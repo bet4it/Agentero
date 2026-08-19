@@ -1,0 +1,66 @@
+name: Build Windows (manual)
+
+# Manual-only build for forks: produces an unsigned NSIS installer (.exe)
+# without requiring TAURI_SIGNING_PRIVATE_KEY / POSTHOG_KEY secrets.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup MSVC developer environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Desktop packages ship a stub externalBin (#285); users install the CLI
+      # from Settings → About. `beforeBuildCommand` also runs cli:bundle:release,
+      # so run the stub here to keep the build-script happy (mirrors release.yml).
+      - name: Prepare externalBin CLI stub
+        run: pnpm cli:bundle:stub
+
+      # Fork builds have no TAURI_SIGNING_PRIVATE_KEY: disable updater artifacts
+      # so `tauri build` does not fail. Produces a plain unsigned installer.
+      - name: Disable updater artifacts for unsigned build
+        shell: bash
+        run: |
+          node -e '
+            const fs = require("fs");
+            const p = "src-tauri/tauri.conf.json";
+            const cfg = JSON.parse(fs.readFileSync(p, "utf8"));
+            cfg.bundle.createUpdaterArtifacts = false;
+            cfg.plugins.updater.endpoints = [];
+            fs.writeFileSync(p, JSON.stringify(cfg, null, 2) + "\n");
+          '
+
+      - name: Build Tauri installer (Windows)
+        run: pnpm tauri build --bundles nsis
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentero-windows-nsis
+          path: src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
