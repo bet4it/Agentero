@@ -120,7 +120,7 @@ export function PaperTreeRow({
 			</FileTreeName>
 			{showActions ? (
 				<FileTreeActions
-					className="shrink-0"
+					className="shrink-0 pr-2"
 					onClick={(e) => {
 						e.stopPropagation();
 					}}
@@ -159,7 +159,7 @@ export function PaperTreeRow({
 						</Tooltip>
 					) : null}
 					{showRead ? (
-						<Tooltip>
+						<Tooltip disableHoverableContent>
 							<TooltipTrigger asChild>
 								<Button
 									type="button"
@@ -180,7 +180,10 @@ export function PaperTreeRow({
 									)}
 								</Button>
 							</TooltipTrigger>
-							<TooltipContent side="right" className="max-w-xs">
+							<TooltipContent
+								side="right"
+								className="max-w-xs select-none cursor-default"
+							>
 								<p className="font-medium">{t("fileTree.readPaper")}</p>
 							</TooltipContent>
 						</Tooltip>
