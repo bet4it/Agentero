@@ -62,5 +62,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: agentero-windows-nsis
-          path: src-tauri/target/release/bundle/nsis/*.exe
+          # Tauri's default target dir is the repo root (../target), not
+          # src-tauri/target. The NSIS bundle lands in
+          # target/release/bundle/nsis/Agentero_<version>_x64-setup.exe.
+          path: target/release/bundle/nsis/*.exe
           if-no-files-found: error
