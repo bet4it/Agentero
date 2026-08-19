@@ -1,0 +1,4156 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Agentero 本地优先 Agent 科研工作台文档">
+      
+      
+      
+      
+        <link rel="prev" href="../mark-locate-eager/">
+      
+      
+        <link rel="next" href="../usage-analytics/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>广场 Plaza - Agentero 文档</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="grey">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#plaza" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Agentero 文档" class="md-header__button md-logo" aria-label="Agentero 文档" data-md-component="logo">
+      
+  <img src="../../assets/agentero-app-icon.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Agentero 文档
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              广场 Plaza
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/poco-ai/agentero" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    poco-ai/agentero
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  架构总览
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../usage/" class="md-tabs__link">
+          
+  
+  
+  教程
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../frontend/" class="md-tabs__link">
+          
+  
+  
+  前端
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../backend/" class="md-tabs__link">
+          
+  
+  
+  后端
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  开发草稿
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../test/" class="md-tabs__link">
+          
+  
+  
+  测试
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../bug_fix/deepseek-thinking-body/" class="md-tabs__link">
+          
+  
+  
+  Bug 修复记录
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Agentero 文档" class="md-nav__button md-logo" aria-label="Agentero 文档" data-md-component="logo">
+      
+  <img src="../../assets/agentero-app-icon.svg" alt="logo">
+
+    </a>
+    Agentero 文档
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/poco-ai/agentero" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    poco-ai/agentero
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构总览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    教程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    教程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装与首次使用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/import-papers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    导入和管理论文
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/read-and-organize/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读、标注与整理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    接入 Agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/mobile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    移动端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/zotero/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用 Zotero Connector
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/remote-vault/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    打开远程 Vault
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    前端
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    前端
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/shell/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工作台壳
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/workspace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dockview 工作区
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/vault-tree/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    文件树
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/library/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    论文库 Library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/paper-import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    入库 UI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/markdown/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Markdown 编辑
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/pdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF 阅读与划词
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/pdf-layout-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF 版面分析（实验）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent 面板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/mobile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    移动端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/wiki/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    双链 UI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/command-palette/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    命令面板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/translate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    翻译
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设置与主题
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/onboarding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    新手引导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    组件约定
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后端
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    后端
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catalog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/vault/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vault FS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/paper-import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    论文入库
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/identifier-lookup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identifier Lookup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/citation-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    参考文献解析
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/skill-import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skill 导入
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/connector/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zotero Connector
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/wiki/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    双链索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Host
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/remote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程 Vault
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/search/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    搜索
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用记录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/translate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    翻译
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    运行日志
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/doctor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vault Doctor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/telemetry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    遥测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 全表
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发草稿
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发草稿
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zotero-word-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Word 引用集成
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mark-cli-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标注 CLI 路线 (#170)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mark-locate-lazy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标注惰性定位
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mark-locate-eager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标注即时定位
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    广场 Plaza
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    广场 Plaza
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-2026-07-252026-08-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. 产品结论（2026-07-25，2026-08-14 修订）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 产品动机
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 侧栏信息架构
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 中间栏呈现
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 中间栏呈现">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-plazaview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 壳：PlazaView
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-cool-papersp0webview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Cool Papers（P0，WebView）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#321" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 入库（已实现）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322-skill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 Skill 推荐（已实现）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 播客（占位）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-v0p0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 论文推荐 v0（P0）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-modelscope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 ModelScope 论文（已实现）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 与其它模块
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 虚拟路径与类型草图
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 分阶段
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-p0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 明确不做（P0）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 实现落点（编码时）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 风险与后续确认点
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用记录总结 (#239)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    测试
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    发布流程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/ios-testflight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    iOS TestFlight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/release-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    发布前 Checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bug 修复记录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bug 修复记录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/deepseek-thinking-body/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DeepSeek 正文落入 Thinking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/acp-session-resume-id/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ACP 会话恢复 ID 错误
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/ime-composition-enter-submit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    输入法组字 Enter 误发送
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/wiki-embed-unrelated-refresh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    普通编辑触发全部 Wiki 嵌入闪烁
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/wikilink-heading-reference-stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标题双链稳定性
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/dockview-sash-pdf-resize-jank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    拖动 Dockview 分隔条时 PDF 卡顿
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/pdf-switch-visual-crop-layout-onnx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF 切换视觉截图与后台 ONNX
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-acp-path-ssh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远端 ACP PATH / SSH
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-vault-tree-lazy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程 Vault 文件树懒加载
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/macos-signing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    macOS 签名与公证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/gemini-login-browser-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gemini 登录弹窗循环
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/import-abstract-mt-timeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    导入 NOTES 摘要 MT 超时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/cli-import-library-refresh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI 导入后论文标题不刷新
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/codex-history-runtime-session-id/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex 历史恢复误用 session id
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/local-pdf-parse-missing-pdfium/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    导入 PDF 无法生成 PAPER.md
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/paper-folder-marker-conflict/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    组织目录被识别成单篇论文
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/paper-import-timeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    论文导入超时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-create-folder-exists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程 Vault 无法新建文件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-delete-list-nosuchfile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程删除后 list 报 NoSuchFile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/todo-checkbox-scale-align/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    缩放时待办 checkbox 错位
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-2026-07-252026-08-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. 产品结论（2026-07-25，2026-08-14 修订）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 产品动机
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 侧栏信息架构
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 中间栏呈现
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 中间栏呈现">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-plazaview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 壳：PlazaView
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-cool-papersp0webview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Cool Papers（P0，WebView）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#321" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 入库（已实现）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322-skill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 Skill 推荐（已实现）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 播客（占位）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-v0p0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 论文推荐 v0（P0）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-modelscope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 ModelScope 论文（已实现）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 与其它模块
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 虚拟路径与类型草图
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 分阶段
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-p0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 明确不做（P0）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 实现落点（编码时）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 风险与后续确认点
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="plaza">广场（Plaza）— 外部来源发现<a class="headerlink" href="#plaza" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>范围：侧栏虚拟节点 <strong>广场</strong> 及其子来源（Cool Papers / ModelScope 论文 / Skill 推荐 / 订阅 / 播客 / 论文推荐）；中间栏发现流。<br />
+相关：<a href="../../frontend/vault-tree/"><code>../frontend/vault-tree.md</code></a>、<a href="../../backend/paper-import/"><code>../backend/paper-import.md</code></a>、<a href="../../backend/"><code>../backend/index.md</code></a>。<br />
+订阅 MVP（已落地）：<a href="../plaza-feeds/"><code>plaza-feeds.md</code></a>。<br />
+开关：设置 → 通用 → <strong>广场</strong>（<code>plazaEnabled</code>，默认开）；关闭后不显示、不加载。</p>
+</blockquote>
+<h2 id="0-2026-07-252026-08-14">0. 产品结论（2026-07-25，2026-08-14 修订）<a class="headerlink" href="#0-2026-07-252026-08-14" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>议题</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>树位置</td>
+<td><strong>Library + Recycle Bin 下方、真实 Vault 根目录上方</strong>（已实现）</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>Cool Papers 呈现</td>
+<td><strong>内嵌 iframe + Host 代理协议</strong> <code>agentero-coolpapers://</code>（已实现；见 §3.2）</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>入库</td>
+<td><strong>已实现</strong>：每行注入 <code>[入库]</code>，复用现成魔棒（见 §3.2.1）</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>P0 范围</td>
+<td><strong>已交付：广场壳 + Cool Papers 浏览入库 + Skill 推荐</strong>；播客 / 论文推荐尚未实现</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>ModelScope 论文</td>
+<td><strong>已实现</strong>：同一代理模式，但站点是 SPA，另有取舍（见 §3.5）</td>
+</tr>
+<tr>
+<td>Q6</td>
+<td>订阅</td>
+<td><strong>已落地</strong>：广场下单一原生节点，本地 RSS/Atom；见 <a href="../plaza-feeds/"><code>plaza-feeds.md</code></a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>已实现落点（2026-08-14）</strong></p>
+<table>
+<thead>
+<tr>
+<th>区域</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>来源注册表</td>
+<td><code>src/lib/plaza/sources.ts</code>（新增来源 = 一条数组项）</td>
+</tr>
+<tr>
+<td>中间栏</td>
+<td><code>src/components/plaza/plaza-view.tsx</code>、<code>plaza-web-frame.tsx</code>、<code>plaza-skills-view.tsx</code></td>
+</tr>
+<tr>
+<td>Skill 精选</td>
+<td><code>src/lib/plaza/skill-catalog.ts</code></td>
+</tr>
+<tr>
+<td>入库</td>
+<td><code>src/lib/plaza/import.ts</code>（论文 + Skill 仓库）</td>
+</tr>
+<tr>
+<td>侧栏行</td>
+<td><code>src/components/sidebar/file-tree/tree-rows.tsx</code>（<code>PlazaRow</code> / <code>PlazaSourceRow</code>）</td>
+</tr>
+<tr>
+<td>Tab kind</td>
+<td><code>src/lib/workspace/tabs/types.ts</code> 的 <code>"plaza"</code> + <code>doc-view.tsx</code> 分支</td>
+</tr>
+<tr>
+<td>站点代理（共享管道）</td>
+<td><code>src-tauri/src/features/site_proxy.rs</code></td>
+</tr>
+<tr>
+<td>站点代理（各站改写 + 注入）</td>
+<td><code>src-tauri/src/features/coolpapers/proxy.rs</code>、<code>src-tauri/src/features/modelscope_proxy.rs</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Kimi 解析没有走广场入库，而是作为论文侧的独立能力落在 Markdown 工具栏的
+「获取 Cool Paper 笔记」按钮上（<code>paper_coolpapers_notes</code> → 追加 <code>NOTES.md</code>）。
+解析顺序：<code>source_url</code> 上的 papers.cool 链接 → venue 形 catalog id（<code>38818@AAAI</code>）
+→ arXiv id → 标题（允许搜索结果截断后的长前缀）。</p>
+</blockquote>
+<h2 id="1">1. 产品动机<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>Agentero 已是 <strong>local-first 论文工作台</strong>（Library + 文件树 + PDF|NOTES）。用户还需要从 <strong>外部发现流</strong> 找新论文。</p>
+<p><strong>广场</strong> = 「发现入口」集合，与 <strong>Library（已收藏）</strong> 正交：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Library</th>
+<th>广场</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据权威</td>
+<td>catalog + Vault 文件</td>
+<td>外部站点 / 本地启发式；<strong>P0 不写 Vault</strong></td>
+</tr>
+<tr>
+<td>侧栏</td>
+<td><code>agentero:library</code></td>
+<td><code>agentero:plaza</code> + 子来源</td>
+</tr>
+<tr>
+<td>中间栏</td>
+<td>论文库表格</td>
+<td>来源专属发现 UI</td>
+</tr>
+<tr>
+<td>典型动作</td>
+<td>打开 / 标签 / 导出</td>
+<td>浏览发现 + 单条入库</td>
+</tr>
+</tbody>
+</table>
+<p>来源：</p>
+<ol>
+<li><strong>Cool Papers</strong>（<a href="https://papers.cool/">papers.cool</a>）— P0：内嵌站点浏览。  </li>
+<li><strong>ModelScope 论文</strong>（<a href="https://modelscope.cn/papers">modelscope.cn/papers</a>）— 内嵌站点浏览；魔搭每日读论文带中文摘要与评分。  </li>
+<li><strong>Skill 推荐</strong> — 原生面板：按论文阅读 / 写作 / 绘图 / 复现 / 投稿精选 GitHub Skill 仓库；点卡片走魔棒 Skill 导入。  </li>
+<li><strong>订阅</strong> — 用户自己的 RSS / Atom / JSON Feed；论文条目入库。见 <a href="../plaza-feeds/"><code>plaza-feeds.md</code></a>。  </li>
+<li><strong>播客</strong> — 占位，后续。  </li>
+<li><strong>论文推荐</strong> — P0 v0：基于本地库的轻量推荐列表（无云端上传）。</li>
+</ol>
+<h2 id="2">2. 侧栏信息架构<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="err">📁</span><span class="w"> </span><span class="nx">VaultName</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📚</span><span class="w"> </span><span class="nx">Library</span><span class="w">                 </span><span class="nx">agentero</span><span class="p">:</span><span class="kn">library</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">🗑️</span><span class="w"> </span><span class="nx">Recycle</span><span class="w"> </span><span class="nx">Bin</span><span class="w">             </span><span class="nx">agentero</span><span class="p">:</span><span class="nx">trash</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">🌐</span><span class="w"> </span><span class="nx">广场</span><span class="w">                     </span><span class="nx">agentero</span><span class="p">:</span><span class="nx">plaza</span><span class="w">              </span><span class="err">←</span><span class="w"> </span><span class="nx">可折叠</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="err">✨</span><span class="w"> </span><span class="nx">Cool</span><span class="w"> </span><span class="nx">Papers</span><span class="w">         </span><span class="nx">agentero</span><span class="p">:</span><span class="nx">plaza</span><span class="o">/</span><span class="nx">cool</span><span class="o">-</span><span class="nx">papers</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="err">✨</span><span class="w"> </span><span class="nx">ModelScope</span><span class="w"> </span><span class="nx">论文</span><span class="w">      </span><span class="nx">agentero</span><span class="p">:</span><span class="nx">plaza</span><span class="o">/</span><span class="nx">modelscope</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="err">✨</span><span class="w"> </span><span class="nx">Skill</span><span class="w"> </span><span class="nx">推荐</span><span class="w">           </span><span class="nx">agentero</span><span class="p">:</span><span class="nx">plaza</span><span class="o">/</span><span class="nx">skills</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="err">📡</span><span class="w"> </span><span class="nx">订阅</span><span class="w">                 </span><span class="nx">agentero</span><span class="p">:</span><span class="nx">plaza</span><span class="o">/</span><span class="nx">feeds</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="err">🎙️</span><span class="w"> </span><span class="nx">播客</span><span class="w">                 </span><span class="nx">agentero</span><span class="p">:</span><span class="nx">plaza</span><span class="o">/</span><span class="nx">podcasts</span><span class="w">      </span><span class="err">←</span><span class="w"> </span><span class="nx">占位</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="err">🧭</span><span class="w"> </span><span class="nx">推荐</span><span class="w">                 </span><span class="nx">agentero</span><span class="p">:</span><span class="nx">plaza</span><span class="o">/</span><span class="nx">recommend</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">papers</span><span class="o">/</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">notes</span><span class="o">/</span>
+<span class="err">└──</span><span class="w"> </span><span class="err">…</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>约定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>路径</td>
+<td><code>agentero:plaza</code>、<code>agentero:plaza/&lt;sourceId&gt;</code>；<strong>永不落盘</strong></td>
+</tr>
+<tr>
+<td>位置</td>
+<td>Library 与 Recycle Bin <strong>之下</strong>，真实根目录 <strong>之上</strong></td>
+</tr>
+<tr>
+<td>父节点</td>
+<td>单击 → 切换展开/收起并打开广场首页（与文件夹行相同）</td>
+</tr>
+<tr>
+<td>子节点</td>
+<td>单击 → 对应来源 panel（dockview 虚拟 tab）</td>
+</tr>
+<tr>
+<td>右键</td>
+<td>Cool Papers：可选「在系统浏览器打开 papers.cool」；无删除/拖拽/Finder</td>
+</tr>
+<tr>
+<td>禁用</td>
+<td>拖入拖出、删除、重命名、终端打开</td>
+</tr>
+</tbody>
+</table>
+<p><strong>图标（建议）</strong></p>
+<table>
+<thead>
+<tr>
+<th>节点</th>
+<th>Lucide</th>
+<th>en</th>
+<th>zh-CN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>广场</td>
+<td><code>Globe</code></td>
+<td>Plaza</td>
+<td>广场</td>
+</tr>
+<tr>
+<td>Cool Papers</td>
+<td><code>Flame</code> 或自定义标</td>
+<td>Cool Papers</td>
+<td>Cool Papers</td>
+</tr>
+<tr>
+<td>ModelScope 论文</td>
+<td>自定义标（魔搭 favicon）</td>
+<td>ModelScope papers</td>
+<td>ModelScope 论文</td>
+</tr>
+<tr>
+<td>Skill 推荐</td>
+<td><code>Sparkles</code></td>
+<td>Skill picks</td>
+<td>Skill 推荐</td>
+</tr>
+<tr>
+<td>订阅</td>
+<td><code>Rss</code></td>
+<td>Feeds</td>
+<td>订阅</td>
+</tr>
+<tr>
+<td>播客</td>
+<td><code>Podcast</code></td>
+<td>Podcasts</td>
+<td>播客</td>
+</tr>
+<tr>
+<td>推荐</td>
+<td><code>Compass</code></td>
+<td>For You</td>
+<td>推荐</td>
+</tr>
+</tbody>
+</table>
+<p>i18n：<code>sidebar:plaza.*</code>。</p>
+<h2 id="3">3. 中间栏呈现<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h3 id="31-plazaview">3.1 壳：<code>PlazaView</code><a class="headerlink" href="#31-plazaview" title="Permanent link">&para;</a></h3>
+<ul>
+<li>dockview：<code>kind: "plaza"</code>，<code>path</code> = 虚拟 URI；同一 path 单实例 <code>activatePanel</code>。  </li>
+<li><strong>无</strong>独立应用顶栏（与 Library 一致）；来源工具条做在内容区内。  </li>
+<li>父路径 <code>agentero:plaza</code>：三张来源卡片（Cool Papers 可进；播客「即将推出」；推荐可进 v0）。</li>
+</ul>
+<div class="codehilite"><pre><span></span><code>┌──────────────────────────────────────────────────────┐
+│  广场                                                 │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐        │
+│  │ Cool Papers│ │ 播客       │ │ 推荐       │        │
+│  │ 打开日更流  │ │ 即将推出   │ │ 基于本地库  │        │
+│  └────────────┘ └────────────┘ └────────────┘        │
+└──────────────────────────────────────────────────────┘
+</code></pre></div>
+
+<h3 id="32-cool-papersp0webview">3.2 Cool Papers（P0，WebView）<a class="headerlink" href="#32-cool-papersp0webview" title="Permanent link">&para;</a></h3>
+<p><strong>主内容</strong>：内嵌 iframe，经 Host 代理协议 <code>agentero-coolpapers://localhost</code>（Windows 为 <code>https://agentero-coolpapers.localhost</code>）加载 papers.cool。</p>
+<table>
+<thead>
+<tr>
+<th>区域</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主体</td>
+<td>全高 iframe；站点内导航、分区、搜索均由 papers.cool 负责</td>
+</tr>
+<tr>
+<td>顶条（Agentero chrome）</td>
+<td>后退 / 前进 / 重新载入 / 当前路径（只读）/「系统浏览器打开」</td>
+</tr>
+<tr>
+<td>站内链接</td>
+<td>在 iframe 内直接跳转</td>
+</tr>
+<tr>
+<td>站外链接</td>
+<td>交给系统浏览器（arxiv.org 等一律拒绝被嵌套）</td>
+</tr>
+<tr>
+<td>加载失败</td>
+<td>代理返回 502 文案</td>
+</tr>
+<tr>
+<td>入库</td>
+<td>每行 <code>[入库]</code>，见 §3.2.1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么要代理（<code>src-tauri/src/features/coolpapers/proxy.rs</code>）</strong></p>
+<p>papers.cool 给几乎所有链接都加了 <code>target="_blank"</code>（单个分区页实测 238 处）。直接跨源嵌套时：</p>
+<ul>
+<li>链接要么弹出独立窗口、要么静默失效——<strong>点了没反应</strong>；</li>
+<li>跨源 iframe 的 <code>location</code> / <code>history</code> 都读不到，<strong>无法实现后退</strong>。</li>
+</ul>
+<p>因此改为在 Host 侧以自有 scheme 转发（沿用 <code>arxiv_proxy.rs</code> 的既有模式），同源后即可改写与观测：</p>
+<ul>
+<li><code>target="_blank"</code> → <code>_self</code>，站内链接原地跳转；</li>
+<li><strong>同时改写 <code>window.open</code></strong>。仅改 HTML 不够：cool.js 的所有脚本式跳转都走 <code>window.open</code>（搜索、<code>[REL]</code> 相关论文、排序、feed、导出收藏、arXiv 日历共 7 处），且多数传 <code>_blank</code>；sandbox 去掉 <code>allow-popups</code> 后这些调用会被<strong>静默丢弃</strong>，表现为「搜索点了没反应」。补丁在 <code>&lt;head&gt;</code> 安装，早于 body 末尾的 cool.js。</li>
+<li>统一的三档跳转规则（链接与脚本共用）：<strong>站内页面</strong> → 原地 <code>location.assign</code>；<strong>Atom feed</strong> → 交系统浏览器（面板里渲染裸 XML 没有意义）；<strong>跨源</strong> → 交系统浏览器。</li>
+<li>feed 与站内 handoff 必须<strong>换算回上游 origin</strong> 再交出去——系统浏览器解析不了我们的私有 scheme（消息用 <code>externalPath</code>，由面板对 <code>homeUrl</code> 求解）。</li>
+<li>绝对自链接 <code>https://papers.cool/…</code> → <code>/…</code>，导航不会掉出代理；</li>
+<li>注入桥接脚本：<code>postMessage</code> 上报每次导航路径（前端据此维护 Back/Forward 栈），并拦截跨源链接交给系统浏览器；</li>
+<li>上游 origin 在 Rust 侧<strong>硬编码</strong>，避免代理退化成任意 URL 中继（SSRF）。</li>
+<li><strong>只对完整 HTML 文档注入</strong>（首字节是 <code>&lt;!doctype</code> / <code>&lt;html</code>）。<code>togglePdf</code> / <code>toggleKimi</code> 用 XHR 取的是 <strong>同样标着 <code>text/html</code> 的片段</strong>——Kimi 解析是裸 <code>&lt;p class="faq-q"&gt;</code>，<code>POST /star</code> 是裸计数——cool.js 直接把响应文本塞进 DOM，一旦注入就会把脚本源码和计数当文本显示出来（现象：点 PDF / Kimi 弹出一段 <code>&lt;script&gt;…&lt;/script&gt;0</code>）。</li>
+<li><strong>桥接脚本在嵌套 frame 内自我禁用</strong>。pdf.js viewer 也是完整文档，会被一并注入；那里的 <code>parent</code> 是 papers.cool 页面而非应用，消息没人收，且点击拦截会把 PDF 内的链接 <code>preventDefault</code> 掉。判定方式：读 <code>parent.location.href</code>——面板自身的父窗口是跨源的应用会抛异常，嵌套 frame 的父窗口同源可读。</li>
+</ul>
+<p><strong>其它工程注意</strong></p>
+<ul>
+<li>前端不用 iframe 自身 history：一旦跳到第三方源就再次不可读；后退改为「按记录的路径重挂载 iframe」，因此也不会污染应用自身的 session history。</li>
+<li><strong>只有 后退 / 前进 / 重新载入 可以改变 iframe 的 <code>key</code></strong>（用单独的 <code>epoch</code> 计数器）。若把 <code>key</code> 挂到「观测到的导航」状态上（如 history 长度 / 游标），站内每次点击都会重挂载并重新加载<strong>挂载时那个旧路径</strong>，表现为「点子页面闪回首页」。venue 尤其明显：<code>&lt;a onclick="listVenueDetail('AAAI')"&gt;</code> 无 href（只做 show/hide + <code>pushState('/')</code>），但其中的年份 / 分组是真链接 <code>href="/venue/AAAI.2026"</code>。</li>
+<li>sandbox 去掉 <code>allow-popups</code>，确保没有链接能逃到新窗口。</li>
+<li>与 PDF iframe 一样，拖拽期间置 <code>pointer-events: none</code>，否则 dockview 收不到 dragover。</li>
+<li>远程 Vault 会话下同样可用（广场不依赖 vault 文件 IO）。</li>
+<li>Host 用进程级复用的 HTTP 客户端转发（<code>network::shared_client</code>），否则每张图 / 每段 JS 都要重新握手代理 TLS，papers.cool 会明显卡。</li>
+</ul>
+<h3 id="321">3.2.1 入库（已实现）<a class="headerlink" href="#321" title="Permanent link">&para;</a></h3>
+<p>代理注入的桥接脚本给每行论文标题追加 <code>[入库]</code>，与站点自带的 <code>[PDF] [Copy] [Kimi] [REL]</code> 同排。点击后把 <code>{ id, branch, url, title }</code> 交给面板，结果回传给该行显示 <code>[已入库]</code>。</p>
+<p><strong>分两条路，因为质量不对等：</strong></p>
+<table>
+<thead>
+<tr>
+<th>行类型</th>
+<th>路线</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>arXiv</td>
+<td>现成魔棒，喂 <code>arxiv.org/abs/{id}</code></td>
+<td>原生 arXiv 路径还能多拿 <code>arxiv_id</code> 与 LaTeX 源码</td>
+</tr>
+<tr>
+<td>其余（venue）</td>
+<td><code>paper_coolpapers_import</code>，读该行自己的 papers.cool 页面</td>
+<td>不经 Translator；见下</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么 venue 不走 Translator。</strong> papers.cool 的论文页自带 Highwire <code>citation_*</code>（title / authors / abstract / publisher / date，<strong>以及 <code>citation_pdf_url</code></strong>），实测覆盖它聚合的全部 11 种出版商形态。而把出版商 URL 送去 Translator：</p>
+<ul>
+<li><code>openreview.net</code>（COLM / CoRL / ICLR / ICML / MLSYS / NeurIPS / UAI <strong>共 7 个 venue</strong>）抓到的是 Cloudflare 人机验证页，0 作者；</li>
+<li><code>ojs.aaai.org</code>（AAAI）HTTP 500；</li>
+<li><code>www.ecva.net</code>（ECCV）HTTP 300 多选；</li>
+<li><code>papers.miccai.org</code> / <code>www.ndss-symposium.org</code> 退化成 <code>webpage</code> / <code>blogPost</code>；</li>
+<li><strong>且 11/11 都不返回 PDF 附件。</strong></li>
+</ul>
+<p>也就是说 Translator 那条路「一半站点坏、还全都缺 PDF、又多一跳依赖用户自建服务」，唯一净胜的只有 DOI（当前不填）。详见 <a href="https://github.com/poco-ai/Agentero/issues/333">#333</a>。</p>
+<p><strong>catalog id 用 papers.cool 原生 id</strong>（如 <code>36962@AAAI</code>、<code>2026.acl-long.1@ACL</code>）。<code>allocate_paper_path</code> 不清洗 id、直接当目录名，<code>@</code> <code>.</code> 三平台合法。选它而非默认派生链是因为它全局唯一、去重精确；派生链的 <code>citekey_fallback</code>（<code>{姓}{年}{标题首词}</code>）会撞，而 <code>DedupePolicy::ByCatalogId</code> 撞了会<strong>静默当重复吞掉</strong>。代价是同一篇论文日后从 BibTeX / Zotero 进来 id 不同、会重复——已知取舍，原生 id 另存进 <code>source_url</code> 保留可追溯性。</p>
+<p><strong>其它约定</strong></p>
+<ul>
+<li>复用共享的 <code>paper_commit</code>：catalog 插入、NOTES.md 播种、PDF 下载、去重全部沿用，不新增管线。</li>
+<li><code>paper_type</code> 不是 Zotero itemType，取值只有 <code>arxiv</code> / <code>doi</code> / <code>html</code> / <code>other</code>；无 DOI 时为 <code>other</code>。</li>
+<li>元数据解析复用 <code>map_zotero_item</code>（先拼一个 Zotero 形状的值），避免第二套字段映射。</li>
+<li>注入的 <code>[入库]</code> <strong>不带 href</strong>，否则会被跨源链接拦截器当外链送去系统浏览器。</li>
+<li>行是滚动加载的（<code>loadMorePapers</code> 追加 <code>.panel.paper</code>），除首屏遍历外挂 <code>MutationObserver</code>。</li>
+<li>只做<strong>单条入库</strong>，不提供批量。</li>
+<li>入库后<strong>不自动打开论文</strong>，否则会把连续浏览的用户拽出面板。</li>
+<li>PDF 没取到时提示「已导入（未取到 PDF）」，不谎报干净成功。</li>
+</ul>
+<p><strong>后续（非 P0）</strong>：批量入库、预览抽屉；DOI 可按需回补（AAAI / IJCAI 的出版商页有 <code>citation_doi</code>，<code>/search</code> 按 DOI 的元数据质量最高）。</p>
+<h3 id="322-skill">3.2.2 Skill 推荐（已实现）<a class="headerlink" href="#322-skill" title="Permanent link">&para;</a></h3>
+<p>原生面板（不 iframe）。五类：论文阅读 / 论文写作 / 绘图 / 复现 / 投稿。目录写在 <code>skill-catalog.ts</code>（静态 star 快照）。点卡片 → <code>importPlazaSkillRepo</code> → 魔棒 <code>lookupSubmit</code> → 现有 Skill 多选安装框。角上外链单独打开 GitHub。不含 Zotero / 文献库类仓库。</p>
+<h3 id="33">3.3 播客（占位）<a class="headerlink" href="#33" title="Permanent link">&para;</a></h3>
+<ul>
+<li>空态文案：订阅源、单集列表与播放将在后续版本提供。  </li>
+<li>侧栏子节点可点，进入占位页（避免「死链」）。</li>
+</ul>
+<h3 id="34-v0p0">3.4 论文推荐 v0（P0）<a class="headerlink" href="#34-v0p0" title="Permanent link">&para;</a></h3>
+<p><strong>目标</strong>：不依赖外部账号，仅用 <strong>本地 catalog + 轻量信号</strong> 给出可解释的「下一步可读」。</p>
+<table>
+<thead>
+<tr>
+<th>信号（v0）</th>
+<th>用法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>最近打开 / 最近入库</td>
+<td>「继续阅读」「新入库未读」</td>
+</tr>
+<tr>
+<td><code>is_read === false</code> 且资源齐全</td>
+<td>「待精读」</td>
+</tr>
+<tr>
+<td>同 tag 聚类</td>
+<td>「与标签 X 相关的本地论文」</td>
+</tr>
+<tr>
+<td>阅读热力为空但已打开</td>
+<td>「打开过但几乎未标注」</td>
+</tr>
+</tbody>
+</table>
+<p><strong>呈现</strong>：分组列表（非 WebView）—</p>
+<div class="codehilite"><pre><span></span><code>推荐
+├── 待精读（未读且有 PDF/TeX）
+├── 最近入库
+└── 标签「…」下的其它论文
+</code></pre></div>
+
+<ul>
+<li>行点击 → <strong><code>openPaper</code></strong>（本地 PDF|NOTES），因为条目已在库。  </li>
+<li>无足够本地数据：空态引导「用魔棒或 Cool Papers 发现论文，入库后这里会更有用」（Cool Papers 暂不入库时，引导魔棒 / 手动）。  </li>
+<li><strong>隐私</strong>：v0 <strong>不上传</strong>库内容到云端；仅本地计算。</li>
+</ul>
+<blockquote>
+<p>说明：P0 推荐是「本地库导读」，不是 Cool Papers 式外网发现。外网推荐留待入库打通之后。</p>
+</blockquote>
+<h3 id="35-modelscope">3.5 ModelScope 论文（已实现）<a class="headerlink" href="#35-modelscope" title="Permanent link">&para;</a></h3>
+<p><strong>主内容</strong>：内嵌 iframe，经 <code>agentero-modelscope://localhost</code> 加载 <a href="https://modelscope.cn/papers">modelscope.cn/papers</a>。顶条 chrome、拖拽护盾、Back / Forward 全部复用 <code>PlazaWebFrame</code>，前端只多了 <code>PLAZA_SOURCES</code> 一条。</p>
+<p><strong>必须代理</strong>：站点回 <code>X-Frame-Options: SAMEORIGIN</code>，直接 iframe 会被拒。代理重建响应时只保留 <code>Content-Type</code>，XFO 顺带被丢掉。</p>
+<p><strong>与 Cool Papers 的四处不同（都因为它是 umi 3.5.26 SPA）</strong></p>
+<table>
+<thead>
+<tr>
+<th>差异</th>
+<th>后果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>列表走 <code>PUT /api/v1/dolphin/papers</code>（JSON body，匿名可用）</td>
+<td>代理原本只发 GET 且丢 body，页面会渲染成空壳。请求管道抽到 <code>site_proxy.rs</code> 并<strong>转发 method + body</strong>（顺带修好 papers.cool 的 <code>POST /star</code>）。只转发 <code>Content-Type</code> / <code>Accept</code> / <code>Accept-Language</code>——<code>Cookie</code>、<code>Origin</code>、<code>Referer</code> 一律不带</td>
+</tr>
+<tr>
+<td>外壳资源全是协议相对 <code>//g.alicdn.com/…</code>，含 <code>window.publicPath</code></td>
+<td>在自有 scheme 下会解析成 <code>agentero-modelscope://g.alicdn.com/…</code>，应用根本不启动。<code>rewrite_html</code> 把 <code>="//</code> / <code>='//</code> / <code>= "//</code> 一律改成 <code>https://</code>。CDN 资源<strong>不经代理</strong>，否则等于给代理开一批额外上游主机（SSRF 面）</td>
+</tr>
+<tr>
+<td>路由是 <code>history.pushState</code>，点卡片不产生真实导航</td>
+<td>桥接必须包装 <code>pushState</code> / <code>replaceState</code> 并监听 <code>popstate</code> 才能上报路径，否则顶条路径和 Back / Forward 永远不动</td>
+</tr>
+<tr>
+<td>页面是 React，被拒绝的点击不能只 <code>preventDefault</code></td>
+<td>umi 的 <code>Link</code> 自己就会 <code>preventDefault</code> 然后照样路由，必须在捕获阶段 <code>stopImmediatePropagation</code>，让事件根本到不了 React 根容器</td>
+</tr>
+</tbody>
+</table>
+<p><strong>只允许 <code>/papers*</code> 原地浏览。</strong> 其余同域路径（<code>/models</code>、<code>/datasets</code>、<code>/docs</code>…）与站外链接一律 handoff 到系统浏览器；同域的走 <code>externalPath</code> 换算回上游 origin。登录一族（<code>/login</code>、<code>/register</code>、<code>/reset</code>、<code>/binding</code>）是另一套独立应用，本就不该在代理里跑——我们不注入任何登录态（§7）。</p>
+<p><strong>隐藏站点 header</strong>（<code>header.antd5-layout-header</code>）。面板是论文流，不是浏览器：全局导航只提供「走出去」的入口，还带登录按钮。隐去之后页面自带的搜索框、<code>本周热门 / 最新推荐 / 全部论文</code> 排序 tab 与卡片栅格都还在，面板反而更干净。</p>
+<p><strong>入库</strong>：<code>/papers/&lt;arxivId&gt;</code> 本身就是全部所需身份，所以列表卡片和详情页注入的「入库」都只发 <code>{ id, branch: "arxiv", url: "https://arxiv.org/abs/&lt;id&gt;" }</code>，直接落到 §3.2.1 的 arXiv 路线（能多拿 <code>arxiv_id</code> 与 LaTeX 源码）。<strong>没有新增任何 Rust 入库命令，前端 <code>import.ts</code> 零改动。</strong></p>
+<p>两处都是带 Agentero 标的按钮，一眼能认出是我们的动作而不是站点自己的：</p>
+<ul>
+<li><strong>列表</strong>：绝对定位在卡片右下角，与统计行同高；自带边框/圆角/中性灰底，浅色深色主题都成立。</li>
+<li><strong>列表</strong>：只装饰真正排布出盒子的卡片（<code>offsetWidth</code>/<code>offsetHeight</code> 阈值）。零宽的 <code>/papers/</code> 锚点会让绝对定位的按钮甩到容器边缘，露在卡片外面。</li>
+<li><strong>详情页</strong>：插在站点那排 <code>arXiv 原文 / PDF / Git</code> 的最左侧，并<strong>在运行时借用 <code>arXiv 原文</code> 的 className</strong>，所以尺寸与外观完全一致。定位靠那颗 arXiv favicon（<code>img[src*="arxiv.org"]</code>）——那排的类名是哈希的、文案是本地化的，图标 src 两者都不是。</li>
+<li><strong>图标</strong>：品牌标缩到只剩那副铜色眼镜。完整的插画式 logo 在 14px（站点图标尺寸）下糊成一团。</li>
+<li><strong>必须在链接拦截器之前注册点击处理并整体吞掉事件</strong>——卡片按钮就长在卡片自己的 <code>&lt;a&gt;</code> 里面，否则入库的同时会被路由带走。</li>
+<li>文案挂在子 <code>span.agentero-import-label</code> 上，落态只改它，图标与借来的结构不会被 <code>textContent</code> 抹掉。</li>
+<li>站点的 Emotion 类名（<code>acss-*</code>）每次发版重新哈希，<strong>只能</strong>用 <code>header.antd5-layout-header</code>、<code>a[href^="/papers/"]</code>、arXiv favicon 这类结构化钩子。</li>
+<li>React 重渲染会抹掉注入节点，<code>MutationObserver</code> 挂 <code>document.body</code> 补回来（debounce 100ms，避免自触发抖动）。</li>
+<li>回执按 <code>data-paper-id</code> 遍历匹配：arXiv id 带 <code>.</code>，不能用 id 选择器。</li>
+</ul>
+<h2 id="4">4. 与其它模块<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>关系</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Library</td>
+<td>推荐 v0 只读 <code>paper_list</code> / 热力；不改 catalog schema</td>
+</tr>
+<tr>
+<td>魔棒 / 入库</td>
+<td><strong>已复用</strong> <code>lookup_import_batch</code>：喂上游 URL，见 §3.2.1。订阅论文卡走同一条</td>
+</tr>
+<tr>
+<td>订阅</td>
+<td>独立 XDG <code>feeds.sqlite</code>，不进 catalog；见 <a href="../plaza-feeds/"><code>plaza-feeds.md</code></a></td>
+</tr>
+<tr>
+<td>PDF|NOTES</td>
+<td>推荐打开本地论文时走现有阅读布局</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>P0 不强制；P1 可做「解释为何推荐」</td>
+</tr>
+<tr>
+<td>命令面板</td>
+<td>P1：<code>Plaza: Cool Papers</code> 等</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5">5. 虚拟路径与类型草图<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">PLAZA_VIRTUAL_PATH</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"agentero:plaza"</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">PLAZA_SOURCE_PATHS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">coolPapers</span><span class="o">:</span><span class="w"> </span><span class="s2">"agentero:plaza/cool-papers"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">podcasts</span><span class="o">:</span><span class="w"> </span><span class="s2">"agentero:plaza/podcasts"</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">recommend</span><span class="o">:</span><span class="w"> </span><span class="s2">"agentero:plaza/recommend"</span><span class="p">,</span>
+<span class="p">}</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kd">const</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">isPlazaVirtualPath</span><span class="p">(</span><span class="nx">path</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">undefined</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nb">Boolean</span><span class="p">(</span><span class="nx">path</span><span class="o">?</span><span class="p">.</span><span class="nx">startsWith</span><span class="p">(</span><span class="s2">"agentero:plaza"</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>DocTab：<code>kind: "plaza"</code>（或 <code>file</code> + mode <code>plaza</code> + path 虚拟 URI——实现时与 Library/Trash 对齐选一种，<strong>推荐独立 kind</strong> 便于 <code>DocView</code> 分支）。</p>
+<h2 id="6">6. 分阶段<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>交付</th>
+<th>验收</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P0a 壳</strong></td>
+<td>侧栏广场 + 三子节点；<code>PlazaView</code> 首页 + 路由</td>
+<td>虚拟 path 不写盘；i18n；折叠位置正确</td>
+</tr>
+<tr>
+<td><strong>P0b Cool Papers</strong></td>
+<td>WebView 浏览 papers.cool + 导航 chrome + 外链</td>
+<td>可分区浏览站点；失败可恢复</td>
+</tr>
+<tr>
+<td><strong>P0c 推荐 v0</strong></td>
+<td>本地启发式分组列表 + openPaper</td>
+<td>有库时有分组；无库时空态</td>
+</tr>
+<tr>
+<td><strong>P0d 播客</strong></td>
+<td>占位页</td>
+<td>可进入、文案清晰</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td>入库（解析 arXiv / 魔棒管线）、预览抽屉、批量加入 Library</td>
+<td>与魔棒语义一致</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>播客实体、Agent 推荐、命令面板、@ 广场条目</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>订阅 MVP</strong></td>
+<td>原生面板 + 本地 RSS + 论文入库</td>
+<td>见 <a href="../plaza-feeds/"><code>plaza-feeds.md</code></a> M1–M4</td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-p0">7. 明确不做（P0）<a class="headerlink" href="#7-p0" title="Permanent link">&para;</a></h2>
+<ul>
+<li>广场 → Vault <strong>批量入库</strong>（单条已实现，见 §3.2.1）。  </li>
+<li>把 feed 写入 catalog（订阅条目缓存走 XDG，见 <a href="../plaza-feeds/"><code>plaza-feeds.md</code></a>）。  </li>
+<li>播客播放器。订阅管理见 <a href="../plaza-feeds/"><code>plaza-feeds.md</code></a>，不进本篇原 P0。  </li>
+<li>云端协同过滤或上传本地库。  </li>
+<li>注入脚本只做导航上报与 <code>[入库]</code>；<strong>不注入任何凭据 / API Key / 登录态</strong>。</li>
+</ul>
+<h2 id="8">8. 实现落点（编码时）<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>区域</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>设计</td>
+<td><code>docs/development/plaza.md</code>（本文，UI 规范也在此，<code>docs/frontend/shell.md</code> 没有广场小节）</td>
+</tr>
+<tr>
+<td>虚拟 path</td>
+<td><code>src/lib/plaza/sources.ts</code></td>
+</tr>
+<tr>
+<td>文件树</td>
+<td><code>src/components/sidebar/file-tree/</code></td>
+</tr>
+<tr>
+<td>中间栏</td>
+<td><code>src/components/plaza/*</code> + <code>doc-view</code></td>
+</tr>
+<tr>
+<td>站点内嵌</td>
+<td><code>src/components/plaza/plaza-web-frame.tsx</code>（代理 iframe，两个站点来源共用；没有 Tauri 子 webview 封装）</td>
+</tr>
+<tr>
+<td>推荐</td>
+<td><code>src/lib/plaza/recommend.ts</code> + <code>src/components/plaza/recommend-view.tsx</code></td>
+</tr>
+<tr>
+<td>订阅</td>
+<td><a href="../plaza-feeds/"><code>plaza-feeds.md</code></a> §6</td>
+</tr>
+<tr>
+<td>i18n</td>
+<td><code>sidebar</code> / 独立 <code>plaza</code> ns</td>
+</tr>
+<tr>
+<td>Roadmap / Todo</td>
+<td>增加「广场 P0」条目</td>
+</tr>
+</tbody>
+</table>
+<h2 id="9">9. 风险与后续确认点<a class="headerlink" href="#9" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>缓解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>站点改版 / 禁止嵌入</td>
+<td>代理已丢弃 <code>X-Frame-Options</code>；仍失败则把该来源降级为 <code>embedOrigin: null</code> + 「系统浏览器打开」</td>
+</tr>
+<tr>
+<td>ModelScope 换 API 形状或 header 类名</td>
+<td>只依赖结构化钩子（<code>antd5-*</code>、<code>a[href^="/papers/"]</code>）；列表接口变了表现为空列表，代理无需改动</td>
+</tr>
+<tr>
+<td>alicdn 资源的 CORS</td>
+<td><code>crossorigin="anonymous"</code> 的几个脚本需要上游回 <code>*</code>；被拦时兜底是在 <code>rewrite_html</code> 里去掉 <code>crossorigin</code>（无 <code>integrity</code>，降级为经典脚本）</td>
+</tr>
+<tr>
+<td>WebView 体积与内存</td>
+<td>仅在对应 plaza panel 挂载；关 tab 销毁</td>
+</tr>
+<tr>
+<td>推荐过冷启动</td>
+<td>空态文案；阈值（如 &lt; 3 篇不估标签组）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>仍可再确认（非阻塞 P0a）</strong>：</p>
+<ul>
+<li>Cool Papers 默认落地 URL（首页 vs 某默认分区如 <code>cs.AI</code>）。  </li>
+<li>推荐 v0 是否显示「打开过的非 paper 笔记」——默认 <strong>否</strong>，仅 paper 单元。</li>
+</ul>
+<hr />
+<p><em>修订：2026-07-25 — 采纳 WebView、不做入库、P0 含推荐 v0、树位置在 Library/Trash 下。</em>
+<em>修订：2026-08-14 — 改为代理协议嵌入；壳 + Cool Papers 浏览 + 单条入库已落地；推荐 / 播客未实现。</em>
+<em>修订：2026-08-15 — 新增 ModelScope 论文来源；请求管道抽到 <code>site_proxy.rs</code> 并转发 method + body。</em><br />
+<em>修订：2026-08-15 — 订阅列为广场来源，规格拆到 <a href="../plaza-feeds/"><code>plaza-feeds.md</code></a>。</em><br />
+<em>修订：2026-08-15 — 订阅 MVP 落地（XDG <code>feeds.sqlite</code> + 原生双栏 + 论文入库）。</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "navigation.tracking", "navigation.top", "search.suggest", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

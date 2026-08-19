@@ -1,0 +1,4154 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Agentero 本地优先 Agent 科研工作台文档">
+      
+      
+      
+      
+        <link rel="prev" href="../pdf/">
+      
+      
+        <link rel="next" href="../agent/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>PDF 版面分析（实验） - Agentero 文档</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="grey">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pdf-figures-tables-algorithms-formulas" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Agentero 文档" class="md-header__button md-logo" aria-label="Agentero 文档" data-md-component="logo">
+      
+  <img src="../../assets/agentero-app-icon.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Agentero 文档
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PDF 版面分析（实验）
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/poco-ai/agentero" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    poco-ai/agentero
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  架构总览
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../usage/" class="md-tabs__link">
+          
+  
+  
+  教程
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  前端
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../backend/" class="md-tabs__link">
+          
+  
+  
+  后端
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../development/" class="md-tabs__link">
+          
+  
+  
+  开发草稿
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../test/" class="md-tabs__link">
+          
+  
+  
+  测试
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../bug_fix/deepseek-thinking-body/" class="md-tabs__link">
+          
+  
+  
+  Bug 修复记录
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Agentero 文档" class="md-nav__button md-logo" aria-label="Agentero 文档" data-md-component="logo">
+      
+  <img src="../../assets/agentero-app-icon.svg" alt="logo">
+
+    </a>
+    Agentero 文档
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/poco-ai/agentero" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    poco-ai/agentero
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构总览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    教程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    教程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装与首次使用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/import-papers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    导入和管理论文
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/read-and-organize/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读、标注与整理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    接入 Agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/mobile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    移动端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/zotero/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用 Zotero Connector
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/remote-vault/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    打开远程 Vault
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    前端
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    前端
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shell/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工作台壳
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workspace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dockview 工作区
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vault-tree/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    文件树
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../library/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    论文库 Library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper-import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    入库 UI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../markdown/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Markdown 编辑
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF 阅读与划词
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF 版面分析（实验）
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF 版面分析（实验）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        流水线（一图）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="流水线（一图）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#host-xdg" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模型落盘（Host / XDG）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onnx-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        后端选择（本地 ONNX / 远程 Provider）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layout-sidecar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layout sidecar
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Layout sidecar">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        侧栏索引（CLI）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        规则清单（现行，共 17 条核心规则）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="规则清单（现行，共 17 条核心规则）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A. 标签与侧栏（4）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B. 文字角色（3）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C. 类型分家与贴题方向（2）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d-figure_title4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D. 联图与 figure_title（4）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        E. 清理与展示（2）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F. 公式编号框聚合 — 同行-only，不解析编号文本
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        已收敛 / 视为多余（勿再加分支）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        阈值速查
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        返回类型（应用层）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        代码地图
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        限制与后续
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent 面板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mobile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    移动端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wiki/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    双链 UI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../command-palette/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    命令面板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../translate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    翻译
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设置与主题
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../onboarding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    新手引导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    组件约定
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后端
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    后端
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catalog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/vault/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vault FS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/paper-import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    论文入库
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/identifier-lookup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identifier Lookup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/citation-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    参考文献解析
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/skill-import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skill 导入
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/connector/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zotero Connector
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/wiki/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    双链索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Host
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/remote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程 Vault
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/search/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    搜索
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用记录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/translate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    翻译
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    运行日志
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/doctor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vault Doctor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/telemetry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    遥测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 全表
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发草稿
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发草稿
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/zotero-word-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Word 引用集成
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/mark-cli-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标注 CLI 路线 (#170)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/mark-locate-lazy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标注惰性定位
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/mark-locate-eager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标注即时定位
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/plaza/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    广场 Plaza
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/usage-analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用记录总结 (#239)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    测试
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    发布流程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/ios-testflight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    iOS TestFlight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/release-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    发布前 Checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bug 修复记录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bug 修复记录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/deepseek-thinking-body/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DeepSeek 正文落入 Thinking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/acp-session-resume-id/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ACP 会话恢复 ID 错误
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/ime-composition-enter-submit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    输入法组字 Enter 误发送
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/wiki-embed-unrelated-refresh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    普通编辑触发全部 Wiki 嵌入闪烁
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/wikilink-heading-reference-stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标题双链稳定性
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/dockview-sash-pdf-resize-jank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    拖动 Dockview 分隔条时 PDF 卡顿
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/pdf-switch-visual-crop-layout-onnx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF 切换视觉截图与后台 ONNX
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-acp-path-ssh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远端 ACP PATH / SSH
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-vault-tree-lazy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程 Vault 文件树懒加载
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/macos-signing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    macOS 签名与公证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/gemini-login-browser-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gemini 登录弹窗循环
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/import-abstract-mt-timeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    导入 NOTES 摘要 MT 超时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/cli-import-library-refresh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI 导入后论文标题不刷新
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/codex-history-runtime-session-id/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex 历史恢复误用 session id
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/local-pdf-parse-missing-pdfium/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    导入 PDF 无法生成 PAPER.md
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/paper-folder-marker-conflict/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    组织目录被识别成单篇论文
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/paper-import-timeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    论文导入超时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-create-folder-exists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程 Vault 无法新建文件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-delete-list-nosuchfile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程删除后 list 报 NoSuchFile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/todo-checkbox-scale-align/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    缩放时待办 checkbox 错位
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        流水线（一图）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="流水线（一图）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#host-xdg" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模型落盘（Host / XDG）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onnx-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        后端选择（本地 ONNX / 远程 Provider）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layout-sidecar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layout sidecar
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Layout sidecar">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        侧栏索引（CLI）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        规则清单（现行，共 17 条核心规则）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="规则清单（现行，共 17 条核心规则）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A. 标签与侧栏（4）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B. 文字角色（3）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C. 类型分家与贴题方向（2）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d-figure_title4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D. 联图与 figure_title（4）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        E. 清理与展示（2）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F. 公式编号框聚合 — 同行-only，不解析编号文本
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        已收敛 / 视为多余（勿再加分支）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        阈值速查
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        返回类型（应用层）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        代码地图
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        限制与后续
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="pdf-figures-tables-algorithms-formulas">PDF 版面分析（Figures / Tables / Algorithms / Formulas）<a class="headerlink" href="#pdf-figures-tables-algorithms-formulas" title="Permanent link">&para;</a></h1>
+<p>版面检测（默认浏览器内 ONNX PP-DocLayoutV3，可选远程 Provider：Paddle PP-StructureV3 / MinerU 云 API）→ 应用层 <strong>文字角色 + 联图聚合 + 公式按编号框几何聚合（不解析编号文本）+ 置信度去重</strong> → 右栏 <strong>Figures</strong>。</p>
+<blockquote>
+<p>该能力已落地并可随论文打开自动运行；大模型推理在低端设备上可能卡顿，分析结果仅写入可重建 sidecar，不改 PDF 二进制。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>上游</td>
+<td><a href="https://www.embedpdf.com/docs/react/headless/plugins/plugin-layout-analysis">EmbedPDF Layout Analysis</a></td>
+</tr>
+<tr>
+<td>代码</td>
+<td><code>src/lib/pdf/layout/</code>、<code>viewer/panels/figures-panel.tsx</code>（header 按钮）、<code>viewer/pdf/hooks/use-pdf-layout-{regions,run,hover,translate}.ts</code>、<code>viewer/pdf/layers/page-layers.tsx</code>（页内命中框与 bbox 叠加）</td>
+</tr>
+<tr>
+<td>持久化</td>
+<td>Paper PDF 写入 <code>{paper}/source/layout.json</code>（raw text-enriched regions）+ <code>{paper}/source/layout-index.json</code>（侧栏同构，供 CLI）；<code>layoutAnalysisStore</code> 仍是运行时 UI store</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_1">流水线（一图）<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code>下载 / 添加入库完成后 → 后台任务「解析插图、表格、文字」
+        │  headless EmbedPDF 栈写 `{paper}/source/layout.json`（有缓存则跳过）
+        │  实现：`enqueue-paper-layout.ts` + `headless-analyze.ts`
+        │
+打开论文 PDF（含非 active 的已挂载 tab）→ enqueue 到后台任务队列
+        │  多篇并行打开：都进左下角任务列表
+        │  本地 ONNX：JobCenter layoutAnalyze cap=1（避免抢模型）
+        │  远程 Provider（Paddle / MinerU）：无 JobCenter 并发上限（远端排队）；进度事件用 requestId 隔离
+        │  实现：viewer mount 调 `enqueuePaperLayoutAnalysis`（与入库后同一路径）
+        │  终态 `job_report` / 取消必须释放该 cap，否则后续任务会一直排队
+        │  后台 ONNX 不依赖当前 active 论文窗口：headless EmbedPDF 独立打开本地 PDF
+        │  激活中的 tab：有 layout.json → 静默载入 store（无新任务条）
+        │  viewer-bound 分析在每个异步边界检查 document 是否仍 open；关闭/切换竞态按取消处理
+        │  尚无缓存 → 轮询 sidecar，headless 写完后再静默载入
+        │  无 paper 目录的散落 PDF：仅 active tab 用 viewer 内分析（asBackgroundTask）
+        │  手动：Figures header「分析 / 重新分析」
+        │     · 有 `source/layout.json` → **只** JSON→侧栏归并（不重跑 ONNX / 不重写 sidecar）
+        │     · 无缓存 → 全量 PDF→JSON（PP-DocLayoutV3）再归并
+        │     · 打开 Figures / 可选 Eye；`force` 仅内部/将来「强制刷新模型」用
+        ▼
+PP-DocLayoutV3  每页: render → detect → map to PDF points（仅无 sidecar 或 force）
+        │  LayoutBlock[]（插件全量标签；页上 LayoutAnalysisLayer 仍画原始框）
+        ▼
+① 抽 caption 文字（PDF text runs）
+        │  captionRole: figure_main | table_main | algorithm_main | subpanel | other
+        │  formula / formula_number **不**解析编号文本
+        │  写入 {paper}/source/layout.json
+        ▼
+①b source/layout.json 缓存命中（打开论文 / 点「重新分析」默认路径）
+        │  跳过 PP-DocLayoutV3，只从 raw regions 重新 `mergeCaptionsIntoHosts` + 去重
+        ▼
+② mergeCaptionsIntoHosts（联图 / 表题 / 算法题 / 公式按编号框几何合并）
+        │  输出 PdfLayoutRegion[]（图必有完整 title；公式仅保留有 formula_number 锚点）
+        ▼
+③ 侧栏展示: isSidebarLayoutKind + dedupeLayoutRegions(minScore 默认 0.3)
+        │  分区顺序：插图 → 表 → 算法 → **公式（最底）**
+        ▼
+右栏 Figures + 聚焦高亮（store.focused）+ 可选 PDF bbox 叠加层（Eye，调试）
+        │  叠加层画 **rawRegions**（合并前、全 kind、无 NMS；score ≥ 0.3）
+        │  每框标注分类 + 置信度（如「图片 87%」「摘要 91%」）
+        │  标签映射须覆盖 PP-DocLayoutV3 全量（含 abstract）；未映射 label 会在 normalize 被丢弃
+        │  侧栏 / hover 仍用 **regions**（post-merge；不含 abstract）
+        │  不用 EmbedPDF LayoutAnalysisLayer 画框：sidecar 缓存命中时插件无 page layout
+        │
+④ PDF 页交互 → 视觉批注卡 / 公式解析卡
+        │  hit 层用 **post-merge** 区域（与侧栏同源，非插件 raw 框）
+        │  插图 / 表 / 算法：hover 框右上角提示「单击进行批注」；单击 → VisualAnnotationEditor
+        │  有编号公式 + Annotation.md 符号表：280ms dwell →「公式解析」卡；hide 320ms
+        │    · hit 保持挂载（可切换公式 / leave→hide）
+        │    · 滚动/缩放重定位；Escape 关闭
+        │  有编号公式但无符号表：同视觉批注卡
+        │  实现：`hit-test.ts` + `pdf-viewer` + `equation-annotation/` +
+        │        `LAYOUT_FORMULA_HOVER_*`
+        │
+⑤ 正文 / 摘要 / 标题文字抽取（PDF text layer → region.text）
+        │  分析或 sidecar 回填时 enrich；供调试与 bulk 翻译
+        │
+⑥ 工具栏「翻译」icon（视觉批注旁）：按阅读顺序批量翻译文字类区域
+        │  并发 2；每完成一块立刻盖译文图层（`LayoutTranslateOverlay`）
+        │  再次点击：运行中=停止；已有译文=清除
+</code></pre></div>
+
+<p>注册（<code>pdf-viewer.tsx</code>）：</p>
+<div class="codehilite"><pre><span></span><code><span class="nx">LayoutAnalysisPluginPackage</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">layoutThreshold</span><span class="o">:</span><span class="w"> </span><span class="kt">0.3</span><span class="p">,</span><span class="w">  </span><span class="c1">// 与侧栏默认置信度一致</span>
+<span class="w">  </span><span class="nx">tableStructure</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">autoAnalyze</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">renderScale</span><span class="o">:</span><span class="w"> </span><span class="kt">2</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="host-xdg">模型落盘（Host / XDG）<a class="headerlink" href="#host-xdg" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>路径</td>
+<td><code>$XDG_CACHE_HOME/agentero/models/pp-doclayoutv3.onnx</code>（Unix 默认 <code>~/.cache/agentero/models/</code>）</td>
+</tr>
+<tr>
+<td>启动</td>
+<td>Host <code>spawn_background_download</code>（task id 固定 <code>layout-model</code>；已有文件则跳过）</td>
+</tr>
+<tr>
+<td>面板</td>
+<td>App <code>useLayoutModelPrefetch</code> 监听 <code>layout-model:task</code> / 进度，写入左下角后台任务（可取消）</td>
+</tr>
+<tr>
+<td>代理</td>
+<td>设置里的 <code>networkProxyEnabled</code> / <code>networkProxyUrl</code>（<code>network::client_builder</code>）</td>
+</tr>
+<tr>
+<td>源顺序</td>
+<td><strong>ModelScope 优先</strong> → HuggingFace 回退</td>
+</tr>
+<tr>
+<td>ModelScope</td>
+<td><code>greatv/oar-ocr</code> → <code>pp-doclayoutv3.onnx</code></td>
+</tr>
+<tr>
+<td>HuggingFace</td>
+<td>EmbedPDF <code>PP-DocLayoutV3-ONNX/model_fp16.onnx</code></td>
+</tr>
+<tr>
+<td>来源标记</td>
+<td>同目录 <code>pp-doclayoutv3.onnx.source</code></td>
+</tr>
+<tr>
+<td>前端</td>
+<td><code>agentero-model://…/pp-doclayoutv3.onnx</code>（Windows：<code>http://agentero-model.localhost/…</code>）</td>
+</tr>
+<tr>
+<td>Commands</td>
+<td><code>layout_model_status</code> / <code>layout_model_ensure({ progressTaskId? })</code></td>
+</tr>
+</tbody>
+</table>
+<p>实现：<code>src-tauri/src/features/layout_model/</code>、<code>src/lib/pdf/layout/model.ts</code>、<code>ai-runtime.ts</code>。</p>
+<h3 id="onnx-provider">后端选择（本地 ONNX / 远程 Provider）<a class="headerlink" href="#onnx-provider" title="Permanent link">&para;</a></h3>
+<p>设置 →「版面解析」可选择检测后端（<code>settings.layout.backend</code>），选项由前端注册表 <code>LAYOUT_PROVIDERS</code>（<code>src/lib/pdf/layout/providers.ts</code>）驱动：</p>
+<table>
+<thead>
+<tr>
+<th>后端</th>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>本地推理（默认）</td>
+<td><code>local</code></td>
+<td>浏览器内 ONNX PP-DocLayoutV3，完全离线</td>
+</tr>
+<tr>
+<td>Paddle API</td>
+<td><code>paddle</code></td>
+<td>AI Studio 托管 PP-StructureV3 <strong>异步任务</strong> API，<strong>整份 PDF 会上传到云端</strong>；端点固定（<code>supportsBaseUrl: false</code>）</td>
+</tr>
+<tr>
+<td>MinerU（云端 API）</td>
+<td><code>mineru</code></td>
+<td>mineru.net 批量解析 API，<strong>整份 PDF 会上传到云端</strong>；支持 Base URL 覆盖（https-only，loopback 例外）</td>
+</tr>
+</tbody>
+</table>
+<p>每个 provider 描述符带 <code>kind</code> / <code>requiresApiKey</code> / <code>supportsBaseUrl</code> / <code>sidecarMode</code>：设置面板与 Onboarding 据此显隐 API Key / Base URL 输入（保存 / 掩码 / 连通性测试逻辑共用 <code>provider-config.ts</code>）；<code>run-analysis.ts</code> 用 <code>layoutProviderFor(backend)</code> + <code>isRemoteLayoutProvider</code> 判定走远程分支（<code>startRemoteLayoutAnalysis</code>，按 <code>provider.id</code> 分发到 Host engine 注册表）。</p>
+<p>远程 provider 共用流程（<code>src/lib/pdf/layout/paddle.ts</code> IPC 封装 + <code>run-analysis.ts</code>）：</p>
+<ol>
+<li>读取本地 PDF，整份 base64 交给 Host 命令 <code>layout_remote_analyze_pdf</code>（<code>provider</code> 参数分发到 <code>src-tauri/src/features/layout_remote/</code> 的 <code>RemoteLayoutEngine</code> 实现：<code>paddle.rs</code> / <code>mineru.rs</code>）；token 由 Host 从设置注入，WebView 只持有 <code>*</code> 掩码；</li>
+<li>Host 轮询远端任务（总时限 10 分钟），期间通过 <code>layout-remote:progress</code> 事件回报进度（<code>requestId</code> 隔离并行任务）；</li>
+<li>每页返回统一的 <code>boxes</code>（像素坐标 + <code>label</code> + <code>score</code>）；</li>
+<li>后续与本地路径完全共用：PDF text runs 补文字 / captionRole → <code>mergeCaptionsIntoHosts</code> → sidecar / index。</li>
+</ol>
+<p><strong>Paddle</strong>（<code>paddle.rs</code>）：multipart 提交 <code>POST https://paddleocr.aistudio-app.com/api/v2/ocr/jobs</code>（<code>model: PP-StructureV3</code>，<code>Authorization: bearer &lt;token&gt;</code>）→ 每 3s 轮询 <code>GET …/jobs/{jobId}</code> → 下载 <code>resultUrl.jsonUrl</code>（JSONL），提取每页 <code>prunedResult.layout_det_res.boxes</code>；渲染像素尺寸优先取响应 <code>dataInfo</code> / <code>inputImage</code> JPEG 头，缺失时按 200 DPI 估算（归一化 <code>bbox</code> 不受影响，仅 points <code>rect</code> 可能有轻微偏差）。API Key 在 <a href="https://aistudio.baidu.com/account/accessToken">AI Studio 访问令牌页</a> 获取。</p>
+<p><strong>MinerU</strong>（<code>mineru.rs</code>）：<code>POST {base}/api/v4/file-urls/batch</code> 申请预签名上传 URL → <code>PUT</code> 上传 PDF 字节 → 轮询 <code>GET {base}/api/v4/extract-results/batch/{batchId}</code> → 下载结果 zip，解析 <code>*content_list.json</code> + <code>*middle.json</code>（每页尺寸）。<code>content_list</code> 的 bbox 是 <strong>0–1000 归一化</strong> 坐标，Host 按 <code>middle.json</code> 页尺寸换算回像素；<code>type</code>（<code>image</code> / <code>table</code> / <code>equation</code> / <code>code</code> / <code>title</code>…）在 Rust 侧映射到与 PP-DocLayoutV3 统一的 label 词表（<code>labels.ts</code> 直接复用），无置信度字段 → score 固定 1.0（通过前端 0.3 阈值、不扭曲排序）。Base URL 可覆盖（默认 <code>https://mineru.net</code>，强制 https，loopback 例外）；不受信 zip 有下载 / 解压上限。API Token 在 <a href="https://mineru.net/apiManage/token">mineru.net API 管理页</a> 获取。</p>
+<ul>
+<li>标签词表与本地一致，阈值同为 0.3。</li>
+<li>sidecar <code>source.mode</code> 按 provider 记为 <code>paddle-layout</code> / <code>mineru-layout</code>（本地为 <code>embedpdf-layout</code>），均可被解析。</li>
+<li>进度 / 取消沿用 <code>LayoutTask</code> 形状。JobCenter 对远程 provider <strong>不设并发上限</strong>；<code>layout-remote:progress</code> 带 <code>requestId</code>，并行任务互不串进度。</li>
+<li>无 paper 目录（拿不到 PDF 字节）或页数未知时自动回退本地 ONNX。</li>
+</ul>
+<h3 id="layout-sidecar">Layout sidecar<a class="headerlink" href="#layout-sidecar" title="Permanent link">&para;</a></h3>
+<p><code>{paper}/source/layout.json</code> 保存 <strong>初步解析结果</strong>：模型标签映射后的 <code>PdfLayoutRegion[]</code>，并已尽力补充 caption 文本与 <code>captionRole</code>（公式编号文本不解析）。它不保存侧栏最终卡片列表，也不保存缩略图；后续 <code>mergeCaptionsIntoHosts</code>、去重和置信度筛选都从该 raw sidecar 重新计算。因此修改联图、公式合并或筛选规则后，不需要重新运行 PP-DocLayoutV3。</p>
+<div class="codehilite"><pre><span></span><code><span class="kr">type</span><span class="w"> </span><span class="nx">LayoutSidecar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">schemaVersion</span><span class="o">:</span><span class="w"> </span><span class="kt">2</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">source</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">mode</span><span class="o">:</span><span class="w"> </span><span class="s2">"embedpdf-layout"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"paddle-layout"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"mineru-layout"</span><span class="p">;</span><span class="w"> </span><span class="nx">generatedAt</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="p">};</span>
+<span class="w">  </span><span class="nx">regions</span><span class="o">:</span><span class="w"> </span><span class="kt">PdfLayoutRegion</span><span class="p">[];</span><span class="w"> </span><span class="c1">// raw, pre-merge</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<h4 id="cli">侧栏索引（CLI）<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h4>
+<p><code>{paper}/source/layout-index.json</code> 在 <strong>每次 merge 后</strong>（含缓存命中只重算 merge）写出，与 Figures 轨 / hover 目标同源：</p>
+<ul>
+<li>过滤：<code>isSidebarLayoutKind</code> + <code>LAYOUT_SIDEBAR_MIN_SCORE</code> + NMS（<code>dedupeLayoutRegions</code>）</li>
+<li>分区：figure（image+chart）→ table → algorithm → formula</li>
+<li>字段：<code>id</code>（如 <code>figure-3</code>）、<code>stableKey</code>、<code>kind</code>、<code>section</code>、<code>page</code>（<strong>1-based</strong>）、<code>pageIndex</code>、<code>bbox</code>（0–1）、<code>score</code>、<code>title?</code>、<code>layoutRegionId</code></li>
+<li>代码：<code>src/lib/pdf/layout/layout-index.ts</code>、<code>writeLayoutIndexFromRaw</code>（<code>io.ts</code>）</li>
+<li>CLI：<code>agentero layout list|get</code>、<code>agentero mark add --region &lt;id&gt;</code>（见 <a href="../../backend/cli/">../backend/cli.md</a>）</li>
+</ul>
+<p>缓存只在已知 paper folder 时启用；散落 PDF 没有 <code>{paper}</code> 路径，仍使用当前内存流程（也不写 index）。</p>
+<p><strong>重新分析按钮</strong>（Figures header）：<code>force: false</code>。有 <code>source/layout.json</code> 时只重跑 JSON→侧栏（<code>mergeCaptionsIntoHosts</code> + NMS），<strong>不</strong>再跑 PP-DocLayoutV3，也<strong>不</strong>覆盖 raw sidecar；<strong>会</strong>刷新 <code>layout-index.json</code>。无缓存时才走完整 PDF→JSON。需要强制刷新模型输出时由调用方显式传 <code>force: true</code>（当前 UI 不暴露）。</p>
+<hr />
+<h2 id="17">规则清单（现行，共 <strong>17</strong> 条核心规则）<a class="headerlink" href="#17" title="Permanent link">&para;</a></h2>
+<p>按阶段编号。实现常量见 <code>merge-captions.ts</code> → <code>LAYOUT_MERGE</code>。</p>
+<h3 id="a-4">A. 标签与侧栏（4）<a class="headerlink" href="#a-4" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A1</strong></td>
+<td>模型 label → kind</td>
+<td>映射：<code>image</code> <code>chart</code> <code>table</code> <code>algorithm</code> <code>formula</code> <code>formula_number</code> <code>figure_title</code> <code>header</code> <code>text</code>/<code>aside_text</code>→<code>text</code>；其余丢弃</td>
+</tr>
+<tr>
+<td><strong>A2</strong></td>
+<td>侧栏种类</td>
+<td>展示 <strong>image / chart / table / algorithm / formula（有 formula_number 框并成功合并）</strong>；<strong>不展示</strong> 无编号框 formula / 裸 <code>formula_number</code> / caption</td>
+</tr>
+<tr>
+<td><strong>A3</strong></td>
+<td>image+chart 同区</td>
+<td>侧栏「插图」分区；NMS 时同属 <code>figure</code> 组；<strong>公式分区固定在列表最下方</strong></td>
+</tr>
+<tr>
+<td><strong>A4</strong></td>
+<td>纯 text/header 不得当图片</td>
+<td>若 image/chart 被 score≥0.3 的 text/header/abstract <strong>覆盖 ≥55%</strong> 且正文置信度不低于图的 ~85%，则 <strong>丢弃</strong> 该 image/chart（双标 / 段落误检）。Eye 叠加层与 merge 共用 <code>suppressSpuriousFigureDetections</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="b-3">B. 文字角色（3）<a class="headerlink" href="#b-3" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>B1</strong></td>
+<td>文本角色优先</td>
+<td><code>Figure N</code>→<code>figure_main</code>；<code>Table N</code>→<code>table_main</code>；<code>Algorithm N</code>→<code>algorithm_main</code>；<code>(a)</code>→<code>subpanel</code>（即使模型标成 figure_title）</td>
+</tr>
+<tr>
+<td><strong>B2</strong></td>
+<td>无文本时几何兜底</td>
+<td>宽≥0.45 且矮 → 可能主图题；窄短 → 子图题</td>
+</tr>
+<tr>
+<td><strong>B3</strong></td>
+<td>角色驱动绑定</td>
+<td><code>table_main</code> 只绑 table；<code>figure_main</code> 只绑图；<code>subpanel</code> 不当整图锚点</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c-2">C. 类型分家与贴题方向（2）<a class="headerlink" href="#c-2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>C1</strong></td>
+<td>宿主族隔离</td>
+<td>figure / table / algorithm 不交叉绑主标题</td>
+</tr>
+<tr>
+<td><strong>C2</strong></td>
+<td>贴题方向</td>
+<td><strong>图：标题在下</strong>；<strong>表 / 算法：标题在上</strong>（学术惯例）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="d-figure_title4">D. 联图与 figure_title（4）<a class="headerlink" href="#d-figure_title4" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>D1</strong></td>
+<td>主图题锚点</td>
+<td>仅 <code>figure_main</code>（或宽 figure_title）可启动联图</td>
+</tr>
+<tr>
+<td><strong>D2</strong></td>
+<td>竖向带</td>
+<td>panel 须在「上一主图题底边 → 本图题顶边」内（防 Fig6/7/8 竖向串台）</td>
+</tr>
+<tr>
+<td><strong>D3</strong></td>
+<td>全宽 vs 半宽</td>
+<td>图题宽 ≥ <strong>0.55</strong>：band 内全部 image/chart 一次收齐（<strong>不</strong>再砍 <code>maxHeightAbove</code>，底行允许轻微压进 title）；半宽：标题水平栏 + panel 邻接连通 + 高度软上限 0.55</td>
+</tr>
+<tr>
+<td><strong>D4</strong></td>
+<td>标题完整包含</td>
+<td>最终 figure <code>bbox</code> <strong>必须完全包含</strong> <code>titleBbox</code>；图无 title → <strong>丢弃</strong>（视为未分对）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="e-2">E. 清理与展示（2）<a class="headerlink" href="#e-2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>E1</strong></td>
+<td>孤儿 panel</td>
+<td>落在更大联图内（覆盖≥0.55）的无主标题 panel 丢弃</td>
+</tr>
+<tr>
+<td><strong>E2</strong></td>
+<td>侧栏 NMS</td>
+<td>默认 <code>minScore=0.3</code>、<code>minArea=0.002</code>、同组 IoU≥0.45 抑低分、小框被盖≥0.85 丢小</td>
+</tr>
+</tbody>
+</table>
+<h3 id="f-only">F. 公式编号框聚合 — <strong>同行-only，不解析编号文本</strong><a class="headerlink" href="#f-only" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>F1</strong></td>
+<td>必须有够分的 formula_number 框</td>
+<td><strong>仅</strong>模型 <code>formula_number</code> 且 <strong>score ≥ 0.3</strong> 可启动合并；无编号框 / 低分噪声编号 <strong>不</strong>进侧栏；<strong>不</strong>解析 <code>(1)</code> 等编号文本</td>
+</tr>
+<tr>
+<td><strong>F2</strong></td>
+<td>主体 seed 够分且够矮</td>
+<td>formula 体 <strong>score ≥ 0.3</strong> 且 <strong>h ≤ 0.055</strong>（拒段落级误检）；优先高分 / 大宽</td>
+</tr>
+<tr>
+<td><strong>F3</strong></td>
+<td><strong>禁止竖向多行 grow</strong></td>
+<td>只并<strong>同一基线带</strong>内、与 seed 竖向重叠 ≥0.35 的碎片；<strong>不</strong>把上下行 / 正文行间公式并进 host</td>
+</tr>
+<tr>
+<td><strong>F4</strong></td>
+<td>侧栏位置</td>
+<td>合并后 display formula 在 <strong>插图 / 表 / 算法之后（最底）</strong>；标题用 i18n 回退；<code>title</code> 不写编号串</td>
+</tr>
+<tr>
+<td><strong>F5</strong></td>
+<td>排序 = 阅读序 / 序号序</td>
+<td><strong>页 → 左栏 → 右栏 → 栏内自上而下</strong>（以 <code>titleBbox</code>/编号框中心 vs <code>columnMidX=0.5</code> 分栏）；双栏避免纯 y 排序把左右栏交错</td>
+</tr>
+</tbody>
+</table>
+<p>竖向 band 只按 <strong>编号框高度</strong> 收紧（<code>bandPad=0.02</code>），不随 body 高度放大。<code>titleBbox</code> 保留编号框几何。</p>
+<p><strong>已废止：</strong>
+- 与 text 重叠 ≥0.28 则丢（旧 F2）— 段落 text / 双标低分 text 会全灭公式
+- 多行竖向邻接扩展（<code>formulaNeighborGap</code>）— 会把正文行间公式连成整段高亮</p>
+<p>半宽并排（Fig7|Fig8）仅在双方都是半宽时做<strong>软</strong>水平分开，并<strong>再并回完整 title</strong>；全宽联图不做 mid-split。</p>
+<hr />
+<h2 id="_2">已收敛 / 视为多余（勿再加分支）<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>多套「全宽」阈值 0.55 / 0.62</td>
+<td><strong>已统一</strong>为 <code>LAYOUT_MERGE.fullWidthTitle = 0.55</code></td>
+</tr>
+<tr>
+<td>硬中线切全宽图导致细条框</td>
+<td><strong>已废止</strong>（仅半宽软切 + 标题回并）</td>
+</tr>
+<tr>
+<td><code>clipFigureBboxToTitleColumn</code> 裁掉标题一半</td>
+<td><strong>已改为</strong> <code>buildFigureBboxWithFullTitle</code>（标题必整框）</td>
+</tr>
+<tr>
+<td>无 title 仍保留 chart 进侧栏</td>
+<td><strong>已废止</strong>（<code>requireFigureTitles</code>）</td>
+</tr>
+<tr>
+<td>侧栏默认 50% 置信度</td>
+<td><strong>已改为固定 30%</strong>（无 UI 滑条）</td>
+</tr>
+<tr>
+<td>文档写死 0.5 / 无 merge 流水线</td>
+<td><strong>以本文为准</strong></td>
+</tr>
+<tr>
+<td><code>looksLikeFigureCaption</code></td>
+<td>兼容别名，等价 <code>captionRoleFromText</code> 主类判断，勿再扩展</td>
+</tr>
+<tr>
+<td>formula 与 text 重叠即丢（旧 F2）</td>
+<td><strong>已废止</strong>（双标 text / 段落包公式 → 侧栏永远为空）</td>
+</tr>
+<tr>
+<td>公式多行竖向 grow</td>
+<td><strong>已废止</strong>（会吞并正文行间公式；现同行-only）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_3">阈值速查<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>符号 / 位置</th>
+<th>值</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>layoutThreshold</code></td>
+<td>0.3</td>
+<td>插件层检测</td>
+</tr>
+<tr>
+<td>侧栏 <code>minScore</code></td>
+<td>0.3（固定，无滑条）</td>
+<td>展示过滤</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.fullWidthTitle</code></td>
+<td>0.55</td>
+<td>全宽联图</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.maxHeightAboveTitle</code></td>
+<td>0.55</td>
+<td><strong>仅半宽</strong>图题无 ceiling 时的竖向软上限</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.panelBottomSlack</code></td>
+<td>0.04</td>
+<td>半宽：panel 底可越过 title 顶的量</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.fullWidthPanelBottomSlack</code></td>
+<td>0.14</td>
+<td>全宽：底行 chart 允许压进 caption</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.panelNeighborGap</code></td>
+<td>0.08</td>
+<td>子图邻接</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.orphanContainment</code></td>
+<td>0.55</td>
+<td>吞并孤儿 panel</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.formulaNumberMaxGap</code></td>
+<td>0.28</td>
+<td>公式体与编号水平间距</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.formulaNumberBandPad</code></td>
+<td>0.02</td>
+<td>同行竖带（相对编号框）</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.formulaNumberMinScore</code></td>
+<td>0.3</td>
+<td>formula_number 锚点最低置信度</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.formulaBodyMinScore</code></td>
+<td>0.3</td>
+<td>formula 主体 seed 最低置信度</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.formulaMaxBodyHeight</code></td>
+<td>0.055</td>
+<td>拒绝过高「公式」误检</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.columnMidX</code></td>
+<td>0.5</td>
+<td>双栏分栏中线（公式排序）</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.figureTextCover</code></td>
+<td>0.55</td>
+<td>image/chart 被正文覆盖比 → 可能丢弃</td>
+</tr>
+<tr>
+<td><code>LAYOUT_MERGE.figureTextMinScore</code></td>
+<td>0.3</td>
+<td>可否决 image 的 text/header 最低分</td>
+</tr>
+<tr>
+<td>~~<code>formulaNeighborGap</code> / 竖向 grow~~</td>
+<td>—</td>
+<td><strong>已废止</strong></td>
+</tr>
+<tr>
+<td>~~<code>formulaTextOverlap</code>~~</td>
+<td>~~0.28~~</td>
+<td><strong>已废止</strong></td>
+</tr>
+<tr>
+<td>NMS <code>iouThreshold</code></td>
+<td>0.45</td>
+<td>去重</td>
+</tr>
+<tr>
+<td>NMS <code>containmentThreshold</code></td>
+<td>0.85</td>
+<td>去重</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_4">返回类型（应用层）<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="kr">type</span><span class="w"> </span><span class="nx">PdfLayoutRegion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">pageIndex</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span><span class="w">           </span><span class="c1">// 0-based</span>
+<span class="w">  </span><span class="nx">kind</span><span class="o">:</span><span class="w"> </span><span class="s2">"image"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"chart"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"table"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"algorithm"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"formula"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">"formula_number"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="err">…</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">score</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span><span class="w">               </span><span class="c1">// 0–1 → UI %</span>
+<span class="w">  </span><span class="nx">readingOrder</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">rect</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">x</span><span class="p">,</span><span class="w"> </span><span class="nx">y</span><span class="p">,</span><span class="w"> </span><span class="nx">w</span><span class="p">,</span><span class="w"> </span><span class="nx">h</span><span class="w"> </span><span class="p">};</span><span class="w">        </span><span class="c1">// PDF points</span>
+<span class="w">  </span><span class="nx">bbox</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">x</span><span class="p">,</span><span class="w"> </span><span class="nx">y</span><span class="p">,</span><span class="w"> </span><span class="nx">w</span><span class="p">,</span><span class="w"> </span><span class="nx">h</span><span class="w"> </span><span class="p">};</span><span class="w">        </span><span class="c1">// 0–1 页相对</span>
+<span class="w">  </span><span class="nx">title?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w">              </span><span class="c1">// 图/表题文字（公式不解析编号串）</span>
+<span class="w">  </span><span class="nx">titleBbox</span><span class="o">?:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">x</span><span class="p">,</span><span class="w"> </span><span class="nx">y</span><span class="p">,</span><span class="w"> </span><span class="nx">w</span><span class="p">,</span><span class="w"> </span><span class="nx">h</span><span class="w"> </span><span class="p">};</span><span class="w">  </span><span class="c1">// 完整标题框，或公式的 formula_number 几何</span>
+<span class="w">  </span><span class="nx">captionRole?</span><span class="o">:</span><span class="w"> </span><span class="kt">CaptionRole</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<p>页上 <code>LayoutAnalysisLayer</code> 仍显示<strong>模型原始</strong>多框；侧栏 / 跳转 / 聚焦用 <strong>合并后</strong> <code>PdfLayoutRegion</code>。</p>
+<hr />
+<h2 id="_5">代码地图<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run-analysis.ts</code></td>
+<td>分析 → 文字 → merge → store</td>
+</tr>
+<tr>
+<td><code>providers.ts</code> / <code>provider-config.ts</code></td>
+<td>Provider 注册表（kind / requiresApiKey / supportsBaseUrl / sidecarMode）与设置 UI 共用的保存 / 探测逻辑</td>
+</tr>
+<tr>
+<td><code>paddle.ts</code></td>
+<td>远程分析 / probe 的 IPC 封装（provider 参数分发）</td>
+</tr>
+<tr>
+<td><code>io.ts</code></td>
+<td><code>{paper}/source/layout.json</code> raw sidecar 读写与 schema 校验</td>
+</tr>
+<tr>
+<td><code>title-text.ts</code></td>
+<td>抽字、captionRole（<strong>不含</strong>公式编号文本解析）</td>
+</tr>
+<tr>
+<td><code>merge-captions.ts</code></td>
+<td>联图 / 表 / 算法 / <strong>公式按 formula_number 几何合并</strong>、标题完整包含</td>
+</tr>
+<tr>
+<td><code>normalize.ts</code></td>
+<td>DocumentLayout → regions（sync 无文字）</td>
+</tr>
+<tr>
+<td><code>dedupe.ts</code></td>
+<td>侧栏 NMS</td>
+</tr>
+<tr>
+<td><code>labels.ts</code> / <code>colors.ts</code> / <code>store.ts</code> / <code>types.ts</code></td>
+<td>映射、色、状态、类型</td>
+</tr>
+<tr>
+<td><code>test/pdf-layout-*.test.ts</code></td>
+<td>归一化 / 去重 / 角色 / 合并 / 公式</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_6">限制与后续<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<ul>
+<li>实验路径；大模型推理可能卡顿。</li>
+<li>不改 PDF 二进制；只写可重建的 <code>{paper}/source/layout.json</code>。</li>
+<li><code>layout.json</code> 只缓存 raw layout，不等同于未来 <code>agentero-figures.json</code> / 缩略图资产 sidecar。</li>
+<li>后续：最终 figure sidecar、自动分析、一键视觉批注。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "navigation.tracking", "navigation.top", "search.suggest", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

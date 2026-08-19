@@ -1,0 +1,4062 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Agentero 本地优先 Agent 科研工作台文档">
+      
+      
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../mark-cli-roadmap/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Word 引用集成 - Agentero 文档</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="grey">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#zotero-word" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Agentero 文档" class="md-header__button md-logo" aria-label="Agentero 文档" data-md-component="logo">
+      
+  <img src="../../assets/agentero-app-icon.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Agentero 文档
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Word 引用集成
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/poco-ai/agentero" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    poco-ai/agentero
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  架构总览
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../usage/" class="md-tabs__link">
+          
+  
+  
+  教程
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../frontend/" class="md-tabs__link">
+          
+  
+  
+  前端
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../backend/" class="md-tabs__link">
+          
+  
+  
+  后端
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  开发草稿
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../test/" class="md-tabs__link">
+          
+  
+  
+  测试
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../bug_fix/deepseek-thinking-body/" class="md-tabs__link">
+          
+  
+  
+  Bug 修复记录
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Agentero 文档" class="md-nav__button md-logo" aria-label="Agentero 文档" data-md-component="logo">
+      
+  <img src="../../assets/agentero-app-icon.svg" alt="logo">
+
+    </a>
+    Agentero 文档
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/poco-ai/agentero" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    poco-ai/agentero
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构总览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    教程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    教程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装与首次使用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/import-papers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    导入和管理论文
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/read-and-organize/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读、标注与整理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    接入 Agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/mobile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    移动端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/zotero/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用 Zotero Connector
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/remote-vault/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    打开远程 Vault
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    前端
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    前端
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/shell/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工作台壳
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/workspace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dockview 工作区
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/vault-tree/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    文件树
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/library/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    论文库 Library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/paper-import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    入库 UI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/markdown/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Markdown 编辑
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/pdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF 阅读与划词
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/pdf-layout-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF 版面分析（实验）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent 面板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/mobile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    移动端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/wiki/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    双链 UI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/command-palette/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    命令面板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/translate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    翻译
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设置与主题
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/onboarding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    新手引导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontend/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    组件约定
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后端
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    后端
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catalog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/vault/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vault FS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/paper-import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    论文入库
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/identifier-lookup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identifier Lookup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/citation-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    参考文献解析
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/skill-import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skill 导入
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/connector/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zotero Connector
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/wiki/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    双链索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Host
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/remote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程 Vault
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/search/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    搜索
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用记录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/translate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    翻译
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    运行日志
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/doctor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vault Doctor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/telemetry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    遥测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backend/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 全表
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发草稿
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发草稿
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Word 引用集成
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Word 引用集成
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结论与产品决策
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        协议事实与 Connector 边界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        范围与用户契约
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="范围与用户契约">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#m1-macos-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M1 要做（macOS 官方插件 provider）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M1 不做
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        领域模型与持久化
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        推荐架构
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="推荐架构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-integration-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 共享 integration engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-macos-ingressm0m1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. macOS ingress（M0/M1）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-windows-ingressm2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Windows ingress（M2）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-catalog-csl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Catalog 到 CSL 的映射
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文档兼容与迁移
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="文档兼容与迁移">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zotero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zotero 兼容字段
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zotero_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        导入 Zotero 字段
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实现难度与前置需求
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="实现难度与前置需求">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        平台评估
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        功能与发布前置条件
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#go-no-go" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Go / No-Go
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实施分期
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        测试与验收
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="测试与验收">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自动化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#office" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        手工 Office 矩阵
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        风险与待决项
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        预期改动落点
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mark-cli-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标注 CLI 路线 (#170)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mark-locate-lazy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标注惰性定位
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mark-locate-eager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标注即时定位
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plaza/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    广场 Plaza
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用记录总结 (#239)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    测试
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    发布流程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/ios-testflight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    iOS TestFlight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../test/release-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    发布前 Checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bug 修复记录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bug 修复记录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/deepseek-thinking-body/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DeepSeek 正文落入 Thinking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/acp-session-resume-id/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ACP 会话恢复 ID 错误
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/ime-composition-enter-submit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    输入法组字 Enter 误发送
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/wiki-embed-unrelated-refresh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    普通编辑触发全部 Wiki 嵌入闪烁
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/wikilink-heading-reference-stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标题双链稳定性
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/dockview-sash-pdf-resize-jank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    拖动 Dockview 分隔条时 PDF 卡顿
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/pdf-switch-visual-crop-layout-onnx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF 切换视觉截图与后台 ONNX
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-acp-path-ssh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远端 ACP PATH / SSH
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-vault-tree-lazy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程 Vault 文件树懒加载
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/macos-signing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    macOS 签名与公证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/gemini-login-browser-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gemini 登录弹窗循环
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/import-abstract-mt-timeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    导入 NOTES 摘要 MT 超时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/cli-import-library-refresh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI 导入后论文标题不刷新
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/codex-history-runtime-session-id/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex 历史恢复误用 session id
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/local-pdf-parse-missing-pdfium/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    导入 PDF 无法生成 PAPER.md
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/paper-folder-marker-conflict/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    组织目录被识别成单篇论文
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/paper-import-timeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    论文导入超时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-create-folder-exists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程 Vault 无法新建文件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/remote-delete-list-nosuchfile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程删除后 list 报 NoSuchFile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/todo-checkbox-scale-align/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    缩放时待办 checkbox 错位
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结论与产品决策
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        协议事实与 Connector 边界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        范围与用户契约
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="范围与用户契约">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#m1-macos-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M1 要做（macOS 官方插件 provider）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M1 不做
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        领域模型与持久化
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        推荐架构
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="推荐架构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-integration-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 共享 integration engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-macos-ingressm0m1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. macOS ingress（M0/M1）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-windows-ingressm2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Windows ingress（M2）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-catalog-csl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Catalog 到 CSL 的映射
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文档兼容与迁移
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="文档兼容与迁移">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zotero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zotero 兼容字段
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zotero_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        导入 Zotero 字段
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实现难度与前置需求
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="实现难度与前置需求">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        平台评估
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        功能与发布前置条件
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#go-no-go" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Go / No-Go
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实施分期
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        测试与验收
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="测试与验收">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自动化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#office" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        手工 Office 矩阵
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        风险与待决项
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        预期改动落点
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="zotero-word">Zotero Word 插件兼容与引用工作流（草案）<a class="headerlink" href="#zotero-word" title="Permanent link">&para;</a></h1>
+<p>关联 Issue：<a href="https://github.com/poco-ai/Agentero/issues/167">#167</a>（“支持一下 Zotero Word 插件”）。</p>
+<blockquote>
+<p>状态：未实现。本文先固定产品边界和技术路线；落地后应将已实现部分移至前端/后端功能文档，并从本目录移除。</p>
+</blockquote>
+<h2 id="_1">结论与产品决策<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>Issue 所说的“Zotero Word 插件”有两层含义，必须分开处理：</p>
+<table>
+<thead>
+<tr>
+<th>目标</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>在 Microsoft Word 中搜索 Agentero Library、插入可刷新引文和参考文献</td>
+<td><strong>做</strong>：在官方插件兼容模式中直接由 Agentero 提供；Agentero 自有 Office Add-in 是后备方案，不是首个交付。</td>
+</tr>
+<tr>
+<td>让已安装的官方 <code>Zotero.dotm</code> 直接把 Agentero 当成 Zotero Desktop</td>
+<td><strong>做，按平台分期</strong>：macOS 先做（插件已有 HTTP 入口）；Windows 后做（<code>WM_COPYDATA</code> + OLE Automation）。两者均不能与 Zotero Desktop 同时接管插件。</td>
+</tr>
+<tr>
+<td>保留已有 Zotero Word 文档的可读性</td>
+<td><strong>做迁移工具，不改原文档</strong>：识别现有 Zotero field code，尽力读出嵌入的 CSL 引文数据；用户确认后生成副本并以当前 provider 验证的兼容字段重写。</td>
+</tr>
+</tbody>
+</table>
+<p>当用户已安装官方 <code>Zotero.dotm</code> 时，首版优先保持其现有 Ribbon 和按钮不变，由 Agentero 接收同一协议并显示自己的引用选择界面。该模式应显式显示为“使用官方 Zotero Word 插件（Agentero provider）”，不得暗示 Agentero 是 Zotero 或修改 Zotero Desktop；Zotero 商标使用需在发布前走法律审核。</p>
+<p><strong>互斥规则</strong>：同一用户会话中只能有一个 provider。启用 Agentero provider 前必须退出 Zotero Desktop；停用后才可恢复 Zotero Desktop。Windows 的插件通过窗口查找第一个匹配目标，macOS 使用固定本机端口/pipe，双进程并行会造成请求随机路由或端口冲突，不能靠提示“同时使用”解决。</p>
+<p>实际工作量是中高风险的桌面集成功能，而非 Connector 加一个普通端点。推荐的 go/no-go 顺序是：<strong>M0 macOS 官方插件握手与空文档操作 → M1 macOS 可用闭环 → M2 Windows → 评估是否仍需要自有 Office Add-in</strong>。</p>
+<h2 id="connector">协议事实与 Connector 边界<a class="headerlink" href="#connector" title="Permanent link">&para;</a></h2>
+<p>当前 <code>features/connector/</code> 在 <code>127.0.0.1:23119</code> 实现的是浏览器 Zotero Connector 保存协议：网页元数据/PDF 进入 Vault。它不管理 Word 的光标、field code、文档偏好或 CSL 排版。</p>
+<p>官方 Windows <code>Zotero.dotm</code> VBA 宏会查找 <code>ZoteroMessageWindow</code>（Zotero 6）或 <code>Mozilla_zotero_*_RemoteWindow</code>（Zotero 7），以 <code>WM_COPYDATA</code> 发送 <code>-ZoteroIntegrationAgent WinWord</code>、命令、文档路径和 template version；Zotero 再用 C++ OLE Automation bridge 操作 Word。官方 macOS 宏则优先请求 <code>GET http://127.0.0.1:23119/integration/macWordCommand?agent=...&amp;command=...&amp;document=...&amp;templateVersion=...</code>，失败后才读取 <code>ZoteroPort.txt</code> 或写入 <code>.zoteroIntegrationPipe</code>，再由 ObjC/AppleScript bridge 操作 Word。</p>
+<p>因此 <strong>macOS 可以复用同一个 loopback listener 与端口，但不能复用现有 Connector 业务路由</strong>：新增的是 <code>/integration/macWordCommand</code> 和一套 Word integration engine。Windows 则需要一个独立的 native message receiver。两端最终都要实现文字处理器回调（如 <code>Document_getFields</code>、<code>Document_insertField</code>、<code>Document_setDocumentData</code>）、引文选择、CSL 排版和 field code；仅返回 HTTP <code>200</code> 没有任何用户价值。</p>
+<p>参考： <a href="https://github.com/zotero/zotero-word-for-windows-integration/blob/main/build/template/Zotero.dotm/word/vbaProject.bin/Zotero.bas">Windows VBA 宏与 OLE bridge</a> · <a href="https://github.com/zotero/zotero-word-for-mac-integration/blob/main/build/template/Zotero.dotm/word/vbaProject.bin/Zotero.bas">macOS VBA 宏、HTTP 与 pipe fallback</a> · <a href="https://www.zotero.org/support/dev/client_coding/libreoffice_plugin_wire_protocol/">LibreOffice wire protocol</a> · <a href="https://www.zotero.org/support/word_processor_plugin_usage">Zotero Word Plugin</a>。</p>
+<h2 id="_2">范围与用户契约<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h3 id="m1-macos-provider">M1 要做（macOS 官方插件 provider）<a class="headerlink" href="#m1-macos-provider" title="Permanent link">&para;</a></h3>
+<ul>
+<li>支持 Microsoft 365 Word Desktop for macOS 的当前受支持版本；用户继续使用官方 <code>Zotero</code> Ribbon 的 Add/Edit Citation、Add/Edit Bibliography、Document Preferences、Refresh、Unlink Citations。</li>
+<li>Agentero 收到 <code>addEditCitation</code> 等命令后打开自己的原生引用选择窗口，搜索当前已选择的本地 Vault Catalog；支持多条引用、页码/locator、prefix/suffix、suppress author、引文重排。</li>
+<li>至少内置 APA、Chicago author-date、IEEE 三种 CSL 样式及相应 locale；样式随 Agentero release 更新，不在运行时静默联网下载。</li>
+<li>插入/刷新后，文档自身含有恢复和排版所需的 CSL-JSON 快照。关闭 Agentero、移动 Vault、把 <code>.docx</code> 发给他人后，现有引文仍是普通 Word 字段显示的文本；重新编辑需要连接一个可用的 Agentero Vault。</li>
+<li>Agentero 只读使用当前 Vault 的论文元数据；Word 文件的写入只能由 Word automation 完成，不经 Vault 覆盖用户文件。</li>
+</ul>
+<h3 id="m1">M1 不做<a class="headerlink" href="#m1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>不同步或写入 Zotero Desktop 数据库、Zotero Sync 或用户的 Zotero 账号。</li>
+<li>不分发、修改或覆盖官方 <code>Zotero.dotm</code>；用户需自行通过 Zotero 安装它。Agentero 只对其公开可观察的本机调用协议作兼容，具体许可结论见“许可证”。</li>
+<li>不保证 Agentero provider 写出的字段在 Zotero Desktop 中可继续编辑，或反向保证 Zotero 字段能被 Agentero 无损编辑；迁移必须创建副本。</li>
+<li>M1 不支持 Windows Word、Google Docs、Word Online、iOS/Android Word；它们分别需要 Windows native bridge、HTTP citing adapter 或 Office Add-in。</li>
+<li>不做在线下载任意 CSL style，也不覆盖已有 <code>.docx</code>。迁移始终显式确认并输出副本。</li>
+</ul>
+<h2 id="_3">领域模型与持久化<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>Catalog 是“可搜索的当前来源”，不是稿件可重复排版的唯一事实来源。为了让未修改的官方插件能够识别文档，provider 不能另造 <code>agentero.citation/1</code> field schema；必须生成并读取 Zotero 已使用的 document data 与 <code>ADDIN ZOTERO_ITEM</code> / CSL citation payload。每个 citation 仍须嵌入完整可用的 CSL item data，避免文档只引用一个会失效的 Vault 路径。</p>
+<div class="codehilite"><pre><span></span><code>Agentero Catalog (当前 Vault，只读)
+  -&gt; PaperRecord -&gt; Zotero-compatible CSL item snapshot
+  -&gt; official Zotero.dotm -&gt; Agentero provider
+  -&gt; Word ADDIN ZOTERO_ITEM field (payload + rendered text)
+  -&gt; Word document
+
+Zotero document data (style / locale / field mode)
+  -&gt; document-level Zotero-compatible payload
+
+Refresh
+  -&gt; scan document Zotero fields
+  -&gt; optional Catalog match by DOI -&gt; arXiv -&gt; normalized title
+  -&gt; citeproc recomputes all rendered citations and bibliography
+</code></pre></div>
+
+<p>Zotero field/document data 的序列化、版本迁移、citation ID、note index、style/locale 与 bibliography 语义以官方集成测试为兼容基线。不要从零猜一个“看起来像 CSL-JSON”的格式。Agentero 的内部类型可以有显式 schema，但写到 Word 前必须通过一个专用 <code>zotero_field_codec</code> 转成经 fixture 验证的官方格式。</p>
+<p>内部 citation draft 的概念形态如下；它不是文档中最终存储的 JSON：</p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"citationID"</span><span class="p">:</span><span class="w"> </span><span class="s2">"01J..."</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"citationItems"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"doi:10.0000/example"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"itemData"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"article-journal"</span><span class="p">,</span><span class="w"> </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"DOI"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.0000/example"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"locator"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12-14"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"page"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"prefix"</span><span class="p">:</span><span class="w"> </span><span class="s2">"see "</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"suffix"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"suppress-author"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"noteIndex"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><code>itemData</code> 是必要字段，<code>id</code> 只帮助重新连接 Catalog。匹配优先级为 DOI → arXiv → 归一化 title + author + year；不能匹配时仍以嵌入快照重新排版，并在 Agentero 的引用选择窗口标记为“未连接到当前 Vault”。不得把绝对 Vault 路径、远程会话 ID、用户路径或凭据写进 <code>.docx</code>。</p>
+<p>Document Preferences 保持 Zotero-compatible data，保存 <code>styleId</code>、locale、note/author-date 模式、field mode 和 bibliography ID。Bibliography 也以 Zotero 兼容字段定位，刷新时只替换该字段的结果。<code>Unlink Citations</code> 必须二次确认，因为它会把字段转为不可刷新的普通文本。</p>
+<h2 id="_4">推荐架构<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h3 id="1-integration-engine">1. 共享 integration engine<a class="headerlink" href="#1-integration-engine" title="Permanent link">&para;</a></h3>
+<p>Tauri Host 新增 <code>features/word/</code>。它不是一个仅返回元数据的 HTTP bridge，而是对官方插件命令执行完整事务的 orchestration 层：</p>
+<table>
+<thead>
+<tr>
+<th>部件</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>provider</code></td>
+<td>处理 <code>addEditCitation</code>、<code>addEditBibliography</code>、<code>setDocPrefs</code>、<code>refresh</code>、<code>removeCodes</code> 等命令，维护单文档互斥 transaction。</td>
+</tr>
+<tr>
+<td><code>word_document</code> trait</td>
+<td>统一 <code>get/setDocumentData</code>、cursor field、enumerate/insert/update/delete fields、footnote/endnote、alert 与 Undo。</td>
+</tr>
+<tr>
+<td><code>mac_word_driver</code></td>
+<td>通过 macOS Automation/AppleScript/ObjC bridge 实现 <code>word_document</code>；必须处理 Word 未启动、权限拒绝和前台激活。</td>
+</tr>
+<tr>
+<td><code>win_word_driver</code></td>
+<td>通过 Windows OLE Automation 实现相同 trait；仅 M2 引入。</td>
+</tr>
+<tr>
+<td><code>citation_domain</code></td>
+<td>Catalog 映射、Zotero field codec、样式偏好、citation order、refresh plan、bibliography plan。</td>
+</tr>
+<tr>
+<td><code>citeproc</code> adapter</td>
+<td>输入 CSL item + style + locale + 当前文档 citation order，输出 citation/bibliography 富文本；先评估可嵌入 Rust/Tauri 的实现及许可证。</td>
+</tr>
+<tr>
+<td><code>citation_dialog</code></td>
+<td>Agentero 原生窗口；接收官方 Ribbon 命令后给用户搜索、多引文、locator/prefix/suffix 等交互。</td>
+</tr>
+</tbody>
+</table>
+<div class="codehilite"><pre><span></span><code>official Zotero.dotm command
+  -&gt; platform ingress
+  -&gt; Agentero provider transaction
+  -&gt; Word document driver reads fields/data
+  -&gt; Agentero citation dialog + current local Vault Catalog
+  -&gt; citeproc + Zotero field codec
+  -&gt; Word document driver writes fields/bibliography
+</code></pre></div>
+
+<h3 id="2-macos-ingressm0m1">2. macOS ingress（M0/M1）<a class="headerlink" href="#2-macos-ingressm0m1" title="Permanent link">&para;</a></h3>
+<p>在现有 <code>ConnectorController</code> 管理的 <code>127.0.0.1:23119</code> listener 上增加 <code>GET /integration/macWordCommand</code>，但只有启用“官方 Zotero Word 插件 provider”且 Zotero Desktop 未运行时才注册/接受该路由。query 的 <code>agent</code>、<code>command</code>、<code>document</code>、<code>templateVersion</code> 全部视为不可信：</p>
+<ul>
+<li>只接受已知 Word agent 与固定命令 allowlist；拒绝未知 template version、缺失字段、过长值和非本机 <code>Host</code>。</li>
+<li>HTTP 返回只确认“命令已受理”；异步 provider 再验证前台 Word 进程和活动文档，绝不把 query 中的路径当成可读写文件路径。</li>
+<li>未修改的官方宏不能携带 bearer token，因而此端点不能达到 Office Add-in 的 token 安全等级。默认关闭、loopback-only、在 Settings 明确显示风险、只接受固定动作；<code>removeCodes</code>、迁移或影响多字段的操作在 Agentero 中二次确认。</li>
+<li>停用 provider 即移除 integration route；<code>/connector/*</code> 浏览器导入路由可与它同 listener 共存，但任一模式都不得与 Zotero Desktop 共用 <code>23119</code>。</li>
+</ul>
+<p>M0 先验证 Word 的 HTTP 请求确实到达、<code>addEditCitation</code> 能打开 Agentero 空对话框，并能通过 macOS automation 在临时文档读取/插入一个无害 field。任何一步依赖修改 <code>Zotero.dotm</code> 或降低 Host 校验，立即停止 M1。</p>
+<h3 id="3-windows-ingressm2">3. Windows ingress（M2）<a class="headerlink" href="#3-windows-ingressm2" title="Permanent link">&para;</a></h3>
+<p>新增一个隐藏的 Win32 message window，优先注册 <code>ZoteroMessageWindow</code> 以兼容官方宏的稳定 Zotero 6 分支；接收并严格解析 <code>WM_COPYDATA</code> 的 UTF-8 命令行 payload。不要尝试伪造 Zotero 7 的 Mozilla window tree，除非 M2 fixture 证明旧窗口 class 已不被当前 <code>Zotero.dotm</code> 接受。收到 <code>WinWord</code> 命令后走同一 provider，再由 Windows OLE Automation driver 操作活动 Word。</p>
+<p>由于官方宏会寻找第一个匹配窗口，此模式必须在 Host 启动时探测 Zotero Desktop，并在其运行时拒绝启用。Windows 安装器还要处理 x64/ARM64 Word、Office bitness、OLE/COM 权限、UAC、崩溃后的 message window 回收及 Word modal dialog。该平台没有“在 Rust axum 里补一个 endpoint”的捷径。</p>
+<h3 id="4-catalog-csl">4. Catalog 到 CSL 的映射<a class="headerlink" href="#4-catalog-csl" title="Permanent link">&para;</a></h3>
+<p>现有 <code>features/import/zotero_io.rs</code> 已能把 Catalog 行转成 Zotero API JSON 并经 Translator 导出。Word 引用不能把每次击键交给远端 Translator，也不能依赖网络；应新增纯 Rust 的 <code>features/citation/</code> 映射层：</p>
+<ul>
+<li><code>PaperRecord -&gt; CslItem</code>：优先保留 title、author/editor、issued、container-title、volume、issue、page、DOI、URL、publisher、edition、type；类型映射与现有 Zotero import map 对齐。</li>
+<li>生成稳定候选 ID：<code>doi:&lt;normalized&gt;</code> → <code>arxiv:&lt;id&gt;</code> → <code>bib:&lt;bibtexKey&gt;</code> → 本地 UUID。ID 不能仅使用可变的 Vault 相对路径。</li>
+<li>由 provider 生成的 <code>CslItem</code> 必须是值副本；通过 Zotero field codec 立即嵌入当前引用。Catalog 的后续修订只在用户点击 Refresh 时才影响文档。</li>
+</ul>
+<p>CSL style/locale 作为应用内版本化资源交付，记录 <code>styleId</code> 与 bundle version；更新应用后既有文档仍按 <code>styleId</code> 可重排。缺失样式时不得替换 field text，先提示用户恢复对应版本或选择新的样式。</p>
+<h2 id="_5">文档兼容与迁移<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<h3 id="zotero">Zotero 兼容字段<a class="headerlink" href="#zotero" title="Permanent link">&para;</a></h3>
+<p>provider 使用 Zotero 兼容字段和 document data。普通读者无需 Agentero 也能看到渲染文字；有兼容 provider 的安装才可编辑或刷新。导出 PDF、另存 <code>.docx</code>、复制粘贴和协作编辑是 M0/M1 的必测行为。</p>
+<h3 id="zotero_1">导入 Zotero 字段<a class="headerlink" href="#zotero_1" title="Permanent link">&para;</a></h3>
+<p>Zotero Word 文档会保留 citation field code，且 Zotero UI 允许已不连接其库的 orphaned item 继续存在。Agentero 的导入器可以利用其中的序列化 CSL citation data 做<strong>尽力</strong>迁移：</p>
+<ol>
+<li>只读扫描 <code>ADDIN ZOTERO_ITEM</code> / Zotero document data，报告可解析、不可解析和缺失 item snapshot 的数量。</li>
+<li>用 DOI → arXiv → title+author+year 匹配当前 Vault；不匹配时保留可得的嵌入元数据，绝不自动入库或猜测论文。</li>
+<li>在用户选择目标文件名并确认后，对副本写入经当前 provider 验证的兼容字段、重新生成 bibliography；原文件不触碰。</li>
+<li>校验副本的 citation 数、字段数和 bibliography 条目数；无法解析的 field 保留原始文本并列出报告，不静默删除。</li>
+</ol>
+<p>迁移不等于双向兼容。若用户需要继续让 Zotero 管理该稿件，应保留原文件并继续使用 Zotero；Agentero 只在用户显式迁移后成为该副本的 provider。</p>
+<h2 id="_6">实现难度与前置需求<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<h3 id="_7">平台评估<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<p>| 平台 | 官方通信方式 | 难度 | 必要实现 | 预估投入 |
+| --- | --- | --- | --- |
+| macOS Word | <code>:23119</code> HTTP command，pipe fallback，AppleScript/ObjC 操作 Word | 中高 | 新 route、provider transaction、macOS Word driver、引用选择 UI、citeproc、Zotero field codec、Automation 权限处理 | M0 约 2-3 人周；M1 约 8-12 人周。 |
+| Windows Word | <code>WM_COPYDATA</code> command + OLE Automation | 高 | 隐藏 Win32 window、严格 payload parser、Windows Word driver、x64/ARM64/Office 版本兼容、同一 provider core | M2 约 10-16 人周。 |
+| LibreOffice | 23116 TCP wire protocol | 中 | frame/transaction transport + 同一 provider core 的 LibreOffice driver | 约 6-10 人周；不阻塞 Word。 |
+| 自有 Office Add-in | Office.js + 自身字段 schema | 中高 | manifest、task pane、文档 adapter、配对 bridge、跨宿主兼容 | 约 10-16 人周；作为官方插件兼容失败时的替代。 |</p>
+<p>投入以一名熟悉 Rust/Tauri 与对应平台原生 Word automation 的工程师为单位，包含实现和平台手工 QA，不包含法律评审、CI 真机授权和后续 Word/Zotero 版本维护。核心共享层未完成前，不得并行开两个平台 driver。</p>
+<h3 id="_8">功能与发布前置条件<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>协议 fixtures</strong>：收集由官方插件生成的空文档、单引文、多引文、author-date、numeric、footnote、bibliography、refresh、unlink 样本；对 field code 与 document data 建字节级或语义级回归测试。</li>
+<li><strong>Word 自动化 spike</strong>：macOS 用用户授权的 Automation 从 Agentero 读取活动 Word 文档、插入 field、写 field code、遍历 fields、更新 bibliography，并验证保存/重开/Undo/Track Changes。没有此证明，不开始 citation UI。</li>
+<li><strong>citeproc 与样式</strong>：选择可再分发的 citeproc 实现和 CSL style/locale bundle，确认许可证、富文本、脚注、locale 与 disambiguation 行为；不能依赖在线 Translator。</li>
+<li><strong>协议安全</strong>：macOS unmodified macro 不带认证 token，需单独威胁建模；路由默认关闭、loopback-only、allowlist、活动 Word 文档复核、破坏性命令二次确认、可见 provider 状态与一键停用都是发布门槛。</li>
+<li><strong>Zotero 共存</strong>：启用前检测 Zotero Desktop/端口/Windows 目标窗口；强制单 provider，明确切换流程。不得修改 Zotero 安装、<code>Zotero.dotm</code> 或用户 Word Startup 文件。</li>
+<li><strong>许可证与商标</strong>：官方 Windows/macOS 集成仓库为 <a href="https://github.com/zotero/zotero-word-for-windows-integration/blob/main/COPYING">AGPLv3</a>，模板内宏标注 GPL；复用、改编、分发模板或将其实现移植进 Agentero 前必须完成法律评审。技术 spike 只允许最小观察与隔离验证，不把官方源码复制进仓库。Zotero 名称/图标不能作为 Agentero 功能品牌使用。</li>
+<li><strong>测试设备</strong>：至少一台受支持 macOS + Microsoft 365 Word；Windows 阶段需 x64 与 ARM64/不同 Office bitness 覆盖。Office 授权、Automation consent 和 Word 更新通道应纳入 release checklist。</li>
+</ol>
+<h3 id="go-no-go">Go / No-Go<a class="headerlink" href="#go-no-go" title="Permanent link">&para;</a></h3>
+<p>M0 的成功标准是：用户不修改官方插件，在 Zotero Desktop 退出时点击现有 Add/Edit Citation，Agentero 能安全接收命令、显示空选择界面，并在用户取消时不改变 Word 文档；再通过 macOS driver 向临时文档写入并读回一个兼容 field。只有这两项和许可证评审均通过，才进入 M1。</p>
+<p>以下任一情况为 <strong>No-Go</strong>：需分发或修改 <code>Zotero.dotm</code> 才能完成基本交互；无法在不放宽 loopback 安全边界的前提下确认命令来源/活动文档；Word Automation 无法稳定保存兼容 fields；或法律结论不允许期望的分发方式。No-Go 后转向自有 Office Add-in，不继续在不稳定的兼容层上投入。</p>
+<h2 id="_9">实施分期<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>交付</th>
+<th>完成门槛</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M0：macOS Go/No-Go</td>
+<td><code>macWordCommand</code> ingress、命令 allowlist、空对话框、Word field read/write、许可评审</td>
+<td>未修改官方插件即可安全完成握手；所有 No-Go 条件均未触发。</td>
+</tr>
+<tr>
+<td>M1：macOS 官方插件 provider</td>
+<td>共享 engine、macOS driver、Catalog→CSL、三种样式、单/多引文、locator、Refresh、bibliography、Unlink</td>
+<td>用户在现有 Ribbon 完成“选择论文 → 插入 → 改顺序 → Refresh → 导出 PDF”闭环。</td>
+</tr>
+<tr>
+<td>M1.5：迁移与稳定性</td>
+<td>Zotero fields 扫描、显式副本迁移、未匹配报告、样式/locale 扩展</td>
+<td>原 <code>.docx</code> hash 不变；迁移副本可重新打开并刷新。</td>
+</tr>
+<tr>
+<td>M2：Windows 官方插件 provider</td>
+<td>Win32 receiver、Windows OLE driver、x64/ARM64 QA</td>
+<td>同一份 fixture 在 Windows Word 完成 M1 闭环；Zotero Desktop 共存检测可靠。</td>
+</tr>
+<tr>
+<td>M3：平台扩展</td>
+<td>LibreOffice adapter、remote Vault 只读 provider、更多 CSL styles</td>
+<td>每项独立发布，不阻塞 M1/M2。</td>
+</tr>
+<tr>
+<td>备选：自有 Add-in</td>
+<td>Office Add-in + 自身文档 schema</td>
+<td>仅在 M0 No-Go，或后续需要 Word Online/跨平台独立发行时启动。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_10">测试与验收<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<h3 id="_11">自动化<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Rust 单测：<code>PaperRecord -&gt; CslItem</code> 类型、日期、作者、DOI/arXiv ID 和缺失字段映射；Zotero field codec、document data migration、命令 allowlist、Host guard、请求参数上限。</li>
+<li>Provider 集成测试：未启用、无 Vault、未知 command、无效 template version、端口占用、Zotero Desktop 已运行、Word automation 拒绝；业务 API 不写 Catalog/Vault。</li>
+<li>前端单测：citation dialog 的候选检索、多引文、locator/prefix/suffix、取消事务不产生写入；Zotero field parser 的正常/损坏输入。</li>
+<li>fixture <code>.docx</code> 回归：一篇/多篇引用、author-date、numeric、note style、bibliography、refresh、unlink、迁移、截断 payload、重复 citation ID。</li>
+</ul>
+<h3 id="office">手工 Office 矩阵<a class="headerlink" href="#office" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>验收</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>macOS Word Desktop（M1）/ Windows Word Desktop（M2）</td>
+<td>插入、编辑、Refresh、Undo、脚注、bibliography、Unlink 均正常；异常显示 i18n Toast/原生错误而不破坏字段。</td>
+</tr>
+<tr>
+<td>保存、重开、复制粘贴、Track Changes、协作者无 Agentero</td>
+<td>已有文本不丢失；可重新定位的字段不重复生成 bibliography。</td>
+</tr>
+<tr>
+<td>Catalog 元数据变更</td>
+<td>只有显式 Refresh 改变排版；未匹配项保持 document snapshot 并明确标记。</td>
+</tr>
+<tr>
+<td>Agentero 停止、provider 停用、端口被占</td>
+<td>Word 不写半个字段；官方 Ribbon 显示其原有“无法通信”错误，Agentero 不留半完成事务。</td>
+</tr>
+<tr>
+<td>Zotero Desktop 正在运行</td>
+<td>Agentero provider 拒绝启用；不抢 <code>23119</code>、不修改 Zotero 配置、不接管 Windows 消息窗口。</td>
+</tr>
+<tr>
+<td>Zotero 迁移</td>
+<td>原 <code>.docx</code> 不变；副本有完整可刷新的兼容字段，失败项在报告中可见。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_12">风险与待决项<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>应对</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CSL 排版、富文本和脚注细节复杂</td>
+<td>采用成熟 citeproc 实现；先固定三种样式；把 style/locale bundle 与 engine 版本写进兼容测试。</td>
+</tr>
+<tr>
+<td>未修改 macOS 宏无法携带 bearer token</td>
+<td>默认关闭、loopback、Host/command allowlist、活动 Word 文档复核、二次确认破坏性操作、短生命周期 provider；不提供任意 Vault 查询 endpoint。</td>
+</tr>
+<tr>
+<td>用户误以为可与 Zotero 双向同步/并行使用</td>
+<td>Settings、文档和切换流程强调“单 provider”；provider 启动前强制探测并拒绝 Zotero Desktop。</td>
+</tr>
+<tr>
+<td>官方插件兼容依赖 Windows/macOS 私有自动化与 Zotero 内部格式</td>
+<td>先完成 macOS M0；复用共享 engine，Windows/LibreOffice 独立排期；每次 Zotero/Office 大版本更新跑 fixtures。</td>
+</tr>
+<tr>
+<td>AGPL/GPL 源码与 Zotero 商标</td>
+<td>不复制、不分发官方模板/源码；在公开发布前取得书面法律评审结论。</td>
+</tr>
+<tr>
+<td>Zotero-compatible field payload 过大或格式变化</td>
+<td>M0 量测并用官方 fixtures 回归；超限时停止而不截断，不能改为私有分段格式破坏兼容。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_13">预期改动落点<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>区域</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>本设计</td>
+<td><code>docs/development/zotero-word-integration.md</code></td>
+</tr>
+<tr>
+<td>macOS ingress</td>
+<td><code>src-tauri/src/features/connector/server.rs</code>（增加受限 integration route） + <code>src-tauri/src/features/word/</code></td>
+</tr>
+<tr>
+<td>Windows ingress</td>
+<td><code>src-tauri/src/features/word/windows/</code>（新增；Win32 message receiver + OLE driver）</td>
+</tr>
+<tr>
+<td>macOS Word driver</td>
+<td><code>src-tauri/src/features/word/macos/</code>（新增；Automation/ObjC bridge）</td>
+</tr>
+<tr>
+<td>CSL 领域映射</td>
+<td><code>src-tauri/src/features/citation/</code>（新增；不与 <code>features/refs/</code> 的论文引用解析混合）</td>
+</tr>
+<tr>
+<td>App 设置/状态</td>
+<td><code>src/lib/settings/*</code>、<code>src-tauri/src/features/settings/*</code></td>
+</tr>
+<tr>
+<td>Zotero field codec / fixtures</td>
+<td><code>src-tauri/src/features/word/zotero_codec.rs</code>、<code>src-tauri/tests/fixtures/word/</code>（新增）</td>
+</tr>
+<tr>
+<td>i18n</td>
+<td><code>src/i18n/locales/en/*.json</code> 与对应 <code>zh-CN/*.json</code></td>
+</tr>
+<tr>
+<td>已实现文档</td>
+<td>完成后补 <code>docs/frontend/</code>、<code>docs/backend/</code>、<code>docs/usage/</code>，并将本文改为历史设计或删除</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>修订：2026-08-05 — 重评官方插件兼容：macOS <code>:23119</code> HTTP provider 优先，Windows <code>WM_COPYDATA</code> + OLE 后置；新增投入、许可证、安全和 Go/No-Go 门槛。</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "navigation.tracking", "navigation.top", "search.suggest", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
