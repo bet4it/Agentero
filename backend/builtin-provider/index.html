@@ -3543,6 +3543,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/note-markdown-stray-less-than/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    笔记正文 < 比较符截断后续内容（#533）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4118,14 +4146,14 @@
 <hr />
 <h2 id="embeddingarxiv-daily">Embedding：arXiv Daily 推荐<a class="headerlink" href="#embeddingarxiv-daily" title="Permanent link">&para;</a></h2>
 <p><code>EmbeddingSettings</code> 新增 <code>source: "builtin" | "custom"</code>。它是普通的 <code>#[serde(default)]</code>（空串即「未设置」），<strong>不是</strong> <code>default = "..."</code> 返回 <code>"builtin"</code>：否则一个填了 BYOK 字段但没有 <code>source</code> 键的旧 <code>settings.json</code>，与「用户显式选了内置」无法区分。</p>
-<p><strong>迁移规则</strong>（Rust <code>resolve_embedding_source()</code> 与前端 <code>normalizeEmbeddingSettings</code> 必须逐条一致）：</p>
+<p><strong>迁移规则</strong>（Rust <code>resolve_embedding_source()</code> 与前端浏览器 dev 默认保持同一安全方向）：</p>
 <ol>
 <li>显式的 <code>"builtin"</code> / <code>"custom"</code> 优先；</li>
 <li>否则 <code>baseUrl</code> / <code>apiKey</code> / <code>model</code> 任一非空（全 <code>*</code> 掩码也算非空）⇒ <code>"custom"</code>；</li>
-<li>三项全空 ⇒ <code>"builtin"</code>；</li>
+<li>三项全空 ⇒ 有编译期 key 的构建为 <code>"builtin"</code>，无 key 的源码 / 浏览器 dev 构建为 <code>"custom"</code>；</li>
 <li>未知值按 2–3 重新推断。</li>
 </ol>
-<p>也就是说：已经填过自定义端点的老用户<strong>不会被静默切走</strong>，只有真正全新 / 全空的配置才变成内置。</p>
+<p>也就是说：已经填过自定义端点的老用户<strong>不会被静默切走</strong>；真正全新 / 全空的配置只在官方这类已注入 key 的构建里变成内置。</p>
 <p><code>embedding_config()</code> 在解析出的 source 非 <code>"custom"</code> 且 <code>builtin::available()</code> 时返回网关三元组；否则穿透到已存值。这条链路只服务 arXiv 每日推荐（<a href="../../development/plaza/">../development/plaza.md</a> §3.4），Host 命令 <code>recommend_arxiv</code> 透明继承，无需改动。</p>
 <p>向量缓存安全：<code>embed_cache</code> 的主键是 <code>(text_hash, model)</code>（<code>catalog/schema.rs</code> v6），所有读写都按 model 过滤，所以换 embedding 模型不会读到旧向量。</p>
 <h2 id="ocrpapermd">正文解析 OCR：<code>PAPER.md</code><a class="headerlink" href="#ocrpapermd" title="Permanent link">&para;</a></h2>
@@ -4203,7 +4231,7 @@
 <tr>
 <td><code>EmbeddingSettings::source</code>（推断）</td>
 <td><code>builtin</code>（仅当 BYOK 三项全空）</td>
-<td><code>builtin</code>（同左；但 <code>embedding_config()</code> 穿透到空值 → 功能禁用）</td>
+<td><code>custom</code>（空字段 → <code>embedding_config()</code> 为 <code>None</code>，功能禁用）</td>
 </tr>
 </tbody>
 </table>

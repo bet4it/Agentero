@@ -3632,6 +3632,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bug_fix/note-markdown-stray-less-than/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    笔记正文 < 比较符截断后续内容（#533）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4014,14 +4042,14 @@
 <ul>
 <li><strong>空态</strong>：建议 chips → <code>summary</code> / <code>qa</code> / <code>related_work</code>。</li>
 <li><strong>上下文</strong>：当前论文默认加入（实心 chip，可 X 移除）。<code>@</code> 提及与文件树拖入为可移除 context chip。</li>
-<li><strong>选区上下文</strong>：Markdown/PDF 选中文字 → 瞬时选区 chip（虚线）；<code>⌘L</code> 固定为 chip；PDF 仅在 Agent 侧栏打开时于选区右下角显示「加入对话」pill。发送时以引用块消费；PDF 带几何的选区在发送后插入 <code>kind: ask</code> 对话卡片页边针（非视觉批注）。</li>
+<li><strong>选区上下文</strong>：划词不自动进对话；<code>⌘L</code> / <code>⇧⌘A</code> / 划词工具栏「加入对话」固定为 chip 并打开 Agent；<code>⌘K</code> /「快速对话」打开页内 Ask。发送时以引用块消费；PDF 带几何的选区在发送后插入 <code>kind: ask</code> 对话卡片页边针（非视觉批注）。</li>
 <li><strong>运行中继续输入</strong>：后续消息进 Queue waitlist，当前回复结束后自动发送。</li>
 <li><strong>权限</strong>：全局模式 <code>restricted</code>（默认）/ <code>ask</code> / <code>auto</code>。<code>ask</code> 时弹权限对话框。</li>
 <li><strong>结构化提问</strong>：各 harness 的 ask-user / elicitation / Grok ext 归一为底部问卷（与 free-text composer 互斥）。详见 <a href="../frontend/agent/">frontend/agent.md</a> / <a href="../backend/agent/">backend/agent.md</a>。</li>
 <li><strong>个人偏好</strong>：<code>agentPersonalPrompt</code> 非空时经 Host <code>build_prompt</code> 注入 envelope。</li>
 </ul>
 <h3 id="pdf">PDF 阅读<a class="headerlink" href="#pdf" title="Permanent link">&para;</a></h3>
-<p>Vault 任意路径 <code>.pdf</code> → <code>blob:</code> 预览。页码导航/适应宽·整页/大纲/⌘F 查找。真实 scale 渲染 + 平滑划词覆盖层。划词菜单：高亮/提问/翻译；批注走页右缘竖向入口。支持视觉区域批注（框选插图/表/算法/公式，可写备注或向 Agent 提问）、版面分析（Figures 侧栏列出检测到的图/表/算法/公式）、有编号公式 hover 符号解析卡。详见 <a href="../frontend/pdf/">frontend/pdf.md</a> / <a href="../frontend/pdf-layout-analysis/">frontend/pdf-layout-analysis.md</a>。</p>
+<p>Vault 任意路径 <code>.pdf</code> → <code>blob:</code> 预览。页码导航/底部缩放滑动条/大纲/⌘F 查找。真实 scale 渲染 + 平滑划词覆盖层。划词菜单：高亮/提问/翻译；批注走页右缘竖向入口。支持视觉区域批注（框选插图/表/算法/公式，可写备注或向 Agent 提问）、版面分析（Figures 侧栏列出检测到的图/表/算法/公式）、有编号公式 hover 符号解析卡。详见 <a href="../frontend/pdf/">frontend/pdf.md</a> / <a href="../frontend/pdf-layout-analysis/">frontend/pdf-layout-analysis.md</a>。</p>
 <h3 id="markdown">Markdown 编辑<a class="headerlink" href="#markdown" title="Permanent link">&para;</a></h3>
 <p>Plate + <code>@platejs/markdown</code>。普通文本粘贴默认按 Markdown 解析。<code>\$a\$</code> 保持普通文本、<code>$a$</code> 保持公式。Obsidian Callout（<code>&gt; [!type]</code>）结构化渲染并原样写回。内嵌图片粘贴到 <code>{mdDir}/assets/</code>，删节点且无引用时 GC。详见 <a href="../frontend/markdown/">frontend/markdown.md</a>。</p>
 <h3 id="_8">双链与图谱<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
@@ -4105,7 +4133,7 @@
 <h3 id="_17">日志<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
 <p>Host <code>tauri-plugin-log</code> + 前端 <code>logger</code> + CLI <code>env_logger</code>。详见 <a href="../backend/logging/">backend/logging.md</a>。</p>
 <h3 id="_18">命令面板<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
-<p><code>⌘P</code>/<code>⌘K</code> 快速打开（论文 + <code>vault_search</code> 全文）；<code>⇧⌘P</code>/<code>&gt;</code> 执行内置命令。</p>
+<p><code>⌘P</code> 快速打开（论文 + <code>vault_search</code> 全文）；<code>⇧⌘P</code>/<code>&gt;</code> 执行内置命令。<code>⌘K</code> 划词快速对话（Ask）；<code>⌘L</code> 有选区时加入 Agent 对话。</p>
 <h3 id="_19">翻译服务<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
 <p>可插拔 <code>TranslateService</code>（内置 provider + 免费 MT + 商用 BYOK + BYOA Agent）。内置 provider（id <code>agentero</code>）的凭证在构建期编入 Host，走 Hunyuan-MT，详见 <a href="../backend/builtin-provider/">backend/builtin-provider.md</a>。其余见 <a href="../frontend/translate/">frontend/translate.md</a> / <a href="../backend/translate/">backend/translate.md</a>。</p>
 

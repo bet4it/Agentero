@@ -3588,6 +3588,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/note-markdown-stray-less-than/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    笔记正文 < 比较符截断后续内容（#533）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3911,6 +3939,10 @@ PP-DocLayoutV3  每页: render → detect → map to PDF points（仅无 sidecar
         ▼
 ③ 侧栏展示: isSidebarLayoutKind + dedupeLayoutRegions(minScore 默认 0.3)
         │  分区顺序：插图 → 表 → 算法 → **公式（最底）**
+        │  解析运行中：匹配 viewer run 或 JobCenter layoutAnalyze；无结果时居中加载，已有结果时顶部显示进度条与 page/pct
+        │  进度归属：`layoutAnalysisStore.activePaperAbsPath`（headless 的 documentId 是
+        │  `headless-layout-*`，不能只靠 activeDocumentId）；排队中的 `layoutAnalyze`
+        │  任务经 BackgroundTask.paperPath 与当前论文 vault-relative 路径匹配
         ▼
 右栏 Figures + 聚焦高亮（store.focused）+ 可选 PDF bbox 叠加层（Eye，调试）
         │  叠加层画 **rawRegions**（合并前、全 kind、无 NMS；score ≥ 0.3）

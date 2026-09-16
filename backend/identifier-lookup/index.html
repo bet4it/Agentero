@@ -4171,6 +4171,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/note-markdown-stray-less-than/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    笔记正文 < 比较符截断后续内容（#533）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5168,7 +5196,7 @@
 <ul>
 <li>魔棒入库时前端把设置中的 URL 传入 <code>lookup_import_batch.args.translatorBaseUrl</code>。</li>
 <li>Host：<code>POST {base}/search</code> 或 <code>/web</code>（<code>Content-Type: text/plain</code>）。</li>
-<li>服务不可达且输入为 arXiv 时，回退 export.arxiv.org。</li>
+<li>服务不可达时按标识符类型走直连兜底链（错峰投机并发，见 §3.2）：arXiv→S2→alphaXiv、DOI→Crossref→S2→OpenAlex、PMID→PubMed。</li>
 </ul>
 <blockquote>
 <p>~~<code>downloadFulltextToLocal</code>~~ 已移除；始终下载 PDF。</p>
@@ -5428,7 +5456,8 @@
 <li>PMID（1–9 位数字，最后匹配）</li>
 </ol>
 <blockquote>
-<p>实现上，优先级由 <code>crates/agentero-core/src/features/paper/scholar_api/identifiers/resolver.rs</code> 的静态 resolver 表驱动：Url / Doi / Arxiv / Isbn / Pmid / Ads 各实现 <code>PaperResolver</code>（<code>priority</code> 探测顺序、<code>catalog_column</code> 查重列、<code>translator_target</code> 构造 Translator 请求）。Translator 失败后的直连回退在 <code>scholar_api::identifiers::fallback</code>（arXiv→Atom、DOI→Crossref、PMID→PubMed）。Skill 不入表，由 <code>skill::skill_identifier</code>（内部调用 <code>skill::extract_skill_source</code>）前置分流。新增导入源只需实现一个 resolver 并登记进表（表按 <code>priority</code> 排序，有测试守护）。</p>
+<p>实现上，优先级由 <code>crates/agentero-core/src/features/paper/scholar_api/identifiers/resolver.rs</code> 的静态 resolver 表驱动：Url / Doi / Arxiv / Isbn / Pmid / Ads 各实现 <code>PaperResolver</code>（<code>priority</code> 探测顺序、<code>catalog_column</code> 查重列、<code>translator_target</code> 构造 Translator 请求）。Skill 不入表，由 <code>skill::skill_identifier</code>（内部调用 <code>skill::extract_skill_source</code>）前置分流。新增导入源只需实现一个 resolver 并登记进表（表按 <code>priority</code> 排序，有测试守护）。</p>
+<p>Translator 失败后的直连回退在 <code>scholar_api::identifiers::fallback</code>，按 kind 走<strong>兜底链</strong>：arXiv→S2→alphaXiv、DOI→Crossref→S2→OpenAlex、PMID→PubMed；URL/ISBN/ADS 暂无链（继续探测表中下一 resolver，<code>doi.org</code> URL 仍能命中 DOI 链）。链的执行模型是<strong>错峰投机并发 + 优先级顺序接受</strong>：所有源同时 spawn，第 i 个源先睡 <code>i×600ms</code> 再请求（给高优先级源让出先手窗口），然后严格按优先级顺序 await——首个返回非空记录的源胜出并 abort 其余在飞请求。健康主源在错峰窗口内完成时次级源尚未开火，请求数与单源直连完全相同；主源慢/429 时失败前缀时延取 <code>max</code> 而非顺序 <code>sum</code>（最坏 ≈ 单源超时上限，而非 3×）。</p>
 </blockquote>
 <p>解析失败：返回 <code>lookup.failure_to_id</code>，不调用网络。</p>
 <h3 id="33-parsedidentifier">3.3 输出：<code>ParsedIdentifier</code><a class="headerlink" href="#33-parsedidentifier" title="Permanent link">&para;</a></h3>
@@ -5448,14 +5477,14 @@
 <p>兼容性通过分工保留：<strong>搜索只负责「文本 → 候选标识符」</strong>，用户选中后把 <code>identifier</code>（arXiv ID 优先，其次 DOI）重新提交 <code>lookup_import_batch</code>，Translator 仍是元数据的唯一事实来源，入库管道不分叉。</p>
 <ul>
 <li>实现：<code>crates/agentero-core/src/features/paper/import/search_router.rs</code></li>
-<li>数据源：Semantic Scholar Graph API <code>/paper/search</code> 与 <strong>arXiv</strong> <code>search_query=ti:"…"&amp;sortBy=relevance</code> <strong>并行</strong>发起；S2 在 5s 预算（<code>S2_SEARCH_BUDGET</code>）内返回非空则优先（跨域、带被引数），否则取已在途的 arXiv 结果。最坏耗时 ≈ max(预算, 单请求 20s 超时)，不再是串行 S2→arXiv 之和（~40s）。两者均免 key，复用 <code>core::http::client_builder()</code> 与信号量限流（并发 2）。<blockquote>
+<li>数据源：Semantic Scholar Graph API <code>/paper/search</code> 与 <strong>arXiv</strong> <code>search_query=ti:"…"&amp;sortBy=relevance</code> <strong>并行</strong>发起；S2 在 5s 预算（<code>S2_SEARCH_BUDGET</code>）内返回非空则优先（跨域、带被引数），否则取已在途的 arXiv 结果。最坏耗时 ≈ max(预算, 单请求 20s 超时)，不再是串行 S2→arXiv 之和（~40s）。两者均免 key，复用 <code>core::http::client_builder()</code> 与信号量限流（并发 2）。实现层由 <code>scholar_api::search</code> 的 <code>ALL_TITLE_SOURCES</code> 驱动（S2 / Crossref / OpenAlex / arXiv / PubMed / alphaXiv 六源并发，各自 8s 预算含信号量排队时间）；alphaXiv 是未文档化的镜像层，仅作末位备份源，不进 Scope 预设。<blockquote>
 <p><strong>S2 无 key 的搜索接口限流极严（实测连续 3 次均 429）</strong>，所以 arXiv 才是线上的常走路径；并行发起后 429 快速失败时 arXiv 已在途，省掉一次串行往返。不选 Crossref 兜底：NeurIPS proceedings 之类没有 Crossref DOI，搜 "Attention is all you need" 时正确论文<strong>根本不在</strong> Crossref 结果集里，只会返回一堆同名论文。
 arXiv 的 Atom 需要按 <code>&lt;entry&gt;</code> 切块解析 —— <code>scholar_api/sources/arxiv.rs::parse_entries</code> 承担这件事，<code>fetch_by_id</code>（limit 1）与 <code>search_by_title</code> 共用同一解析器。</p>
 </blockquote>
 </li>
 <li>排序：保留 provider 的相关度顺序，但把<strong>标题与 query 归一化后完全相等</strong>的条目提到最前（归一化 = 小写、去非字母数字、压空格）。同名论文很多，这一步防止真正那篇被埋掉。</li>
 <li><strong>过滤掉既无 DOI 也无 arXiv ID 的条目</strong> —— 没有标识符就无法入库，不能出现在候选里。</li>
-<li>Top 3 返回给前端（<code>SEARCH_CANDIDATE_LIMIT</code>）；无结果或搜索失败写入 <code>errors</code>，不静默。单源失败走 <code>log::warn!</code>，否则 S2 的 429 完全不可见。</li>
+<li>Top 3 返回给前端（<code>SEARCH_CANDIDATE_LIMIT</code>）；无结果或搜索失败写入 <code>errors</code>，不静默。单源失败走 <code>log::warn!</code>，否则 S2 的 429 完全不可见。<strong>全部</strong>在试源失败时不再吞掉错误（#524）：任一源应答（即使 0 命中）仍返回空列表——一个权威「没找到」胜过限流猜测；但整批失败且含 429 → 报 <code>rate limited</code>，整批失败无 429 → 报网络摘要，二者都会随 <code>errors</code> 透出，不再误报「no search results」。</li>
 <li>取消：<code>resolve_search_queries</code> 带前端 <code>task_id</code>，每条 query 前检查协作取消 —— 关闭搜索卡片即取消任务，剩余查询直接跳过。</li>
 <li>副作用：拼错的标识符（如 <code>1706.0376</code>）现在会走搜索并得到「无结果」，比原来的 <code>unrecognized identifier</code> 更可读。</li>
 </ul>
@@ -5563,7 +5592,11 @@ arXiv 的 Atom 需要按 <code>&lt;entry&gt;</code> 切块解析 —— <code>sc
 </tr>
 <tr>
 <td>fallback 成功</td>
-<td><code>source: 'fallback'</code>，libraryCatalog 填 <code>Agentero (Crossref)</code> 等</td>
+<td><code>source: 'fallback'</code>，libraryCatalog 填 <code>Agentero (Crossref)</code> 等；meta_source 如实反映链内实际应答源（arxiv / s2 / alphaxiv / crossref / openalex / pubmed）</td>
+</tr>
+<tr>
+<td>回退链全部限流</td>
+<td>链内先重试一趟（2s 冷却）；仍失败按 <code>rate_limited</code> 上报（PDF 识别路径触发 <code>arxiv_rate_limited</code> 警告码），不再静默误报「无结果」</td>
 </tr>
 </tbody>
 </table>

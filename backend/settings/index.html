@@ -3405,6 +3405,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/note-markdown-stray-less-than/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    笔记正文 < 比较符截断后续内容（#533）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3515,7 +3543,7 @@
 <h2 id="provider">内置 provider 凭证解析<a class="headerlink" href="#provider" title="Permanent link">&para;</a></h2>
 <p>settings 不存内置 provider 的任何凭证；它只在<strong>读取时</strong>把 id <code>agentero</code> 解析到构建期注入的凭证（见 <a href="../builtin-provider/">builtin-provider.md</a>）。</p>
 <ul>
-<li><strong><code>embedding.source</code></strong>（<code>"builtin"</code> | <code>"custom"</code>）：普通 <code>#[serde(default)]</code>，空串即「未设置」，<strong>不是</strong>返回 <code>"builtin"</code> 的 default fn——否则一个填了 BYOK 端点但没有 <code>source</code> 键的旧 <code>settings.json</code>，与「用户显式选了内置」无法区分。<code>normalize()</code> 里的 <code>resolve_embedding_source()</code> 推断：显式值优先 → <code>baseUrl</code>/<code>apiKey</code>/<code>model</code> 任一非空（全 <code>*</code> 掩码也算非空）⇒ <code>custom</code> → 三项全空 ⇒ <code>builtin</code>。该规则必须与前端 <code>normalizeEmbeddingSettings</code> <strong>逐条一致</strong>（它在 Host load、legacy 迁移、每次保存、<code>settings_set</code> 回显、<code>settings:changed</code> 时都会跑）。已填过自定义端点的老用户不会被静默切走。</li>
+<li><strong><code>embedding.source</code></strong>（<code>"builtin"</code> | <code>"custom"</code>）：普通 <code>#[serde(default)]</code>，空串即「未设置」，<strong>不是</strong>返回 <code>"builtin"</code> 的 default fn——否则一个填了 BYOK 端点但没有 <code>source</code> 键的旧 <code>settings.json</code>，与「用户显式选了内置」无法区分。<code>normalize()</code> 里的 <code>resolve_embedding_source()</code> 推断：显式值优先 → <code>baseUrl</code>/<code>apiKey</code>/<code>model</code> 任一非空（全 <code>*</code> 掩码也算非空）⇒ <code>custom</code> → 三项全空时，有编译期 key 的构建 ⇒ <code>builtin</code>，无 key 的源码 / dev 构建 ⇒ <code>custom</code>。前端浏览器 dev 默认也保持在 <code>custom</code>。已填过自定义端点的老用户不会被静默切走。</li>
 <li><strong><code>embedding_config()</code></strong>：source 非 <code>custom</code> 且 <code>builtin::available()</code> 时返回网关三元组；无编译期 key 时穿透到已存值，仍为空则 <code>None</code>，让 <code>recommend.no_embedding</code> 照常触发。</li>
 <li><strong><code>layout_api_key</code> / <code>layout_base_url</code> / <code>layout_model</code></strong> 在 <strong>getter 层</strong>特判内置 id，这样所有调用方（<code>body_engines/mod.rs</code>、<code>layout/hosted/commands.rs</code>）自动正确，不必各自加分支。<code>layout_prompt</code> / <code>layout_language</code> / <code>layout_is_ocr</code> <strong>不特判</strong> → <code>None</code> / <code>None</code> / <code>false</code>：提示词由 VLM 引擎按 model id 推导，后两项是 MinerU 专用。</li>
 <li><strong><code>layout_provider_settings_key("agentero")</code></strong> 返回 <code>"agentero"</code>，只为给 parser 凭证 <code>HashMap</code> 一个稳定的键；它不对应任何落盘卡片。</li>

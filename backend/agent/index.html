@@ -3504,6 +3504,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/note-markdown-stray-less-than/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    笔记正文 < 比较符截断后续内容（#533）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3765,6 +3793,13 @@ wait / kill / release 在分发时先获取或移除句柄，再经 <code>connec
 不会等待进程退出；输出按 <code>outputByteLimit</code> 从头部截断并保证 UTF-8 字符边界。该能力
 让 Kimi Code 等需要执行 shell 命令的 Agent 可以在 Vault 工作目录下运行命令并
 读取结果。</p>
+<p>run / warm / list / load / probe 共用 <code>agentero_acp_builder!</code>（name + terminal
+handler）；各入口自行挂 notification / permission 回调。</p>
+<p><strong>warm 与空会话</strong>：模型列表来自 Session Setup 的 <code>configOptions</code>（协议不在
+<code>initialize</code> 提供），故 warm 仍需 <code>session/new</code>。若 Agent 声明
+<code>sessionCapabilities.delete</code>，warm 在读完 models/usage 后对该空会话调用
+<code>session/delete</code>，避免 <code>session/list</code> / CLI 历史堆积无消息 thread；未声明时仅
+debug 日志，行为与旧版相同。</p>
 <p>Kimi Code ACP 会把 <code>Bash</code>/<code>Glob</code>/<code>Grep</code> 等工具实现为 <code>terminal/create</code>。<a href="https://github.com/MoonshotAI/kimi-cli/blob/main/src/kimi_cli/acp/tools.py">当前实现</a>
 会把完整 shell 文本放进 <code>command</code>；Host 对可解析的可执行文件继续按 <code>command + args</code>
 直接 spawn，对无法解析且没有 <code>args</code> 的命令在 Windows 用 PowerShell、Unix 用
@@ -3834,7 +3869,7 @@ cursor 不再推进（<code>next == prev</code>）时视为走完，避免死循
 </tr>
 <tr>
 <td><code>agent_run_tool_lifecycle</code></td>
-<td>静默安装/升级/卸载 catalog CLI（及 Claude/Codex ACP 适配器）；本机 lifecycle 串行执行，设置页在对应 Agent 行内展示安装 / 扫描 / 探测进度（#250），Windows 使用唯一临时 <code>.bat</code> 并按 UTF-8/GBK 解码错误输出；<code>uninstall</code> 做 best-effort npm 卸载 + 受管目录删除（不改 shell rc），成功后联动删除 catalog 注册项；见 <a href="../api/">api.md</a> 与 <a href="https://github.com/poco-ai/Agentero/issues/225">#225</a></td>
+<td>静默安装/升级/卸载 catalog CLI（及 Claude/Codex ACP 适配器）；本机 lifecycle 串行执行，设置页在对应 Agent 行内展示安装 / 扫描 / 探测进度（#250），Windows 使用唯一临时 <code>.bat</code> 并按 UTF-8/GBK 解码错误输出；安装失败会将 npm 缓存目录 EPERM 转成可操作的缓存迁移提示；Windows 探测 <code>.exe</code> 时校验 PE 头，避免把文本 shim 当作 16 位程序执行；<code>uninstall</code> 做 best-effort npm 卸载 + 受管目录删除（不改 shell rc），成功后联动删除 catalog 注册项；见 <a href="../api/">api.md</a> 与 <a href="https://github.com/poco-ai/Agentero/issues/225">#225</a></td>
 </tr>
 <tr>
 <td><code>agent_check_catalog_updates</code></td>
@@ -3851,7 +3886,8 @@ cursor 不再推进（<code>next == prev</code>）时视为走完，避免死循
 Agentero prompt envelope、skill/context 注入，并将原始 <code>/command</code> 作为
 <code>session/prompt</code> 发送到当前 provider session。</p>
 <h2 id="_3">权限<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
-<p>全局 <code>agentPermissionMode</code>：</p>
+<p>全局 <code>agentPermissionMode</code>，前端经 <code>runOnce({ permissionMode })</code> 下发（优先字段；
+旧 <code>autoApprove</code> 仅 Host 侧兼容读取）：</p>
 <table>
 <thead>
 <tr>
@@ -3926,8 +3962,8 @@ Agentero prompt envelope、skill/context 注入，并将原始 <code>/command</c
 <li><code>translate</code>：<strong>不套 envelope</strong>（无 <code>## Sources</code>、无 CLI 政策、不注入回答语言与个人偏好）。翻译 prompt 自己已指定目标语言并要求「只返回译文」，envelope 会与之冲突。</li>
 <li>Skill：Claude 倾向 <code>/id</code>；其它注入 <code>SKILL.md</code> 文本（<code>SkillMentionStyle</code>）。激活语法<strong>只由 Host 判定</strong>（<code>skill_mention_style</code> + <code>paper_reader_skill_line</code>）；前端不得重复推断，否则同一条 prompt 的两半会互相矛盾。</li>
 <li>paper-reader：写 NOTES + <code>paper_set_is_read</code>；前端任务条编排。</li>
-<li>输出约定：工作流要求 <code>## Sources</code>（相对 Vault 路径）；双链保留 <code>[[...]]</code>。</li>
-<li><code>AGENTS.md</code> 已作为 progressive disclosure 系统上下文注入所有工作流 prompt（优先级：Vault 根 <code>AGENTS.md</code> → 当前 paper <code>NOTES.md</code> → marks）。</li>
+<li>Host <code>build_prompt</code> envelope <strong>只</strong>负责：本轮 workflow 角色、回答语言、个人偏好、<code>User request</code>（<code>paper_reader</code> 另带激活句）。<strong>不</strong>再塞引用格式、CLI 政策、论文阅读顺序，也<strong>不</strong>在 free/qa 等 workflow 里重复 skill-follow-hint（激活靠 <code>skill_activation_prefix</code> + 注入的 <code>SKILL.md</code>；cwd 为 vault 根时 Agent 自载 <code>AGENTS.md</code>）。</li>
+<li>引用约定（<code>AGENTS.md</code> / <code>paper-reader</code>）：<strong>阅读</strong>可用 TeX/<code>PAPER.md</code>，citation <strong>href 优先本地 PDF + fragment</strong>；笔记用 <code>[[papers/&lt;id&gt;/NOTES]]</code>；不加外层 <code>([…])</code>、不用文末 <code>## Sources</code>。前端负责 pill 渲染、<code>.tex</code>→PDF 回退，以及残留 <code>blocked</code> 标签的显示兜底。Host <code>agent_resolve_citation</code>：<code>#figure=N</code> 在 caption 任意位置匹配 <code>Fig./Figure N</code>；<code>#section=N</code> 认阿拉伯与 IEEE 罗马章节号（如 <code>3</code>↔<code>III.</code>），纯数字不走模糊 overlap；失败时前端按 fragment 类型 Toast（短分类 + source）。</li>
 <li>自由模型选择：<code>preferred_model_id</code> 可指向 ACP catalog 外的任意模型 id；Warm / Run 时始终尝试 <code>session/set_config_option</code>，失败不阻断会话。</li>
 </ul>
 <h2 id="_4">模型协商<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>

@@ -3576,6 +3576,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/note-markdown-stray-less-than/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    笔记正文 < 比较符截断后续内容（#533）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3900,6 +3928,12 @@
 <td><code>features/paper/scholar_api/sources/pubmed.rs</code></td>
 </tr>
 <tr>
+<td><strong>alphaXiv</strong></td>
+<td><code>GET https://api.alphaxiv.org/papers/v3/{id}/preview</code>、<code>GET /v1/search/paper?q=</code></td>
+<td>arXiv 元数据/标题搜索的末位备份源（未文档化匿名 JSON API）</td>
+<td><code>features/paper/scholar_api/sources/alphaxiv.rs</code></td>
+</tr>
+<tr>
 <td><strong>bioRxiv</strong></td>
 <td><code>GET https://api.biorxiv.org/details/biorxiv/{doi}</code></td>
 <td>DOI → 生命科学预印本元数据</td>
@@ -3949,11 +3983,13 @@
 <li><strong>Translator Runtime</strong>（<code>features/import/mod.rs::resolve_metadata</code>）</li>
 <li>若用户输入被识别为 arXiv id / DOI / URL，会构造 <code>{base}/web</code> 或 <code>{base}/search</code> 请求。</li>
 <li>arXiv 的各类输入（<code>2508.05004</code>、<code>arXiv:2508.05004v2</code>、<code>https://arxiv.org/pdf/...</code>、<code>https://arxiv.org/html/...</code>）都会被规范化为 <code>https://arxiv.org/abs/{id}</code> 再走 <code>/web</code>。</li>
-<li>Translator 失败且输入是 arXiv id 时，本地 fallback 到 <code>fetch_arxiv_metadata</code>。</li>
-<li><strong>Crossref DOI fallback</strong>（<code>features/paper/scholar_api/identifiers/fallback.rs::fetch_crossref_metadata</code>）</li>
-<li>当 Translator 无法解析一个 DOI 时，<code>fetch_direct_fallback</code> 直接请求 <code>api.crossref.org/works/{doi}</code>。</li>
-<li><strong>arXiv Atom 直接 fallback</strong>（<code>features/paper/scholar_api/identifiers/fallback.rs::fetch_arxiv_metadata</code>）</li>
-<li>请求 <code>export.arxiv.org/api/query?id_list={id}</code>，解析 <code>&lt;arxiv:journal_ref&gt;</code> 作为 publication/venue。</li>
+<li>Translator 失败时按标识符类型走<strong>直连兜底链</strong>（<code>scholar_api::identifiers::fallback</code>，见下）。</li>
+<li><strong>直连兜底链</strong>（<code>features/paper/scholar_api/identifiers/fallback.rs</code>）</li>
+<li>arXiv → <code>ARXIV_CHAIN</code> = arXiv Atom → S2 <code>ARXIV:{id}</code> → alphaXiv <code>/papers/v3/{id}/preview</code>。</li>
+<li>DOI → <code>DOI_CHAIN</code> = Crossref <code>works/{doi}</code> → S2 <code>DOI:{doi}</code> → OpenAlex。</li>
+<li>PMID → <code>PMID_CHAIN</code> = PubMed <code>efetch</code>。</li>
+<li>执行模型是<strong>错峰投机并发 + 优先级顺序接受</strong>（hedged chain）：链内所有源同时 spawn，第 i 个源先睡 <code>i×600ms</code> 再请求，随后严格按优先级顺序 await——首个非空 <code>Ok</code> 胜出并 abort 其余在飞请求。健康主源在错峰窗口内完成时请求数与单源直连相同；主源 429/慢时失败前缀时延取 <code>max</code> 而非 <code>sum</code>。整趟全失败且含 429 → 2s 冷却后重试一趟，仍失败按 <code>rate_limited</code> 上报（#524：不再误报「无结果」）。</li>
+<li>arXiv Atom 解析 <code>&lt;arxiv:journal_ref&gt;</code> 作为 publication/venue（链内其余源不提供 venue 回填语义，透明受益于既有 merge 偏好）。</li>
 </ol>
 <blockquote>
 <p><strong>被引数（<code>citation_count</code>）</strong>：Crossref 解析 <code>is-referenced-by-count</code>、OpenAlex 解析 <code>cited_by_count</code>、Semantic Scholar 解析 <code>citationCount</code>，三者 <code>capabilities()</code> 均声明 <code>PROVIDE_CITATION_COUNT</code>；Crossref / OpenAlex 的 title search 还必须把该字段列进 <code>select</code> 白名单，否则 API 根本不返回它。<code>api_paper_to_meta</code> 把值带进 <code>PaperRecord</code>，<code>merge_api_papers</code> 合并两个源时取较大值（各自索引的引用文献子集不同）。arXiv Atom 与 Translator 不产出被引数。<strong>注意</strong>：入库以 Translator 为主路径，<code>map_zotero_item_to_record</code> 不带被引数，因此常规导入写入的仍是 NULL；只有 Translator 失败后降级到 Crossref 直连的 DOI 导入才会落进真实值。完整缺口见 <a href="../catalog/">catalog.md</a>。</p>
@@ -3964,8 +4000,8 @@
 <ol>
 <li>本地 liteparse 探测 PDF 前若干页文字几何。</li>
 <li>将文字几何按 Zotero Worker 形状提交到 <code>https://services.zotero.org/recognizer/recognize</code>，获取可能的 DOI / arXiv / title。</li>
-<li>若识别出 DOI → <code>import/mod.rs::resolve_metadata</code> → Translator → Crossref 直连 fallback。</li>
-<li>若识别出 arXiv → <code>fetch_arxiv_metadata</code>。</li>
+<li>若识别出 DOI → <code>import/mod.rs::resolve_metadata</code> → Translator → DOI 兜底链（Crossref→S2→OpenAlex）。</li>
+<li>若识别出 arXiv → arXiv 兜底链（Atom→S2→alphaXiv）；<code>meta_source</code> 如实反映实际应答源。</li>
 <li>仅有 title/authors 时 → 生成本地 PDF 占位元数据（<code>meta_from_recognize</code>）。</li>
 </ol>
 <h3 id="23">2.3 参考文献在线补全<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
@@ -4054,7 +4090,7 @@
 <li>解析论文 URL：<code>https://papers.cool/{arxiv|venue}/{id}</code>。</li>
 <li>按标题搜索：<code>GET https://papers.cool/{branch}/search?query=...</code>。</li>
 <li>获取 Kimi 解析：<code>GET https://papers.cool/{branch}/kimi?paper={id}</code>。</li>
-<li>这是一个人工整理的学术站点，不是开放 API；解析结果写入 NOTES.md。</li>
+<li>这是一个人工整理的学术站点，不是开放 API；解析结果写入 NOTES.md。FAQ 问题写成 <code>## Qn</code>，保留答案内 <code>###</code> 小节；丢弃末尾「想要进一步了解论文」FAQ（跳转 Kimi 网页版的推广段）。</li>
 </ul>
 <h3 id="210-pdf-tex">2.10 PDF / TeX 资产下载<a class="headerlink" href="#210-pdf-tex" title="Permanent link">&para;</a></h3>
 <p>入口：<code>features/paper/import/download.rs</code>。</p>
@@ -4081,9 +4117,14 @@
 </thead>
 <tbody>
 <tr>
-<td>标题/关键词搜索</td>
-<td><code>SEARCH_CONCURRENCY = 2</code>（Semaphore）</td>
-<td>S2 免费搜索端点限流严格，arXiv Atom 也有速率限制；单条查询并行占用至多 2 个 permit（S2 + arXiv）</td>
+<td>scholar_api 全部请求</td>
+<td><code>GLOBAL_CONCURRENCY = 4</code>（<code>scholar_api/client.rs</code> Semaphore）</td>
+<td>6 个标题搜索源并发时尾部排队，排队计入各源 8s <code>FETCH_BUDGET</code>；429→<code>RateLimited</code>、404→<code>NotFound</code> 统一处理</td>
+</tr>
+<tr>
+<td>直连兜底链</td>
+<td>错峰 600ms/源 + 优先级顺序接受</td>
+<td>主源健康时零请求放大；链整体限流才 2s 重试一趟</td>
 </tr>
 <tr>
 <td>在线参考文献</td>
@@ -4163,27 +4204,27 @@
 <tbody>
 <tr>
 <td>用户输入 title/关键词</td>
-<td>S2 ∥ arXiv 并行竞速（5s 预算内 S2 优先）</td>
-<td>已在途的 arXiv 结果</td>
-<td>无</td>
+<td>6 源并发（S2/Crossref/OpenAlex/arXiv/PubMed/alphaXiv，S2 match 3s 快路径优先）</td>
+<td>单源失败 warn 降级；任一源应答即返回</td>
+<td>全源失败且含 429 → 报 <code>rate limited</code>（#524 不再误报无结果）</td>
 </tr>
 <tr>
 <td>用户输入 arXiv id</td>
 <td>Translator <code>/web</code> (canonical abs URL)</td>
-<td>arXiv Atom</td>
-<td>无</td>
+<td>arXiv 链：Atom → S2 → alphaXiv（错峰投机并发）</td>
+<td>链整体限流 → 2s 重试一趟 → <code>rate_limited</code></td>
 </tr>
 <tr>
 <td>用户输入 DOI</td>
 <td>Translator <code>/search</code></td>
-<td>Crossref <code>works/{doi}</code></td>
-<td>无</td>
+<td>DOI 链：Crossref → S2 → OpenAlex（错峰投机并发）</td>
+<td>同上</td>
 </tr>
 <tr>
 <td>用户输入 PMID</td>
 <td>Translator <code>/search</code></td>
-<td>PubMed <code>efetch</code></td>
-<td>无</td>
+<td>PubMed 链：<code>efetch</code></td>
+<td>同上</td>
 </tr>
 <tr>
 <td>用户输入 URL</td>
@@ -4194,14 +4235,14 @@
 <tr>
 <td>PDF 识别出 DOI</td>
 <td>Translator</td>
-<td>Crossref</td>
+<td>DOI 链（Crossref→S2→OpenAlex）</td>
 <td>本地 title fallback</td>
 </tr>
 <tr>
 <td>PDF 识别出 arXiv</td>
-<td>arXiv Atom</td>
+<td>arXiv 链（Atom→S2→alphaXiv）</td>
 <td>-</td>
-<td>本地 title fallback</td>
+<td>本地 title fallback；链整体限流 → <code>arxiv_rate_limited</code> 警告</td>
 </tr>
 <tr>
 <td>在线参考文献</td>

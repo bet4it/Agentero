@@ -3449,6 +3449,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/note-markdown-stray-less-than/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    笔记正文 < 比较符截断后续内容（#533）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3596,7 +3624,7 @@
 <p>光栅化分辨率分两层封顶：整页底图 <code>RenderLayer</code> 按 <code>min(devicePixelRatio, 1.5)</code>（<code>pdfRasterDpr</code>）出图——高 DPI 屏全 dpr 光栅会让每次缩放重渲染过重；高清瓦片 <code>TilingLayer</code> 是用户实际阅读的层，按 <code>min(devicePixelRatio, 2)</code>（<code>pdfTileDpr</code>）出图，HiDPI 屏小字号保持清晰，瓦片只覆盖视口 + 一圈故成本有界（<code>TilingLayer</code> 的 <code>dpr</code> 属性由 <code>@embedpdf/plugin-tiling</code> patch 提供）。Agent 区域裁剪走 <code>renderPageRect</code>，不受封顶影响。</p>
 <p><code>RenderLayer</code> 只是瓦片下的底图层，其 scale 另按 <code>PDF_BASE_LAYER_SCALE_CAP</code>（1.5）封顶：zoom 超过该值后整页光栅不再重渲染（单 worker 串行渲染下，长文档高倍缩放的整页光栅 + blob 传输是主要开销），清晰层由 <code>TilingLayer</code> 承担。瓦片 <code>tileSize: 1024</code> + <code>extraRings: 1</code>，减少长文档快速滚动时的渲染往返与边缘弹出。</p>
 <p>抗抽动（twitch）措施：瓦片 <code>extraRings: 1</code> 预渲染视口外圈，减少快速滚动时边缘瓦片延迟弹出；<code>TilingLayer</code> patch 在新瓦片集异步光栅到达前保留旧瓦片作拉伸占位（<code>scale/srcScale</code> 重映射，1.5s 超时兜底），消除缩放瞬间的空白闪烁；marks 不再定时轮询，改由 Vault 文件监听（<code>vault:file-changed</code>，命中 <code>{paper}/marks/</code> 前缀，200ms 合并突发）触发刷新，配合激活时与窗口 focus 兜底；应用自身对 <code>marks/</code> 的写入会登记路径（3s TTL），其 watcher 回声直接跳过（写入方已更新内存态），mark 文件并发读取，读取结果仍做 JSON 指纹比对，内容未变不提交 state，避免整 viewer 重渲染。高亮派生态（视图模型 / 页边针锚点 / 链接分页图）的 annotation 事件按微任务合并后重建一次，批量导入 n 条不再逐事件 O(n²) 重建。</p>
-<p>滚动路径开销（触控板一帧内可触发多次 scroll）另有两处收敛：viewport 滚动指标按动画帧合并后再 <code>setViewportScrollMetrics</code>（每次提交都会推出新的 scroller layout 对象，令所有挂载页重渲染）；layout hover 命中框与 Eye 调试框按 <code>hoverableLayoutRegionsByPage</code> / <code>rawLayoutRegionsByPage</code> 预先分页缓存，页渲染只做 <code>Map.get</code>，不再每页重跑一遍全文档 NMS。</p>
+<p>滚动路径开销（触控板一帧内可触发多次 scroll）另有两处收敛：viewport 滚动指标按动画帧合并后再 <code>setViewportScrollMetrics</code>（每次提交都会推出新的 scroller layout 对象，令所有挂载页重渲染）；layout hover 命中框与 Eye 调试框按 <code>hoverableLayoutRegionsByPage</code> / <code>rawLayoutRegionsByPage</code> 预先分页缓存，页渲染只做 <code>Map.get</code>，不再每页重跑一遍全文档 NMS。PDF viewport 的延迟跳转请求同样按帧合并，并在用户滚轮先发生时取消；虚拟页重排、缩放布局和双栏同步产生的程序化滚动不会触发取消；虚拟页节点换入换出时关闭浏览器 scroll anchoring，避免 Windows/WebView2 将阅读位置校正到首尾页（见 <a href="../../bug_fix/pdf-windows-scroll-endpoint-jump/">bug_fix/pdf-windows-scroll-endpoint-jump.md</a>）。</p>
 <h2 id="_1">阅读能力<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3608,7 +3636,7 @@
 <tbody>
 <tr>
 <td>缩放</td>
-<td>可输入 50%–300% 精确比例；支持 +/-、⌘滚轮、触控板捏合；适应宽度 / 适应整页放在底部栏的沉浸式按钮左侧；真实 scale 重渲染。⌘滚轮步进按动画帧合并（<code>createWheelZoomCoalescer</code>）：一帧内多个 wheel 事件先累加抵消，再一次性应用净步进，避免触控板高频事件逐事件触发整页重光栅。wheel 监听不常驻 non-passive（<code>bindWheelZoomGesture</code>）：普通滚动手势期间切成 passive，滚轮静默后再换回 non-passive，保证捏合缩放仍可 <code>preventDefault</code>，同时普通滚动不被主线程阻塞。WebKit（Safari / macOS WKWebView）的触控板捏合不以 ctrl+wheel 送达，而是 <code>gesturestart/change/end</code>，<code>bindWheelZoomGesture</code> 将其 magnification 比值换算为等价 wheel delta 走同一合并路径并 <code>preventDefault</code> 抑制平台放大</td>
+<td>底部栏滑动条调节 50%–300%（旁显示当前百分比；静止为灰色，hover / 聚焦 / 拖动时为 brand 主题色）；另支持 ⌘滚轮、触控板捏合；真实 scale 重渲染。默认仍以适应宽度打开。⌘滚轮步进按动画帧合并（<code>createWheelZoomCoalescer</code>）：一帧内多个 wheel 事件先累加抵消，再一次性应用净步进，避免触控板高频事件逐事件触发整页重光栅。wheel 监听不常驻 non-passive（<code>bindWheelZoomGesture</code>）：普通滚动手势期间切成 passive，滚轮静默后再换回 non-passive，保证捏合缩放仍可 <code>preventDefault</code>，同时普通滚动不被主线程阻塞。WebKit（Safari / macOS WKWebView）的触控板捏合不以 ctrl+wheel 送达，而是 <code>gesturestart/change/end</code>，<code>bindWheelZoomGesture</code> 将其 magnification 比值换算为等价 wheel delta 走同一合并路径并 <code>preventDefault</code> 抑制平台放大</td>
 </tr>
 <tr>
 <td>导航</td>
@@ -3636,21 +3664,25 @@
 </tr>
 <tr>
 <td>位置</td>
-<td>记忆阅读位置</td>
+<td>记忆阅读位置；从 <code>#page=</code> / <code>#section=</code> 等引用打开时，一次性 pending 页意图优先于恢复上次阅读位置，并短时重试跳转，避免先闪到目标页再被拉回第 1 页；跳转后在目标 bbox 上闪黄色半透明高亮块（~1.6s 淡出）。细条 <code>#section=</code> 标题扩成标题下预览块，并 <code>scrollToPage({ pageCoordinates })</code> 滚到该 y</td>
 </tr>
 <tr>
 <td>文中链接</td>
-<td>Link annotation 覆盖层：citation / 图表·公式交叉引用 / 章节 GoTo 点击跳页，URI 开系统浏览器；未带 Link annotation 的纯文本 <code>http(s)</code> URL 与 <code>arXiv:&lt;id&gt;</code> 也会根据现有 PDFium 文字矩形生成外链命中区，并跳过与原生链接重叠的区域。打开论文后（主线程空闲时）在 Worker 里解析命名目标（<code>lib/pdf/citation-dest-keys.ts</code>），字节优先复用 <code>tab.pdfBytes</code>，按 <code>pdfPath:size</code> 缓存。<strong>Citation hover</strong>：hyperref <code>cite.&lt;key&gt;</code> 走 <code>pageIndex:pdfY → key → sidecar.rawKey</code>；ACS <code>mk:refN</code> 因 <code>/FitR</code> 整页冲突改走 <strong>Link rect → mk:refN → sidecar id <code>ref-N</code></strong>。同一上标簇内按间距区分逗号与连字符：<code>14-18</code> 展开为 14…18 多条列表，<code>7,9</code> 保持两条。<strong>Crossref hover</strong>（<code>Fig. 3</code> / <code>Table 1</code> / <code>Eq. (2)</code>）：同理先 dest 坐标，冲突时 <strong>Link rect → mk:tbl1 / mk:fig3</strong>，再配 layout region 裁剪。索引 / layout / sidecar 未就绪或无法消歧时不弹卡片；章节等非 float 内部链接只保留导航。<strong>浮动卡互斥（#430）</strong>：citation 与 crossref 预览互斥；划词拖选进行中（<code>onBeginSelection</code>→菜单就绪）以及 pin 卡（ask·translate·visual）打开时压制链接预览；划词菜单单独存在时仍允许 hover 引用预览；链接命中区在主键按下时不触发 hover，避免拖选扫过引用时闪卡；预览卡与 pin 卡共用 sticky hover（指针在卡上不收起，离开后短延迟关闭；link 命中区用 pointer 事件与卡片对齐）</td>
+<td>Link annotation 覆盖层：citation / 图表·公式交叉引用 / 章节 GoTo 点击跳页，URI 开系统浏览器；未带 Link annotation 的纯文本 <code>http(s)</code> URL 与 <code>arXiv:&lt;id&gt;</code> 也会根据现有 PDFium 文字矩形生成外链命中区，并跳过与原生链接重叠的区域。打开论文后（主线程空闲时）在 Worker 里解析命名目标（<code>lib/pdf/citation-dest-keys.ts</code>），字节优先复用 <code>tab.pdfBytes</code>，按 <code>pdfPath:size</code> 缓存。<strong>Citation hover</strong>：hyperref <code>cite.&lt;key&gt;</code> 走 <code>pageIndex:pdfY → key → sidecar.rawKey</code>；ACS <code>mk:refN</code> 因 <code>/FitR</code> 整页冲突改走 <strong>Link rect → mk:refN → sidecar id <code>ref-N</code></strong>。同一上标簇内按间距区分逗号与连字符：<code>14-18</code> 展开为 14…18 多条列表，<code>7,9</code> 保持两条。<strong>Crossref hover</strong>（<code>Fig. 3</code> / <code>Table 1</code> / <code>Eq. (2)</code>）：同理先 dest 坐标，冲突时 <strong>Link rect → mk:tbl1 / mk:fig3</strong>，再配 layout region 裁剪。索引 / layout / sidecar 未就绪或无法消歧时不弹卡片；章节等非 float 内部链接只保留导航。<strong>浮动卡互斥（#430）</strong>：citation 与 crossref 预览互斥；划词拖选进行中、选区操作菜单存在（<code>selectionMenu</code>）、全文翻译覆盖层打开或运行（<code>layoutTranslateActive</code> / <code>layoutTranslateRunning</code>）以及 pin 卡（ask·translate·visual）打开时压制链接预览；链接命中区在主键按下时不触发 hover，避免拖选扫过引用时闪卡；预览卡与 pin 卡共用 sticky hover（指针在卡上不收起，离开后短延迟关闭；link 命中区用 pointer 事件与卡片对齐）</td>
 </tr>
 <tr>
 <td>视觉批注</td>
-<td>工具栏或 <strong>⌘.</strong> 进入框选，框定/单击 layout 区域后裁剪直接保存为 <code>marks/&lt;id&gt;.json</code>，并在页右缘评论列打开就地编辑。评论卡 hover 显示「加入侧边栏对话」图标，点击后将裁剪图送入 Agent composer 草稿。视觉批注的 Agent 会话继续通过右侧 Agent 面板进行；没有用户备注但已有 Agent 会话的视觉批注，点击页边针会在针旁打开浮动对话卡查看 transcript。面板与 mark 共用 <code>agentSessionStore</code> 会话（同一 send 管线、同一 <code>lines</code>）。多轮会回写同一 <code>marks/&lt;id&gt;.json</code> 的 <code>messages[]</code> / <code>answerSnapshot</code>。活动 PDF 才轮询 marks；切换 Vault 清空 composer 视觉草稿。裁剪最长边 1600 px</td>
+<td>工具栏或 <strong>⌘.</strong> 进入框选，框定/单击 layout 区域后裁剪直接保存为 <code>marks/&lt;id&gt;.json</code>，并在页右缘评论列打开就地编辑。框选中、裁剪中、已打开或正在编辑的视觉区域都使用当前 UI 主题色绘制 2px 矩形边缘，并保留轻量 halo 以压住复杂 PDF 内容。评论卡 hover 显示「加入侧边栏对话」图标，点击后将裁剪图送入 Agent composer 草稿。视觉批注的 Agent 会话继续通过右侧 Agent 面板进行；没有用户备注但已有 Agent 会话的视觉批注，点击页边针会在针旁打开浮动对话卡查看 transcript。面板与 mark 共用 <code>agentSessionStore</code> 会话（同一 send 管线、同一 <code>lines</code>）。多轮会回写同一 <code>marks/&lt;id&gt;.json</code> 的 <code>messages[]</code> / <code>answerSnapshot</code>。活动 PDF 才轮询 marks；切换 Vault 清空 composer 视觉草稿。裁剪最长边 1600 px</td>
+</tr>
+<tr>
+<td>隐私模式</td>
+<td><strong>窗口失焦</strong>时淡出批注（高亮）、评论卡、翻译覆盖、Agent 对话卡等浮层（<code>usePdfPrivacy</code> 经 <code>onFocusChanged</code> 监听），页面正文渲染层保留——切换窗口后再截图不会带出标注内容。系统不提供“正在截图”事件，失焦是无需权限的近似代理；纯浏览器 dev 构建恒可见</td>
 </tr>
 </tbody>
 </table>
 <h2 id="_2">划词菜单<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<p>选区后浮动工具栏：高亮 / 复制 / 提问 / 翻译。「提问」按钮图标为 Settings → PDF Ask 当前配置的 Agent logo（未解析到时回退 <code>MessageSquare</code>）。<strong>加入对话</strong>不在工具栏里：仅当 <strong>Agent 侧栏已打开</strong>（或 Agent 已弹出独立窗）时，选区右下角才出现文字 pill「加入对话」。<strong>批注</strong>也不在工具栏里：选区出现时页右缘评论列会在对应高度出现一条竖向入口（与空评论卡同高、宽度更窄，内为评论图标）。<strong>Hover 直接进入编辑</strong>（展开并聚焦输入框）；<strong>移走且尚未输入则缩回竖向卡片</strong>；已有输入则保持编辑直至 ⌘/Ctrl+Enter / 失焦提交或 Esc 取消。入口用选区快照，聚焦时即使 EmbedPDF 清掉选区也保留卡片。Settings → 翻译开启「划词自动翻译」后，选区文本提取完成即自动启动翻译并打开结果卡；关闭时保留手动翻译入口。</p>
-<p><strong>远程 PDF</strong>（<code>agentero:arxiv:*</code>，如 arXiv Daily 预览）：无本地 sidecar。划词菜单只保留 <strong>复制 / 提问</strong>；Agent 侧栏打开时选区右下角仍有 <strong>加入对话</strong> pill（Ask 内存 ephemeral，关 tab 即丢，不写 <code>marks/</code>）；高亮 / 批注入口 / 翻译隐藏。底栏显示 Remote mode 徽标（<code>SiArxiv</code>，与 Info 面板同色）。引用 hover 可从 PDF dest key 生成只读条目，导入按钮走整篇入库。</p>
+<p>选区后浮动工具栏：高亮色点（默认半重叠叠放并带深色描边，hover / 聚焦时向左弹簧展开；工具栏按右边缘定位，仅左侧色点区变宽，翻译 / 快速对话 / 加入对话位置不变、整栏不抖动）/ <strong>翻译</strong> / <strong>快速对话</strong>（<code>⌘K</code>，页内 Ask）/ <strong>加入对话</strong>（<code>⌘L</code>），文字按钮小号、快捷键提示更小。点击已有高亮弹出的编辑菜单使用同样的右边缘定位，色点展开方式与划词菜单一致。选中后自动复制，工具栏不再放复制按钮。<strong>批注</strong>不在工具栏里：选区出现时页右缘评论列会在对应高度出现一条竖向入口（与空评论卡同高、宽度更窄，内为评论图标）。<strong>Hover 直接进入编辑</strong>（展开并聚焦输入框）；<strong>移走且尚未输入则缩回竖向卡片</strong>；已有输入则保持编辑直至 ⌘/Ctrl+Enter / 失焦提交或 Esc 取消。入口用选区快照，聚焦时即使 EmbedPDF 清掉选区也保留卡片。Settings → 翻译开启「划词自动翻译」后，选区文本提取完成即自动启动翻译并打开结果卡；关闭时保留手动翻译入口。全局 <code>⌘L</code> 有选区时加入对话并打开侧栏；<code>⌘K</code> 触发页内快速对话；<code>⇧⌘A</code> 加入对话并聚焦输入框。</p>
+<p><strong>远程 PDF</strong>（<code>agentero:arxiv:*</code>，如 arXiv Daily 预览）：无本地 sidecar。划词菜单只保留 <strong>加入对话 / 快速对话</strong>（Ask 内存 ephemeral，关 tab 即丢，不写 <code>marks/</code>）；高亮 / 批注入口 / 翻译隐藏。底栏显示 Remote mode 徽标（<code>SiArxiv</code>，与 Info 面板同色）。引用 hover 可从 PDF dest key 生成只读条目，导入按钮走整篇入库。</p>
 <table>
 <thead>
 <tr>
@@ -3668,17 +3700,22 @@
 <tr>
 <td>批注</td>
 <td>高亮 + <code>comment</code></td>
-<td>选区时页右缘竖向评论入口（hover 进入编辑；移走且无输入则缩回图标卡；提交后落盘）；已保存的批注在页右缘外侧常驻评论列（色点 + 评论卡，相邻卡片纵向避让；点击卡片就地编辑，Notion 式：卡片内 textarea，Enter 换行，⌘/Ctrl+Enter 或失焦保存，Esc 取消；hover 出复制链接/嵌入/删除）；视口窄于 640px 时回退为页边针</td>
+<td>选区时页右缘竖向评论入口（hover 进入编辑；移走且无输入则缩回图标卡；提交后落盘）；已保存的批注在页右缘外侧常驻评论列（色点 + 评论卡，相邻卡片纵向避让；点击卡片就地编辑，Notion 式：卡片内 textarea，Enter 换行，⌘/Ctrl+Enter 或失焦保存，Esc 取消；hover 出复制链接/嵌入/删除）；<strong>Hover 卡片或原文高亮区</strong>时叠强调层，并画一条经页缘的直角细线连到卡片（仅 Hover 显示，编辑中不常驻；文字与视觉批注双向）；原文高亮区不铺可接收 pointerdown 的透明按钮，避免挡住 EmbedPDF 文字重选；视口窄于 640px 时回退为页边针</td>
 </tr>
 <tr>
-<td>提问</td>
+<td>快速对话（Ask）</td>
 <td><code>marks/&lt;id&gt;.json</code>（kind ask）；远程仅内存</td>
-<td>工具栏图标为 PDF Ask Agent logo；迷你问答；页边针；<strong>hover / 打开卡片时高亮</strong>锚定选区原文；打开时停在用户问题处，不自动滚到回复底部；卡片右上角 ChatGPT / Claude 图标可把 论文标题 + 页码 + 划选文本 发送到对应外部 AI</td>
+<td>划词工具栏文字「快速对话」；迷你问答；页边针；<strong>hover / 打开卡片时高亮</strong>锚定选区原文；打开时停在用户问题处，不自动滚到回复底部；卡片右上角 ChatGPT / Claude 图标可把 论文标题 + 页码 + 划选文本 发送到对应外部 AI</td>
+</tr>
+<tr>
+<td>快速对话</td>
+<td>页内 Ask 浮层（ephemeral）</td>
+<td>划词工具栏文字按钮 / <code>⌘K</code>；打开 PDF Ask 对话卡，不强制打开 Agent 侧栏</td>
 </tr>
 <tr>
 <td>加入对话</td>
 <td>发送该轮后写 <code>marks/&lt;id&gt;.json</code>（kind <code>ask</code>）；远程无 pin 落盘</td>
-<td>仅 Agent 侧栏打开（或 Agent 弹出窗）时，选区右下角文字 pill；点击后选区固定为 Agent composer 文本 chip；<strong>发送</strong>后在选区旁插入<strong>对话卡片</strong>页边针（与「提问」同一 ask 卡 / 非视觉批注）；hover / 打开同样高亮原文，见 <a href="../agent/">agent.md</a></td>
+<td>划词工具栏文字按钮 / <code>⌘L</code> / <code>⇧⌘A</code>（额外聚焦）；点击或快捷键后选区固定为 Agent composer 文本 chip 并打开侧栏；<strong>发送</strong>后在选区旁插入<strong>对话卡片</strong>页边针（与「快速对话」同一 ask 卡 / 非视觉批注）；hover / 打开同样高亮原文，见 <a href="../agent/">agent.md</a></td>
 </tr>
 <tr>
 <td>翻译</td>
@@ -3696,7 +3733,7 @@
 <li>不改 PDF 二进制；不自动写入 <code>NOTES.md</code>。</li>
 <li>提问 Agent 可与面板默认 Agent 分开配置。</li>
 <li>坐标归一化；多段 rect 支持双栏。</li>
-<li>页边针：用 PDFium <code>getPageTextRects</code> 判断是否压字。优先贴选区右侧，有字则试左侧；压字半透明，空白处实心。文字层未加载时保持实心。划词菜单（工具栏 + 右下角「加入对话」pill）随视口滚动 / 缩放重定位，始终贴合选区；选区滚出视口时夹在屏幕边缘并半透明。</li>
+<li>页边针：用 PDFium <code>getPageTextRects</code> 判断是否压字。优先贴选区右侧，有字则试左侧；压字半透明，空白处实心。文字层未加载时保持实心。划词工具栏随视口滚动 / 缩放重定位，始终贴合选区；选区滚出视口时夹在屏幕边缘并半透明。</li>
 <li>页右缘控件使用固定 CSS px 尺寸：逐页翻译页签和批注评论列只随 PDF 缩放更新锚点位置，不随页面放大/缩小改变自身宽高。</li>
 <li>对话 / 翻译 / 视觉卡片与<strong>同一侧页边针</strong>对齐（左针开左、右针开右），贴合锚点，避免卡片落到选区另一侧。</li>
 <li>普通划词只启用文本选区；EmbedPDF 默认 marquee 矩形框选关闭，视觉区域批注只通过工具栏 / <strong>⌘.</strong> 显式进入。</li>
@@ -3766,19 +3803,23 @@
 </tr>
 <tr>
 <td><code>src/components/viewer/pdf/layers/</code></td>
-<td>页内绘制层：<code>page-layers</code>（memo 单页栈）/ <code>citation-links</code> / <code>layout-translate-overlay</code> / <code>region-select-layer</code> / <code>selection-gutter</code> / <code>comment-cards-layer</code>（批注评论列：页右缘常驻卡片 + <code>layoutCommentCards</code> 纵向避让；选区竖向评论入口 hover 展开；点击就地编辑；hover 卡片时页内高亮区域叠半透明强调层）</td>
+<td>页内绘制层：<code>page-layers</code>（memo 单页栈）/ <code>citation-links</code> / <code>layout-translate-overlay</code> / <code>region-select-layer</code> / <code>selection-gutter</code> / <code>comment-cards-layer</code>（批注评论列：页右缘常驻卡片 + <code>layoutCommentCards</code> 纵向避让；选区竖向评论入口 hover 展开；点击就地编辑；hover 卡片或原文命中区时页内高亮叠半透明强调层，并用 <code>commentConnectorPath</code> 画页缘直角连接细线（多段高亮锚到离卡片最近的段落，而非整段竖直中点）；线色随 PDF 纸面 tone，不跟 app 主题）</td>
 </tr>
 <tr>
 <td><code>src/components/viewer/pdf/chrome/</code></td>
-<td>纯展示 chrome：<code>pdf-toolbar</code> / <code>pdf-left-toolbar</code> / <code>pdf-find-bar</code> / <code>pdf-outline-panel</code>（+<code>outline-tree</code>）/ <code>pdf-references-panel</code> / <code>pdf-figures-panel</code> / <code>pdf-bottom-bar</code> / <code>pdf-card-stack</code>（portal 卡片栈）。共享材质见 <code>pdf-chrome-surface.ts</code>（小芯片轻玻璃、侧栏厚材质、划词菜单玻璃、长文卡片近实色；<code>data-pdf-chrome</code> 供 <code>prefers-reduced-transparency</code> 实色回退）。顶部两条工具栏自动显隐（<code>use-pdf-chrome-visibility</code>）：滚动中或指针靠近顶部区域时显示，静读时以 opacity + 轻微上移/缩放 materialize（<code>prefers-reduced-motion</code> 仅淡入淡出）；面板打开 / ⌘F / 框选 / 缩放输入聚焦时保持可见；左侧大纲/引用/图表面板自左滑入；⌘F 查找栏自右上角 zoom-in；底部页码条按页数位数扩展输入宽度，并限制在视口内以适配窄面板。阅读区底色 <code>bg-muted/40</code>，与纸面 tone 分层</td>
+<td>纯展示 chrome：<code>pdf-toolbar</code>（右上：框选 / 全文翻译，常显）/ <code>pdf-left-toolbar</code> / <code>pdf-find-bar</code> / <code>pdf-outline-panel</code>（+<code>outline-tree</code>）/ <code>pdf-references-panel</code> / <code>pdf-figures-panel</code> / <code>pdf-bottom-bar</code>（页码 + 缩放滑动条 + 纸色）/ <code>pdf-card-stack</code>（portal 卡片栈）。共享材质见 <code>pdf-chrome-surface.ts</code>（小芯片轻玻璃、侧栏厚材质、划词菜单玻璃、长文卡片近实色；<code>data-pdf-chrome</code> 供 <code>prefers-reduced-transparency</code> 实色回退）。左上工具栏自动显隐（<code>use-pdf-chrome-visibility</code>）：滚动中或指针靠近顶部区域时显示，静读时以 opacity + 轻微上移/缩放 materialize（<code>prefers-reduced-motion</code> 仅淡入淡出）；面板打开 / ⌘F 时保持可见；左侧大纲/引用/图表面板自左滑入；⌘F 查找栏自右上角 zoom-in；底部页码条按页数位数扩展输入宽度，并限制在视口内以适配窄面板。阅读区底色 <code>bg-muted/40</code>，与纸面 tone 分层</td>
 </tr>
 <tr>
 <td><code>src/components/viewer/pdf/cards/</code></td>
-<td>划词与 mark 卡片：<code>selection-menu</code> / <code>selection-card</code>（共用壳）/ <code>ask-popover</code> / <code>translate-card</code> / <code>visual-trace-card</code> / <code>visual-annotation-editor</code> / <code>formula-annotation-card</code> / <code>citation-preview</code></td>
+<td>划词与 mark 卡片：<code>selection-menu</code> / <code>highlight-color-stack</code>（高亮色点叠放与向左展开）/ <code>selection-card</code>（共用壳）/ <code>ask-popover</code> / <code>translate-card</code> / <code>visual-trace-card</code> / <code>visual-annotation-editor</code> / <code>formula-annotation-card</code> / <code>citation-preview</code></td>
 </tr>
 <tr>
 <td><code>src/components/viewer/pdf/viewport/</code></td>
 <td>宿主接线：<code>dockview-viewport</code>（resize 门控 + 滚动指标按帧提交；<code>rightGutter</code> 为评论列预留页外空间，并向 EmbedPDF 报告缩减后的 width/clientWidth 使 fitWidth 页面让出该空间）/ <code>wheel-zoom-handler</code> / <code>pan-handler</code>（中键 / 空格拖拽平移的空格归属判定与光标 class）/ <code>active-card-scroll-sync</code></td>
+</tr>
+<tr>
+<td><code>src/lib/pdf/scroll-sync.ts</code> + <code>hooks/use-pdf-scroll-sync.ts</code></td>
+<td>双栏翻译跨 EmbedPDF 实例的滚动/缩放同步：各 viewer 注册 peer，pair 的 source 侧接线，按视口比例对齐 scroll、镜像 zoom</td>
 </tr>
 <tr>
 <td><code>src/components/viewer/pdf/floating-hover.ts</code></td>
@@ -3850,11 +3891,11 @@
 </tr>
 <tr>
 <td><code>src/components/viewer/pdf/hooks/use-pdf-zoom-controls.ts</code></td>
-<td>缩放百分比输入（focus 期不被观测值覆盖）</td>
+<td>缩放 level → ref 镜像（页层 / 选区定位不因 zoom 重订阅）</td>
 </tr>
 <tr>
 <td><code>src/components/viewer/pdf/hooks/use-pdf-chrome-visibility.ts</code></td>
-<td>顶部工具栏自动显隐：滚动事件 + 指针靠近顶部区域触发显示，空闲定时淡出；显隐动画由 chrome 组件的 <code>PDF_CHROME_VIS*</code> 类承担</td>
+<td>左上工具栏自动显隐：滚动事件 + 指针靠近顶部区域触发显示，空闲定时淡出；显隐动画由 <code>pdf-left-toolbar</code> 的 <code>PDF_CHROME_VIS*</code> 类承担；右上工具栏常显</td>
 </tr>
 <tr>
 <td><code>src/components/viewer/pdf/hooks/use-pdf-paper-tone.ts</code></td>
@@ -3877,6 +3918,10 @@
 <td>注册命令式 handle（跨簇，唯一入口）</td>
 </tr>
 <tr>
+<td><code>src/components/viewer/pdf/hooks/use-pdf-privacy.ts</code></td>
+<td>隐私模式：监听窗口 <code>onFocusChanged</code>，失焦时返回 hidden（驱动批注/评论/翻译/Agent 卡淡出）</td>
+</tr>
+<tr>
 <td><code>src/components/viewer/pdf/hooks/use-pdf-pin-anchors.ts</code></td>
 <td>ask/translate 钉锚点几何投影（<code>useStableDerived</code> 指纹稳定：流式期间引用不变，<code>pinsByPage</code> 不失效）</td>
 </tr>
@@ -3890,7 +3935,7 @@
 </tr>
 <tr>
 <td><code>src/components/viewer/pdf/hooks/use-pdf-selection-actions.ts</code></td>
-<td>划词动作装配（工具栏：高亮/复制/提问/翻译；选区右下角 pill：加入对话；右缘入口：批注），各动作入口注入</td>
+<td>划词动作装配（工具栏：高亮/加入对话/快速对话/翻译；右缘入口：批注），各动作入口注入</td>
 </tr>
 <tr>
 <td><code>src/components/viewer/pdf/hooks/use-pdf-mark-actions.ts</code></td>
@@ -3984,7 +4029,7 @@
 <p><strong>完整流水线、14 条核心规则、阈值与代码地图</strong>见：</p>
 <p>→ <strong><a href="../pdf-layout-analysis/">pdf-layout-analysis.md</a></strong></p>
 <p>要点：先文字角色再联图；图题须整框在 figure bbox 内；图无 title 丢弃；默认置信度 30%；Paper PDF 的初步解析结果缓存到 <code>{paper}/source/layout.json</code>，后续 merge/filter 可重复计算。全文翻译先归一化文字层原文（断词 / ligature / 页眉页脚残留），把跨栏跨页的续段合并成一个翻译单元，再按阅读顺序<strong>分批</strong>请求（<code>buildTranslateBatches</code>，批内 <code>[[n]]</code> 标记保上下文，解析失败回退逐段），缓存独立写入 <code>{paper}/source/layout-translate.json</code>，按 provider / 语言 / region 原文校验后复用。详见 <a href="../translate/">translate.md</a>。</p>
-<p><strong>单击视觉批注：</strong> hover 插图 / 表 / 算法 / 公式的命中框时，框上出现 primary 描边（即将裁剪的确切 bbox）与右上角「单击进行批注」提示；单击裁剪该区域并直接保存为 note-only visual mark，同时在页右缘评论列打开就地编辑（与手动框选相同；不自动发送 Agent）。框选模式或裁剪进行中时命中框不挂载。</p>
+<p><strong>单击视觉批注：</strong> hover 插图 / 表 / 算法 / 公式的命中框时，框上出现当前 UI 主题色的 2px 描边（即将裁剪的确切 bbox）与右上角「单击进行批注」提示；单击裁剪该区域并直接保存为 note-only visual mark，同时在页右缘评论列打开就地编辑（与手动框选相同；不自动发送 Agent）。框选模式或裁剪进行中时命中框不挂载。</p>
 <p>交互细节（均有对应实现约束）：</p>
 <table>
 <thead>

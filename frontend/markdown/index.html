@@ -3488,6 +3488,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/note-markdown-stray-less-than/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    笔记正文 < 比较符截断后续内容（#533）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3682,24 +3710,26 @@
 <p>原则：所见即所得；与 shadcn/ui 工具栏风格一致；Agent 写回的 Markdown 经反序列化再展示。编辑期间的权威状态是 Plate AST，保存时再序列化为 Markdown；应用不会在每次渲染时重新读取一份隐藏的 Markdown 源字符串。</p>
 <h2 id="_2">能力<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <ul>
-<li>自动保存；可选顶部格式工具栏（<code>showEditorToolbar</code>）。论文 <code>NOTES.md</code> 工具栏右侧多一个「笔记」按钮（Cool Papers 图标 + 文案；悬停显示「获取 Cool Paper 笔记」），把 papers.cool 的 Kimi 解析追加进当前笔记。从广场 venue 入库的论文优先用已保存的 Cool Papers id / <code>source_url</code>（如 <code>38818@AAAI</code>），不再只靠标题精确搜索。</li>
+<li>自动保存；可选顶部格式工具栏（<code>showEditorToolbar</code>）。论文 <code>NOTES.md</code> 工具栏右侧多一个「笔记」按钮（Cool Papers 图标 + 文案；悬停显示「获取 Cool Paper 笔记」），把 papers.cool 的 Kimi 解析追加进当前笔记（FAQ 为 <code>## Qn</code>，答案内原有 <code>###</code> 小节嵌在其下；去掉末尾「想要进一步了解论文」跳转 Kimi 网页的 CTA）。从广场 venue 入库的论文优先用已保存的 Cool Papers id / <code>source_url</code>（如 <code>38818@AAAI</code>），不再只靠标题精确搜索。</li>
 <li><strong>文档目录</strong>：至少存在三个标题时，才在编辑器右侧四分之一高度显示层级标记，一级标题标记最长，后续层级依次缩短；收起时保持紧凑，悬停或键盘聚焦后以动效展开标题；展开后标题在目录块内左对齐，depth marker 仍靠右；滚动时以中性色高亮视口对应的标题，点击标题会在当前 Dockview 文档面板内平滑滚动并高亮目标。面板宽度小于 18rem 时隐藏目录条，正文同时收回为目录预留的右侧留白。</li>
 <li><strong>状态栏</strong>：编辑器底部单行显示反向链接（悬停查看列表）、词数、字符数；按面板宽度逐级降级（小于 18rem 隐藏反向链接，小于 11rem 再隐藏词数，字符数始终保留），避免窄面板下换行溢出。</li>
 <li><strong>窄面板标题</strong>：一至三级标题字号随面板宽度分两档递减（小于 24rem、小于 18rem），避免窄面板下单个标题占满整屏并逐字换行。</li>
 <li><strong>标题上边距</strong>：GitHub 风格固定阶梯，H1–H3 为 <code>mt-6</code>、H4–H6 为 <code>mt-4</code>，不随标题字号放大；文档第一个块不再叠加段前间距，笔记以 <code># 标题</code> 开头时只保留编辑器 <code>pt-4</code>。</li>
 <li><strong>分隔线</strong>：<code>---</code> / <code>___</code> 渲染为紧凑分隔条；void 块放不进光标，默认 Enter 无效果，现光标停在分隔线上或块选分隔线时按 Enter 会在其下方插入新段落并落入光标。</li>
-<li><strong>外部链接</strong>：手写或粘贴标准 Markdown <code>[文字](https://…)</code> 会成为链接节点；普通单击打开编辑气泡（改显示文字与 URL），<code>⌘/Ctrl+单击</code>、中键或右键用系统浏览器打开；气泡内也有「打开」。<code>/</code> 菜单「外部链接」或右键「新增外部链接」直接插入链接节点（默认占位文字）并打开同一编辑气泡，而不是插入字面量 <code>[]()</code>。Vault 内相对 <code>.md</code> 链接与 <code>wiki:</code> 双链仍走站内导航。</li>
+<li><strong>外部链接</strong>：手写或粘贴标准 Markdown <code>[文字](https://…)</code> 会成为链接节点；普通单击打开编辑气泡（改显示文字与 URL），<code>⌘/Ctrl+单击</code>、中键或右键用系统浏览器打开；气泡内也有「打开」。<code>/</code> 菜单「外部链接」或右键「新增外部链接」直接插入链接节点（默认占位文字）并打开同一编辑气泡，而不是插入字面量 <code>[]()</code>。Vault 内相对 <code>.md</code> 链接与 <code>wiki:</code> 双链仍走站内导航。带 <code>#page=</code> / <code>#section=</code> / <code>#figure=</code> 等 fragment 的 vault PDF（或 <code>.tex</code> 回退到同论文 PDF）链接与 Agent citation 相同，单击走 <code>openCitation</code> 打开论文并跳到对应页/区域。</li>
 <li><strong>Markdown 粘贴</strong>：普通文本粘贴默认按 Markdown 反序列化，粘贴后光标保持在插入内容之后。</li>
 <li><strong>块选与拖拽</strong>：编辑态悬停顶层块时左侧出现六点手柄（Notion 同款）。<strong>悬停或点击手柄</strong>打开操作列表（复制 / 剪切 / 创建副本 / 删除）；<strong>按住拖动手柄</strong>在块之间换位（拖拽中禁止划词）。左 gutter 拖出虚线框可框选相邻块；多选后每个选中块保持显示手柄，任一手柄对整组复制 / 剪切 / 移动。空段落（Markdown 空行、文末 TrailingBlock）不是内容块：不显示手柄、也不画选中底色，但仍可随相邻块一起被框选移动以保留间距。在文字上拖仍是划词。<code>⌘A</code> / <code>Ctrl+A</code> 第一次选中当前块，再按一次选中全部块。复制块写入 Markdown 纯文本。只读、导出面和 <code>![[…]]</code> 嵌入不显示手柄。内部 Plate 块 id 不写回磁盘。块拖拽用指针后端（非 HTML5）：macOS 上 wry 会吞掉 DOM <code>drop</code>，和文件树一样。长笔记下拖拽/框选的两个全局标志由单一订阅镜像成编辑器根节点上的 <code>data-dnd-dragging</code> / <code>data-dnd-selection-area</code>，块级样式走 CSS 后代选择器而非每块订阅；手柄的操作菜单 Popover 直到指针进入手柄才挂载。放置目标与 drop line 必须常驻——指针后端在拖拽途中不会触发「被拖过的那个块」去注册自己。</li>
 <li><strong>Slash 格式命令</strong>：在可编辑正文中输入 <code>/</code> 打开轻量命令列表；使用上下方向键选择、Enter 执行、Escape 关闭。Slash 与双链候选会在可视窗口边缘自动翻转并限制高度；滚动编辑器时关闭候选，避免脱离光标。</li>
-<li><strong>美元符号</strong>：<code>\$a\$</code> 是普通文本，<code>$a$</code> 是行内公式；行内公式两侧可直接接普通文字（如 <code>第一段$x_0$第三段</code>），编辑时继续输入不会吞掉公式；两者经编辑、粘贴和保存后保持不同语义。</li>
+<li><strong>美元符号</strong>：<code>\$a\$</code> 是普通文本，<code>$a$</code> 是行内公式；行内公式两侧可直接接普通文字（如 <code>第一段$x_0$第三段</code>），编辑时继续输入不会吞掉公式；含 <code>cases</code> 等较高内容的行内公式 hover / 选中背景按公式盒子覆盖，不只覆盖文本行高；两者经编辑、粘贴和保存后保持不同语义。</li>
+<li><strong>独立公式</strong>：<code>$$...$$</code> 渲染为块级 KaTeX；多行 <code>cases</code> / <code>aligned</code> 等高度较大的公式由整宽块级容器承载，hover / 选中背景覆盖完整公式块，超宽内容横向滚动，不会压到前后正文。</li>
 <li><strong>公式错误恢复</strong>：未闭合的独立 <code>$$</code> 不会吞掉其后的 Markdown；围栏内的错误内容按普通文本保留，后续段落和标题继续正常解析。</li>
+<li><strong>正文小于号容错</strong>：正文里 <code>&lt;0.5B</code>、<code>p&lt;0.05</code> 这类 <code>&lt;</code> 后紧跟数字 / 符号的写法不会截断其后内容（#533）。解析前把这类裸 <code>&lt;</code> 改写为 <code>&amp;lt;</code> 实体（MDX 解析器会把它当非法 JSX 直接抛错），编辑器中仍显示为字面 <code>&lt;</code>；代码块、公式与真实 HTML 标签不受影响。详见 <a href="../../bug_fix/note-markdown-stray-less-than/">bug_fix/note-markdown-stray-less-than.md</a>。</li>
 <li><strong>Obsidian Callout</strong>：<code>&gt; [!important]</code> 等标准 marker 渲染为专用块，正文继续使用既有段落、列表、公式与双链节点。</li>
 <li><strong>内嵌 HTML</strong>：<code>&lt;div&gt;</code>、<code>&lt;center&gt;</code>、<code>&lt;p align="…"&gt;</code>、<code>&lt;iframe&gt;</code> 保留为 HTML 块并在编辑器内净化后真实渲染（居中、嵌入生效），单击块打开源码编辑气泡；保存逐字写回原文，不再被转义成 <code>\&lt;div&gt;</code>。裸 <code>&lt;p&gt;</code> 还原为普通段落，<code>&lt;br&gt;</code> 作为硬换行。其余标签（<code>&lt;u&gt;</code> <code>&lt;sub&gt;</code> <code>&lt;sup&gt;</code> <code>&lt;mark&gt;</code> <code>&lt;kbd&gt;</code>）沿用既有 mark 节点。详见下文「内嵌 HTML」。</li>
 <li><strong>代码块操作</strong>：编辑态悬停或聚焦代码块时，右上角依次显示语言选择与复制按钮；只读预览只显示复制按钮。选择 Mermaid 语言后，源码下方显示实时预览。</li>
 <li><strong>内嵌图</strong>（见下表）。</li>
 <li><strong>双链 / 嵌入</strong>：见 <a href="../wiki/">wiki.md</a>。</li>
-<li><strong>导出 PDF / PNG</strong>（桌面端）：工具栏分享按钮或右键「导出为 PDF / 图片…」。离屏只读渲染当前序列化内容（含未保存改动）。页面背景贴边；正文内边距对齐编辑器 <code>default</code>（<code>px-16 pt-4</code>，底边 <code>pb-10</code>）。默认完整展开 <code>![[…]]</code> 嵌入，就绪后用 <code>html-to-image</code> 截视觉层。<strong>PDF</strong>（<code>pdf-lib</code>）在位图上叠 <strong>不可见可选中文字层</strong>（DOM 测量 + Host <code>export_system_cjk_font</code>）与 <strong>http(s)/mailto 链接注解</strong>，再按 A4 分页；<strong>PNG</strong> 仍为纯位图。可选论文页眉、每页水印（logo + <code>muted-foreground</code>）。完整 PDF 附件嵌入为路径占位。默认水印见设置 → 通用。</li>
+<li><strong>导出 PDF / PNG / Markdown</strong>（桌面端）：工具栏分享按钮或右键「导出笔记…」。Markdown 格式直接把当前序列化内容（含未保存改动与 frontmatter）另存为独立 <code>.md</code> 文件。PDF / PNG 离屏只读渲染当前序列化内容；页面背景贴边；正文内边距对齐编辑器 <code>default</code>（<code>px-16 pt-4</code>，底边 <code>pb-10</code>）。默认完整展开 <code>![[…]]</code> 嵌入，就绪后用 <code>html-to-image</code> 截视觉层。<strong>PDF</strong>（<code>pdf-lib</code>）在位图上叠 <strong>不可见可选中文字层</strong>（DOM 测量 + Host <code>export_system_cjk_font</code>）与 <strong>http(s)/mailto 链接注解</strong>，再按 A4 分页；<strong>PNG</strong> 仍为纯位图。可选论文页眉、每页水印（logo + <code>muted-foreground</code>）。完整 PDF 附件嵌入为路径占位。默认水印见设置 → 通用。</li>
 <li><strong>外部改盘</strong>：无未存改动则重载；有未存则 toast；内容相等抑制自写回声。主窗与文档弹出窗（「移动至新窗口」）各自监听本窗 Vault watcher，规则相同。</li>
 <li><strong>保存冲突</strong>：写盘前比对上次落盘内容；磁盘已被外部改则中止并警告。</li>
 </ul>

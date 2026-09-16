@@ -3466,6 +3466,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/note-markdown-stray-less-than/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    笔记正文 < 比较符截断后续内容（#533）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3663,7 +3691,7 @@
 <tbody>
 <tr>
 <td>通用</td>
-<td>Translator URL、EasyScholar Key（输入后点确定保存并探测，色点显示可用/不可用/未配置；留空则禁用。配置后可在 Library 表头 Tags 列一键为当前范围内全部论文获取 <code>#easyscholar:</code> 命名空间的分区/影响因子标签）、Connector 开关、<strong>MCP server</strong> 开关（loopback Streamable HTTP，默认关；同区块可填 ChatGPT Secure MCP Tunnel 的 Runtime API key / Tunnel ID 并一键起停，接 ChatGPT 见 <a href="../../usage/mcp/">用 MCP 连接外部 Agent</a>）、<strong>广场开关</strong>（<code>plazaEnabled</code>，默认开；关闭后侧栏隐藏且不挂载广场面板）、网络代理、<strong>GitHub 镜像</strong>（Skill 导入直连失败时的 URL 前缀回退，见 <a href="../../backend/skill-import/">backend/skill-import.md</a>）、文件树标签/排序、打开行为（<code>autoOpenPaperNotes</code> 默认开，关闭后打开论文只开 PDF/HTML、不自动分屏 NOTES）、笔记导出默认水印、隐私（PostHog <code>telemetryEnabled</code> 控制是否上报；本机 <code>usage.sqlite</code> 记录始终开启、可一键清除）</td>
+<td>Translator URL、EasyScholar Key（输入后点确定保存并探测，色点显示可用/不可用/未配置；留空则禁用。配置后可在 Library 表头 Tags 列一键为当前范围内全部论文获取 <code>#easyscholar:</code> 命名空间的分区/影响因子标签）、Connector 开关、<strong>MCP server</strong> 开关（loopback Streamable HTTP，默认关；同区块可填 ChatGPT Secure MCP Tunnel 的 Runtime API key / Tunnel ID 并一键起停，接 ChatGPT 见 <a href="../../usage/mcp/">用 MCP 连接外部 Agent</a>）、<strong>广场开关</strong>（<code>plazaEnabled</code>，默认开；关闭后侧栏隐藏且不挂载广场面板）、网络代理、<strong>GitHub 镜像</strong>（Skill 导入直连失败时的 URL 前缀回退，见 <a href="../../backend/skill-import/">backend/skill-import.md</a>）、文件树标签/排序、打开行为（<code>autoOpenPaperNotes</code> 默认开，关闭后打开论文只开 PDF/HTML、不自动分屏 NOTES；<code>replaceCurrentTabOnOpenPaper</code> 默认关，开启后打开新论文会先关闭当前标签页）、笔记导出默认水印、隐私（PostHog <code>telemetryEnabled</code> 控制是否上报；本机 <code>usage.sqlite</code> 记录始终开启、可一键清除）</td>
 </tr>
 <tr>
 <td>Appearance</td>
@@ -3671,7 +3699,7 @@
 </tr>
 <tr>
 <td>Agent</td>
-<td>目录两层检测（Agent CLI / ACP）、未装「安装」/ 缺 ACP「安装 ACP」/ <strong>有可静默升到的新版本时</strong>「升级」（本地 <code>--version</code> 对比 npm latest 或 dsh pin；探测中/失败/hermes 等无法判定时不显示）、已安装或已注册行「卸载」（Trash 按钮 → 确认对话框展示 logo 与清理项：npm 全局包、受管目录，或仅注册项）、安装 / 升级进行中行内显示阶段进度条与取消（X）按钮（点击静默中止安装子进程，不弹错误）、默认 Agent、权限模式、自动精读、可选 <strong>User-Agent</strong>（Codex 中转亲和）、个人提示词、划词提问 Agent、<strong>Embedding 端点</strong>（arXiv 每日推荐用；<code>source</code> 在「Agentero 内置」与「自定义接口」之间切换，选内置时隐藏 Base URL / API Key / Model 三个输入框以及探测色点和 Test 按钮——凭证来自构建期注入，见 <a href="../../backend/builtin-provider/">../backend/builtin-provider.md</a>）</td>
+<td>目录两层检测（Agent CLI / ACP）、未装「安装」/ 缺 ACP「安装 ACP」/ <strong>有可静默升到的新版本时</strong>「升级」（本地 <code>--version</code> 对比 npm latest 或 dsh pin；探测中/失败/hermes 等无法判定时不显示）、已安装或已注册行「卸载」（Trash 按钮 → 确认对话框展示 logo 与清理项：npm 全局包、受管目录，或仅注册项）、安装 / 升级进行中行内显示阶段进度条与取消（X）按钮（点击静默中止安装子进程，不弹错误）、默认 Agent、权限模式、自动精读、可选 <strong>User-Agent</strong>（Codex 中转亲和）、个人提示词、划词提问 Agent、<strong>Embedding 端点</strong>（arXiv 每日推荐用；<code>source</code> 在「Agentero 内置」与「自定义接口」之间切换，选内置时隐藏 Base URL / API Key / Model 三个输入框以及探测色点和 Test 按钮——凭证来自构建期注入；无 key 的源码 / dev 构建默认落到「自定义接口」且为空，见 <a href="../../backend/builtin-provider/">../backend/builtin-provider.md</a>）</td>
 </tr>
 <tr>
 <td>翻译</td>

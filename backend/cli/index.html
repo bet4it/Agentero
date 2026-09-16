@@ -2079,6 +2079,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#agent-describe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent 自省（describe）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2094,6 +2105,17 @@
     <span class="md-ellipsis">
       
         文字高亮 / 批注 / 翻译（已实现）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vault" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vault 列表
       
     </span>
   </a>
@@ -3522,6 +3544,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bug_fix/note-markdown-stray-less-than/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    笔记正文 < 比较符截断后续内容（#533）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3579,6 +3629,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#agent-describe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent 自省（describe）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3594,6 +3655,17 @@
     <span class="md-ellipsis">
       
         文字高亮 / 批注 / 翻译（已实现）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vault" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vault 列表
       
     </span>
   </a>
@@ -3740,11 +3812,11 @@
 </tr>
 <tr>
 <td><code>vault</code></td>
-<td>create / which / info 等</td>
+<td>create / list 等</td>
 </tr>
 <tr>
-<td><code>tree</code></td>
-<td>列树</td>
+<td><code>describe</code></td>
+<td>Agent 自省：策展型 op 目录与单 op 的 input/output/errors/examples（机器契约真源）</td>
 </tr>
 <tr>
 <td><code>paper</code></td>
@@ -3764,7 +3836,7 @@
 </tr>
 <tr>
 <td><code>layout</code></td>
-<td>侧栏同构版面索引：<code>list</code> / <code>get</code>（figure / table / algorithm / formula）</td>
+<td>侧栏同构版面索引：<code>list</code> / <code>get</code>（figure / table / algorithm / formula / section）</td>
 </tr>
 <tr>
 <td><code>mark</code></td>
@@ -3777,12 +3849,23 @@
 </tbody>
 </table>
 <p>稳定 <code>--json</code> 输出，供脚本与外部 Agent 组合。JSON 默认 <strong>compact 单行</strong>（省 token），<code>--pretty</code> 恢复缩进美化（<a href="https://github.com/poco-ai/Agentero/issues/367">#367</a>）。</p>
+<h3 id="agent-describe">Agent 自省（<code>describe</code>）<a class="headerlink" href="#agent-describe" title="Permanent link">&para;</a></h3>
+<p>Agent 不应背 flag 表；以 curated ops 目录为准（<code>agentero-core::ops</code>，与 MCP tool 名对齐）：</p>
+<div class="codehilite"><pre><span></span><code>agentero<span class="w"> </span>describe<span class="w"> </span>--json
+agentero<span class="w"> </span>describe<span class="w"> </span>paper.list<span class="w"> </span>--json
+agentero<span class="w"> </span>describe<span class="w"> </span>paper_list<span class="w"> </span>--json<span class="w">   </span><span class="c1"># MCP tool 名亦可</span>
+</code></pre></div>
+
+<p>未知 id 返回 <code>usage</code>，并尽量提示相近 op。Skill <code>agentero-cli</code>（v16+）按<strong>任务分支</strong>写协议（已知 path 的问答直接读文件；探索才 <code>paper list</code>；<code>describe</code> 仅在 flag 未知时用；<code>set-read</code> 只在 paper-reader / 显式标已读后），细节仍以本命令为准。</p>
 <p><code>paper list --json</code> 默认每行只含 <code>id/path/title</code>；用 <code>--fields year,tags,abstract,…</code>（逗号分隔、可重复）按需加字段，或 <code>--full</code> 输出完整 <code>PaperRecord</code>。未知字段报 <code>usage</code> 错误并列出合法字段。text 表格输出不受影响。</p>
+<p><code>paper get</code> / 其它接受 paper ref 的命令：优先 vault-relative <strong>path</strong>。bare <strong>id</strong> 在多 shelf 同 id 时返回 <code>paper_ambiguous</code>（<code>details.candidates</code> 为可选 path），message 会提示用 path 重试。</p>
 <h3 id="_3">版面索引与区域批注（已实现）<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
 <p>侧栏 Figures 同源列表落在 <code>{paper}/source/layout-index.json</code>（由桌面版面分析在 merge 后写入；raw 仍为 <code>source/layout.json</code>）。</p>
-<div class="codehilite"><pre><span></span><code><span class="c1"># 列出图 / 表 / 算法 / 公式（--kind 可重复，OR）</span>
+<div class="codehilite"><pre><span></span><code><span class="c1"># 列出图 / 表 / 算法 / 公式 / 章节标题（--kind 可重复，OR）</span>
 agentero<span class="w"> </span>layout<span class="w"> </span>list<span class="w"> </span>papers/demo<span class="w"> </span>--json
 agentero<span class="w"> </span>layout<span class="w"> </span>list<span class="w"> </span>papers/demo<span class="w"> </span>--kind<span class="w"> </span>figure<span class="w"> </span>--kind<span class="w"> </span>formula<span class="w"> </span>--json
+<span class="c1"># section 从 source/layout.json 的 header 区域实时合并，不写入 layout-index.json</span>
+agentero<span class="w"> </span>layout<span class="w"> </span>list<span class="w"> </span>papers/demo<span class="w"> </span>--kind<span class="w"> </span>section<span class="w"> </span>--json
 agentero<span class="w"> </span>layout<span class="w"> </span>get<span class="w">  </span>papers/demo<span class="w"> </span>figure-3<span class="w"> </span>--json
 
 <span class="c1"># 按区域钉批注（bbox 归一，页面尺寸由 PDF 引擎测量）</span>
@@ -3808,6 +3891,10 @@ agentero<span class="w"> </span>mark<span class="w"> </span>delete<span class="w
 <tr>
 <td><code>image</code> / <code>chart</code> / <code>table</code> / <code>algorithm</code> / <code>formula</code></td>
 <td>精确 kind</td>
+</tr>
+<tr>
+<td><code>section</code></td>
+<td>章节 / 段落标题，实时从 <code>source/layout.json</code> 的 <code>kind=header</code> 区域合并</td>
 </tr>
 </tbody>
 </table>
@@ -3871,11 +3958,22 @@ zh 目标走并行竞速）；商业 BYOK Key 只在桌面 settings 里，CLI �
 <span class="c1"># 开发机可选跑下面命令把真二进制放进 src-tauri/binaries，让 设置 → 安装 CLI 走本地路径：</span>
 pnpm<span class="w"> </span>cli:bundle
 cargo<span class="w"> </span>build<span class="w"> </span>-p<span class="w"> </span>agentero-cli
-cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>agentero-cli<span class="w"> </span>--<span class="w"> </span>vault<span class="w"> </span>which<span class="w"> </span>--json
+cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>agentero-cli<span class="w"> </span>--<span class="w"> </span>vault<span class="w"> </span>list<span class="w"> </span>--json
 cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>agentero-cli<span class="w"> </span>--<span class="w"> </span>doctor<span class="w"> </span>wiki<span class="w"> </span>papers/demo/NOTES.md<span class="w"> </span>--json
 cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>agentero-cli<span class="w"> </span>--<span class="w"> </span>doctor<span class="w"> </span>--json
 cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>agentero-cli<span class="w"> </span>--<span class="w"> </span>layout<span class="w"> </span>list<span class="w"> </span>papers/demo<span class="w"> </span>--json
 cargo<span class="w"> </span><span class="nb">test</span><span class="w"> </span>-p<span class="w"> </span>agentero-cli
+</code></pre></div>
+
+<h3 id="vault">Vault 列表<a class="headerlink" href="#vault" title="Permanent link">&para;</a></h3>
+<p><code>agentero vault create &lt;PATH&gt;</code> 会把 Vault 绝对路径记录到 <code>~/.config/agentero/config.toml</code> 的 <code>known_vaults</code> 数组中（去重追加）。<code>agentero vault list</code> 可列出这些已知 Vault，并标出当前 <code>default_vault</code>：</p>
+<div class="codehilite"><pre><span></span><code>agentero<span class="w"> </span>vault<span class="w"> </span>list
+agentero<span class="w"> </span>vault<span class="w"> </span>list<span class="w"> </span>--json
+</code></pre></div>
+
+<p>该配置与 GUI 设置隔离，可直接编辑 <code>config.toml</code>：</p>
+<div class="codehilite"><pre><span></span><code><span class="n">default_vault</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/Users/philfan/l/paper"</span>
+<span class="n">known_vaults</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"/Users/philfan/l/paper"</span><span class="p">,</span><span class="w"> </span><span class="s2">"/Users/philfan/l/video-acc"</span><span class="p">]</span>
 </code></pre></div>
 
 <h2 id="_5">论文导入<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
@@ -3906,6 +4004,10 @@ agentero<span class="w"> </span>paper<span class="w"> </span>tag<span class="w">
 <div class="codehilite"><pre><span></span><code>agentero<span class="w"> </span>paper<span class="w"> </span>move<span class="w"> </span>papers/inbox/demo<span class="w"> </span>papers/archive
 <span class="c1"># 目标父目录可尚未存在：</span>
 agentero<span class="w"> </span>paper<span class="w"> </span>move<span class="w"> </span>papers/inbox/demo<span class="w"> </span>papers/new-shelf
+</code></pre></div>
+
+<p>如果路径以 Vault 根目录开头，则自动识别为跨 Vault 迁移（源 Vault 的 Catalog 记录会被删除并插入到目标 Vault）：</p>
+<div class="codehilite"><pre><span></span><code>agentero<span class="w"> </span>paper<span class="w"> </span>move<span class="w"> </span>/path/to/src-vault/papers/inbox/demo<span class="w"> </span>/path/to/dst-vault/papers/archive
 </code></pre></div>
 
 <h3 id="app">从命令行打开桌面 App<a class="headerlink" href="#app" title="Permanent link">&para;</a></h3>
