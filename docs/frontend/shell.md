@@ -56,7 +56,7 @@
 
 ## 弹层栈
 
-- Linux 启动时统一设置 `GTK_OVERLAY_SCROLLING=0`，让 WebKit 使用普通滚动条，避免 GTK 细长浮动指示器穿过 Tooltip（侧栏精读 / 魔棒、PDF 全文翻译等）。滚动条保持固定粗细，网页浮层可以正常遮挡；详见 [复盘](../bug_fix/linux-overlay-scrollbar-tooltip.md)。
+- 文件树与 PDF 共用 `ScrollArea` 的 `pane` 滚动条：闲置时细长，悬停 / 拖动时变粗并略缩短，无轨道边线。滑块在 DOM 中绘制，Tooltip 可以正常遮挡；原生 viewport 继续负责滚动、虚拟化与阅读位置。详见 [复盘](../bug_fix/linux-overlay-scrollbar-tooltip.md)。
 - `overlay-stack`：`Esc` / `⌘W` 先关最顶层 sheet/Dialog，再关 active panel。
 - 弹层可标记为 `modal: false`（如 Agent 面板底部 ask-user 表单），保留 `Esc` 关闭能力，但不阻塞 `whenSettingsClosed` 类的全局快捷键（如 `⌘B` / `⌥⌘S` 切换侧边栏）。
 - 仅剩全库 Library 且无弹层时，`⌘W` 关窗。

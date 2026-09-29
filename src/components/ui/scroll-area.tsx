@@ -3,24 +3,45 @@ import type * as React from "react";
 
 import { cn } from "@/lib/core/utils";
 
+type ScrollAreaProps = React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
+	viewportProps?: React.ComponentProps<typeof ScrollAreaPrimitive.Viewport>;
+	scrollbars?: "vertical" | "both";
+	variant?: "default" | "pane";
+};
+
 function ScrollArea({
 	className,
 	children,
+	viewportProps,
+	scrollbars = "vertical",
+	variant = "default",
 	...props
-}: React.ComponentProps<typeof ScrollAreaPrimitive.Root>) {
+}: ScrollAreaProps) {
+	const pane = variant === "pane";
 	return (
 		<ScrollAreaPrimitive.Root
 			data-slot="scroll-area"
-			className={cn("relative", className)}
+			scrollHideDelay={pane ? 800 : undefined}
+			className={cn("relative", pane && "agentero-pane-scroll-area", className)}
 			{...props}
 		>
 			<ScrollAreaPrimitive.Viewport
+				{...viewportProps}
 				data-slot="scroll-area-viewport"
-				className="size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1"
+				className={cn(
+					"size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1",
+					viewportProps?.className,
+				)}
 			>
 				{children}
 			</ScrollAreaPrimitive.Viewport>
-			<ScrollBar />
+			<ScrollBar className={pane ? "agentero-pane-scrollbar" : undefined} />
+			{scrollbars === "both" && (
+				<ScrollBar
+					orientation="horizontal"
+					className={pane ? "agentero-pane-scrollbar" : undefined}
+				/>
+			)}
 			<ScrollAreaPrimitive.Corner />
 		</ScrollAreaPrimitive.Root>
 	);

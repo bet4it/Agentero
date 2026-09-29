@@ -13,6 +13,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { createPdfViewportResizeGate } from "@/lib/pdf/dockview-resize";
 import { registerScrollSyncElement } from "@/lib/pdf/scroll-sync";
 import { createPdfViewportScrollScheduler } from "@/lib/pdf/viewport-scroll";
@@ -206,32 +207,30 @@ export function DockviewViewport({
 		};
 	}, [documentId, hostRef, viewportPlugin, rightGutter]);
 
-	const { style, ...restProps } = props;
+	const { className, style, ...restProps } = props;
 
 	return (
 		<ViewportElementContext.Provider
 			value={viewportRef as RefObject<HTMLDivElement>}
 		>
-			<div
-				{...restProps}
-				ref={viewportRef}
-				style={{
-					width: "100%",
-					height: "100%",
-					overflow: "auto",
-					...style,
-					// Scroller swaps virtualized page nodes while scrolling. Letting
-					// Chromium's scroll anchoring adjust this custom virtual viewport can
-					// move it to an endpoint when the rendered range changes.
-					overflowAnchor: "none",
-					padding: `${viewportGap}px`,
-					// The shorthand above would clobber a caller's paddingRight; merge
-					// the reserved rail gutter explicitly.
-					paddingRight: `${viewportGap + rightGutter}px`,
+			<ScrollArea
+				variant="pane"
+				scrollbars="both"
+				className={className}
+				viewportProps={{
+					...restProps,
+					ref: viewportRef,
+					style: {
+						...style,
+						// Virtual page swaps must not move the viewport via scroll anchoring.
+						overflowAnchor: "none",
+						padding: `${viewportGap}px`,
+						paddingRight: `${viewportGap + rightGutter}px`,
+					},
 				}}
 			>
 				{!isGated && children}
-			</div>
+			</ScrollArea>
 		</ViewportElementContext.Provider>
 	);
 }
