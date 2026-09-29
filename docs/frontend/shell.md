@@ -56,7 +56,7 @@
 
 ## 弹层栈
 
-- WebKitGTK 的浮动滚动条不遵循层叠顺序，任何浮层都盖不住。`<html data-overlay-scrollbars>` 下，Radix 浮层（`[data-radix-popper-content-wrapper]`）或 `ViewportFloating` 打开期间，`index.css` 对页面滚动容器设置 `scrollbar-width: none`，浮层内部滚动条不受影响；详见 [复盘](../bug_fix/linux-overlay-scrollbar-tooltip.md)。新的自定义浮层需要挂到 `body` 下并带上 `data-viewport-floating`。
+- WebKitGTK 的浮动滚动条不遵循层叠顺序，任何浮层都盖不住。文件树与 PDF 视口用 `hooks/use-overlay-scrollbars.ts`（OverlayScrollbars）绘制 DOM 滚动条，视口的内边距须写成内联样式。其余区域兜底：`<html data-overlay-scrollbars>` 下，Radix 浮层（`[data-radix-popper-content-wrapper]`）或 `ViewportFloating` 打开期间，`index.css` 对页面滚动容器设置 `scrollbar-width: none`，浮层内部滚动条不受影响。新的自定义浮层需要挂到 `body` 下并带上 `data-viewport-floating`。详见 [复盘](../bug_fix/linux-overlay-scrollbar-tooltip.md)。
 - `overlay-stack`：`Esc` / `⌘W` 先关最顶层 sheet/Dialog，再关 active panel。
 - 弹层可标记为 `modal: false`（如 Agent 面板底部 ask-user 表单），保留 `Esc` 关闭能力，但不阻塞 `whenSettingsClosed` 类的全局快捷键（如 `⌘B` / `⌥⌘S` 切换侧边栏）。
 - 仅剩全库 Library 且无弹层时，`⌘W` 关窗。

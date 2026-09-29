@@ -1646,7 +1646,7 @@ function PdfViewerInner({
 				documentId={docId}
 				hostRef={hostRef}
 				rightGutter={translationOnly || plainViewer ? 0 : COMMENT_RAIL_WIDTH_PX}
-				className="agentero-scroll-both min-h-0 min-w-0 flex-1"
+				className="min-h-0 min-w-0 flex-1"
 			>
 				<WheelZoomHandler docId={docId} />
 				<PanDragHandler

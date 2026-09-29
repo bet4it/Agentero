@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { FileTree as AiFileTree } from "@/components/ai-elements/file-tree";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useSettings } from "@/hooks/use-app-stores";
+import { useOverlayScrollbars } from "@/hooks/use-overlay-scrollbars";
 import { cn } from "@/lib/core/utils";
 import type {
 	PaperMetadata,
@@ -267,6 +268,8 @@ export const FileTree = memo(
 			expandAncestorsOf: expansion.expandAncestorsOf,
 			suppressAutoRevealRef: expansion.suppressAutoRevealRef,
 		});
+		const treeScrollHostRef = useRef<HTMLDivElement>(null);
+		useOverlayScrollbars(treeScrollHostRef, treeScrollRef);
 
 		const dragDrop = useTreeDragDrop({
 			byPath,
@@ -408,13 +411,35 @@ export const FileTree = memo(
 						vaultPath={vaultPath}
 						nodes={nodes}
 					/>
-					<div
-						ref={treeScrollRef}
-						className="agentero-scroll min-h-0 flex-1 overflow-y-auto py-1 [scrollbar-gutter:stable]"
-					>
-						{nodes.length === 0 && !createDraft ? (
-							<>
-								{/* Trash + 广场 always available (empty vault or no vault yet). */}
+					<div ref={treeScrollHostRef} className="min-h-0 flex-1">
+						<div
+							ref={treeScrollRef}
+							className="agentero-scroll h-full overflow-y-auto"
+							style={{ paddingBlock: "0.25rem" }}
+						>
+							{nodes.length === 0 && !createDraft ? (
+								<>
+									{/* Trash + 广场 always available (empty vault or no vault yet). */}
+									<AiFileTree
+										selectedPath={treeSelectedPath}
+										selectedPaths={selection.selected}
+										expanded={expansion.expanded}
+										onExpandedChange={expansion.setExpandedFromTree}
+										onContextMenuPath={handleContextMenuPath}
+										onSelectRow={selection.handleSelectRow}
+									>
+										{trashRow}
+										{plazaRows}
+									</AiFileTree>
+									{vaultPath && loading ? (
+										<LoadingRows />
+									) : vaultPath ? (
+										<p className="px-3 py-2 text-muted-foreground text-xs">
+											{t("fileTree.empty")}
+										</p>
+									) : null}
+								</>
+							) : (
 								<AiFileTree
 									selectedPath={treeSelectedPath}
 									selectedPaths={selection.selected}
@@ -422,57 +447,38 @@ export const FileTree = memo(
 									onExpandedChange={expansion.setExpandedFromTree}
 									onContextMenuPath={handleContextMenuPath}
 									onSelectRow={selection.handleSelectRow}
+									dropTargetPath={dragDrop.dropTarget}
+									onRowDragStart={dragDrop.handleRowDragStart}
+									onRowDragOver={dragDrop.handleRowDragOver}
+									onRowDrop={dragDrop.handleRowDrop}
+									onRowDragEnd={dragDrop.handleRowDragEnd}
 								>
-									{trashRow}
-									{plazaRows}
+									<TreeRowsViewport
+										flatRows={flatRows}
+										rowVirtualizer={rowVirtualizer}
+										trashRow={trashRow}
+										createRow={createRow}
+										renameDraft={renameDraft}
+										onConfirmRename={onConfirmRename}
+										onCancelRename={onCancelRename}
+										cutPathKeys={cutPathKeys}
+										expanded={expansion.expanded}
+										loadingDirs={expansion.loadingDirs}
+										relPathForNode={relPathForNode}
+										paperMetaByRelPath={paperMetaByRelPath}
+										paperTreeLabelMode={paperTreeLabelMode}
+										paperActions={paperActions}
+										texCompile={texCompile}
+										vaultPath={vaultPath}
+									/>
 								</AiFileTree>
-								{vaultPath && loading ? (
-									<LoadingRows />
-								) : vaultPath ? (
-									<p className="px-3 py-2 text-muted-foreground text-xs">
-										{t("fileTree.empty")}
-									</p>
-								) : null}
-							</>
-						) : (
-							<AiFileTree
-								selectedPath={treeSelectedPath}
-								selectedPaths={selection.selected}
-								expanded={expansion.expanded}
-								onExpandedChange={expansion.setExpandedFromTree}
-								onContextMenuPath={handleContextMenuPath}
-								onSelectRow={selection.handleSelectRow}
-								dropTargetPath={dragDrop.dropTarget}
-								onRowDragStart={dragDrop.handleRowDragStart}
-								onRowDragOver={dragDrop.handleRowDragOver}
-								onRowDrop={dragDrop.handleRowDrop}
-								onRowDragEnd={dragDrop.handleRowDragEnd}
-							>
-								<TreeRowsViewport
-									flatRows={flatRows}
-									rowVirtualizer={rowVirtualizer}
-									trashRow={trashRow}
-									createRow={createRow}
-									renameDraft={renameDraft}
-									onConfirmRename={onConfirmRename}
-									onCancelRename={onCancelRename}
-									cutPathKeys={cutPathKeys}
-									expanded={expansion.expanded}
-									loadingDirs={expansion.loadingDirs}
-									relPathForNode={relPathForNode}
-									paperMetaByRelPath={paperMetaByRelPath}
-									paperTreeLabelMode={paperTreeLabelMode}
-									paperActions={paperActions}
-									texCompile={texCompile}
-									vaultPath={vaultPath}
-								/>
-							</AiFileTree>
-						)}
-						{revealError ? (
-							<p className="px-3 py-1 text-destructive text-xs leading-snug">
-								{revealError}
-							</p>
-						) : null}
+							)}
+							{revealError ? (
+								<p className="px-3 py-1 text-destructive text-xs leading-snug">
+									{revealError}
+								</p>
+							) : null}
+						</div>
 					</div>
 					{menuProps ? <TreeContextMenuPortal {...menuProps} /> : null}
 				</div>

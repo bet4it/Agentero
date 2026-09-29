@@ -27,18 +27,23 @@ WebKit 有意把浮动（overlay）滚动条画在所有内容之上。WebKitGTK
 
 ## 当前修复
 
-保留原生滚动条，只在浮层打开期间隐藏页面滚动条：
+**主要面板：OverlayScrollbars。** 文件树与 PDF 视口（`DockviewViewport`，含双栏翻译）通过 `hooks/use-overlay-scrollbars.ts` 接入 [OverlayScrollbars](https://github.com/KingSora/OverlayScrollbars)：
+
+- 原有滚动元素作为 `elements.viewport` 保留，滚动仍是原生的，文件树虚拟列表、EmbedPDF 的 ref / scroll / resize 接线不变；外层新增的宿主元素承载滚动条。滚动条是普通 DOM 元素，遵循层叠顺序，气泡可以遮住。
+- 库会隐藏原生滚动条（`scrollbar-width: none`），并通过样式表把视口 `padding` 设为 0，所以视口的内边距必须写成内联样式。
+- 样式在 `index.css` 的 `.os-theme-agentero` 中，只用库提供的 CSS 变量；`autoHide: "move"`：指针移动或滚动时显示，停下 800ms 后淡出，悬停在滑块上时保持显示，与 GTK 原生行为一致。
+
+**其余滚动区域：浮层打开时隐藏原生滚动条（兜底）。**
 
 - `index.css`：`html[data-overlay-scrollbars]` 且 `body` 下存在 `[data-radix-popper-content-wrapper]`（Tooltip、Popover、DropdownMenu、ContextMenu、HoverCard、Select）或 `[data-viewport-floating]`（`ViewportFloating`：斜杠菜单、双链建议、文件树右键菜单）时，对滚动容器设置 `scrollbar-width: none`；浮层内部的滚动条不受影响。
 - `lib/core/scrollbars.ts`：启动时探测滚动条是否占布局宽度，仅在浮动滚动条下标记 `data-overlay-scrollbars`。浮动滚动条不占空间，隐藏时 `clientWidth` / `scrollWidth` / `scrollTop` 均不变，不会重排；Windows 经典滚动条不标记，避免每次悬停都重排。
 - 选择器只列真正会滚动的类（`.agentero-scroll`、`.agentero-scroll-both`、`.overflow-auto`、`.overflow-x-auto`、`.overflow-y-auto`），因为每次浮层开关都会重新计算匹配元素的样式。
-
-代价：浮层显示期间，页面滚动条暂时不显示。
+- 代价：浮层显示期间，这些区域的滚动条暂时不显示。
 
 ## 被否决的方案
 
 - **`GTK_OVERLAY_SCROLLING=0`**：改成经典滚动条后能被遮挡，但丢失闲置细长 / 悬停变粗的外观，并出现轨道边线。
-- **Radix `ScrollArea` 自绘滚动条**：外观和遮挡都正确，但只覆盖文件树与 PDF，且要改动虚拟列表和 PDF 视口的 DOM 结构。
+- **Radix `ScrollArea`**：外观和遮挡都正确，但要求使用它自己的视口和 `display: table` 内容包装层，需要改动虚拟列表和 PDF 视口的 DOM 结构并用 `!important` 覆盖；细长 / 变粗效果要手写伪元素。
 - **只用 `::-webkit-scrollbar`**（[nab-os/2kHz#21](https://github.com/nab-os/2kHz/pull/21)）：WebKit 会忽略同时设置了 `scrollbar-width` / `scrollbar-color` 的元素的伪元素样式；去掉这两个属性后，滚动条随容器绘制，可被遮挡。但它占 10px 布局宽度，外观不如原生；而且 WebKit 只在滚动容器自身样式变化时刷新滚动条，悬停显示需要额外技巧。
 - **`scrollbar-color: transparent`**：滑块填充变透明，但仍留下 1px 边线穿过浮层。
 - **全局 `*` 选择器隐藏**：2 万个元素时每次开关约 50ms；列出具体的滚动类后约 3ms。
@@ -46,5 +51,6 @@ WebKit 有意把浮动（overlay）滚动条画在所有内容之上。WebKitGTK
 ## 验证方法
 
 - 同版本 WebKitGTK 2.52.6 + WebKitWebDriver + Xvfb，开启 `webkitgtk:browserOptions.useOverlayScrollbars`（WebKitWebDriver 会覆盖启动环境中的 `GTK_OVERLAY_SCROLLING`）。滚动条悬停相关检查需要用 xdotool 发送真实指针事件，WebDriver 合成的事件不会触发。
+- OverlayScrollbars（同样用 xdotool）：离开面板时隐藏、移动时显示、停下后淡出、悬停滑块时保持并变深；拖动和滚轮可滚动；原生滚动条的 `scrollbar-width` 为 `none`；气泡覆盖滑块。库不会向视口内部插入元素。
 - 浮层插入 `body` 后，滚动容器计算出的 `scrollbar-width` 为 `none`，截图中细条消失，`clientWidth` / `scrollTop` 不变；移除浮层后恢复。
 - 应用以 `nix-shell shell.nix --run "pnpm tauri dev"` 编译运行；手动回归入口为侧栏精读、魔棒和 PDF 全文翻译 Tooltip，以及斜杠菜单、右键菜单、Select 下拉内部的滚动。

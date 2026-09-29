@@ -13,6 +13,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useOverlayScrollbars } from "@/hooks/use-overlay-scrollbars";
 import { createPdfViewportResizeGate } from "@/lib/pdf/dockview-resize";
 import { registerScrollSyncElement } from "@/lib/pdf/scroll-sync";
 import { createPdfViewportScrollScheduler } from "@/lib/pdf/viewport-scroll";
@@ -46,6 +47,8 @@ export function DockviewViewport({
 }: DockviewViewportProps) {
 	const [viewportGap, setViewportGap] = useState(0);
 	const viewportRef = useRef<HTMLDivElement>(null);
+	const scrollHostRef = useRef<HTMLDivElement>(null);
+	useOverlayScrollbars(scrollHostRef, viewportRef, "both");
 	const { plugin: viewportPlugin } = useViewportPlugin();
 	const { provides: viewportCapability } = useViewportCapability();
 	const isGated = useIsViewportGated(documentId);
@@ -206,31 +209,35 @@ export function DockviewViewport({
 		};
 	}, [documentId, hostRef, viewportPlugin, rightGutter]);
 
-	const { style, ...restProps } = props;
+	const { className, style, ...restProps } = props;
 
 	return (
 		<ViewportElementContext.Provider
 			value={viewportRef as RefObject<HTMLDivElement>}
 		>
-			<div
-				{...restProps}
-				ref={viewportRef}
-				style={{
-					width: "100%",
-					height: "100%",
-					overflow: "auto",
-					...style,
-					// Scroller swaps virtualized page nodes while scrolling. Letting
-					// Chromium's scroll anchoring adjust this custom virtual viewport can
-					// move it to an endpoint when the rendered range changes.
-					overflowAnchor: "none",
-					padding: `${viewportGap}px`,
-					// The shorthand above would clobber a caller's paddingRight; merge
-					// the reserved rail gutter explicitly.
-					paddingRight: `${viewportGap + rightGutter}px`,
-				}}
-			>
-				{!isGated && children}
+			{/* Layout classes go on the scrollbar host; the viewport fills it. */}
+			<div ref={scrollHostRef} className={className}>
+				<div
+					{...restProps}
+					ref={viewportRef}
+					style={{
+						width: "100%",
+						height: "100%",
+						overflow: "auto",
+						overscrollBehavior: "contain",
+						...style,
+						// Scroller swaps virtualized page nodes while scrolling. Letting
+						// Chromium's scroll anchoring adjust this custom virtual viewport can
+						// move it to an endpoint when the rendered range changes.
+						overflowAnchor: "none",
+						padding: `${viewportGap}px`,
+						// The shorthand above would clobber a caller's paddingRight; merge
+						// the reserved rail gutter explicitly.
+						paddingRight: `${viewportGap + rightGutter}px`,
+					}}
+				>
+					{!isGated && children}
+				</div>
 			</div>
 		</ViewportElementContext.Provider>
 	);

@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 @import "dockview-react/dist/styles/dockview.css";
+@import "overlayscrollbars/overlayscrollbars.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -729,10 +730,10 @@
 }
 
 /*
- * WebKit paints overlay scrollbars in a second pass over the whole page so
- * they sit "on top of everything else" (RenderLayerScrollableArea), which
- * no z-index can beat: GTK's thin scroll indicator shows through tooltips
- * and menus. Hide page scrollbars while a floating layer is open. Overlay
+ * WebKitGTK's overlay scrollbars ignore CSS stacking, so GTK's thin scroll
+ * indicator shows through tooltips and menus whatever their z-index. Panes on
+ * OverlayScrollbars (hooks/use-overlay-scrollbars) are immune; for the rest,
+ * hide page scrollbars while a floating layer is open. Overlay
  * scrollbars take no layout space, so this never shifts content; the
  * attribute is only set when that holds (lib/core/scrollbars.ts). Keep the
  * selector list to real scrollers: it is restyled on every open / close.
@@ -748,6 +749,28 @@ html[data-overlay-scrollbars]:has(
 	.overflow-y-auto
 ):not(:is([data-radix-popper-content-wrapper], [data-viewport-floating]) *) {
 	scrollbar-width: none;
+}
+
+/* OverlayScrollbars theme for pane scrollers (hooks/use-overlay-scrollbars). */
+.os-theme-agentero {
+	--os-size: 10px;
+	--os-padding-perpendicular: 3px;
+	--os-padding-axis: 3px;
+	--os-track-border-radius: 999px;
+	--os-handle-border-radius: 999px;
+	--os-handle-interactive-area-offset: 4px;
+	--os-handle-bg: color-mix(in oklch, var(--muted-foreground) 32%, transparent);
+	--os-handle-bg-hover: color-mix(
+		in oklch,
+		var(--muted-foreground) 48%,
+		transparent
+	);
+	--os-handle-bg-active: color-mix(
+		in oklch,
+		var(--muted-foreground) 56%,
+		transparent
+	);
+	box-sizing: border-box;
 }
 
 /* dockview: map native theme class to app design tokens */
