@@ -1,0 +1,50 @@
+name: Windows preview build
+
+# Temporary: builds an unsigned NSIS installer from try/** branches so UI
+# changes can be checked on Windows. Drop this workflow before merging.
+on:
+  push:
+    branches: ["try/**"]
+  workflow_dispatch:
+
+jobs:
+  windows:
+    name: Windows installer
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup MSVC developer environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      # No updater signing key here, so skip updater artifacts.
+      - name: Build NSIS installer
+        shell: bash
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: pnpm tauri build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":false}}'
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentero-windows-nsis
+          path: target/release/bundle/nsis/*.exe
+          if-no-files-found: error
