@@ -29,8 +29,6 @@ Agent / Reasoning 消息里的 Markdown：`Streamdown` + `PlainTable` / `PlainCo
 | `components/dialogs/` | 命令面板、权限、迁移等 |
 | `components/ui/` | shadcn 基础件；`math-text.tsx` 用 KaTeX 渲染标题内联公式（`$\\pi$`） |
 
-`ScrollArea` 的 `pane` 变体供文件树与 PDF 共用：`viewportProps` 接入真实滚动元素的 ref、事件与 padding，`scrollbars="both"` 开启双轴。Radix 管理滑块尺寸、拖动与滚动同步；DOM 滑块保持细长 / 悬停变粗缩短的外观，并遵循 Tooltip 层级。该变体将 Radix 内容包装层改为 block，避免 table 的固有宽度撑开虚拟列表或 PDF 视口。
-
 ## 状态订阅
 
 组件经 `hooks/use-app-stores.ts` selector 订阅；避免整树重渲染。命令式 dock/布局经 registry，不把 DOM ref 塞进 zustand。

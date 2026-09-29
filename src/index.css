@@ -728,85 +728,26 @@
 	);
 }
 
-/* Pane scrollbars live in the DOM so portaled tooltips can cover them.
- * Only the painted thumb changes size; its drag target stays stable. */
-.agentero-pane-scroll-area [data-slot="scroll-area-viewport"] {
-	overscroll-behavior: contain;
-}
-
-.agentero-pane-scroll-area [data-slot="scroll-area-viewport"] > div {
-	/* biome-ignore lint/complexity/noImportantStyles: Radix's inline table layout expands virtualized panes to their content's intrinsic width. */
-	display: block !important;
-}
-
-.agentero-pane-scrollbar {
-	z-index: 1;
-	border: 0;
-	padding: 0;
-}
-
-.agentero-pane-scrollbar[data-orientation="vertical"] {
-	width: 0.75rem;
-	height: auto;
-}
-
-.agentero-pane-scrollbar[data-orientation="horizontal"] {
-	width: auto;
-	height: 0.75rem;
-}
-
-.agentero-pane-scrollbar [data-slot="scroll-area-thumb"] {
-	background: transparent;
-}
-
-.agentero-pane-scrollbar [data-slot="scroll-area-thumb"]::before {
-	position: absolute;
-	border-radius: 999px;
-	background: color-mix(in oklch, var(--muted-foreground) 32%, transparent);
-	content: "";
-	pointer-events: none;
-	transition:
-		inset 120ms ease,
-		width 120ms ease,
-		height 120ms ease,
-		background-color 120ms ease;
-}
-
-.agentero-pane-scrollbar[data-orientation="vertical"]
-	[data-slot="scroll-area-thumb"]::before {
-	inset: 0 0.125rem 0 auto;
-	width: 0.1875rem;
-}
-
-.agentero-pane-scrollbar[data-orientation="horizontal"]
-	[data-slot="scroll-area-thumb"]::before {
-	inset: auto 0 0.125rem;
-	height: 0.1875rem;
-}
-
-.agentero-pane-scrollbar:is(:hover, :active)
-	[data-slot="scroll-area-thumb"]::before {
-	background: color-mix(in oklch, var(--muted-foreground) 48%, transparent);
-}
-
-.agentero-pane-scrollbar[data-orientation="vertical"]:is(:hover, :active)
-	[data-slot="scroll-area-thumb"]::before {
-	top: 0.25rem;
-	bottom: 0.25rem;
-	width: 0.5rem;
-}
-
-.agentero-pane-scrollbar[data-orientation="horizontal"]:is(:hover, :active)
-	[data-slot="scroll-area-thumb"]::before {
-	right: 0.25rem;
-	left: 0.25rem;
-	height: 0.5rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.agentero-pane-scrollbar [data-slot="scroll-area-thumb"]::before {
-		transition: none;
-	}
+/*
+ * WebKit paints overlay scrollbars in a second pass over the whole page so
+ * they sit "on top of everything else" (RenderLayerScrollableArea), which
+ * no z-index can beat: GTK's thin scroll indicator shows through tooltips
+ * and menus. Hide page scrollbars while a floating layer is open. Overlay
+ * scrollbars take no layout space, so this never shifts content; the
+ * attribute is only set when that holds (lib/core/scrollbars.ts). Keep the
+ * selector list to real scrollers: it is restyled on every open / close.
+ */
+html[data-overlay-scrollbars]:has(
+	body > :is([data-radix-popper-content-wrapper], [data-viewport-floating])
+)
+:is(
+	.agentero-scroll,
+	.agentero-scroll-both,
+	.overflow-auto,
+	.overflow-x-auto,
+	.overflow-y-auto
+):not(:is([data-radix-popper-content-wrapper], [data-viewport-floating]) *) {
+	scrollbar-width: none;
 }
 
 /* dockview: map native theme class to app design tokens */

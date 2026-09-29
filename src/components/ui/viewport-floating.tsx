@@ -101,6 +101,8 @@ export function ViewportFloating({
 	return createPortal(
 		<div
 			{...props}
+			// Hides page overlay scrollbars while open (index.css).
+			data-viewport-floating=""
 			ref={(element) => {
 				elementRef.current = element;
 				setRef(floatingRef, element);

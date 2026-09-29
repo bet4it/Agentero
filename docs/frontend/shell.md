@@ -56,7 +56,7 @@
 
 ## 弹层栈
 
-- 文件树与 PDF 共用 `ScrollArea` 的 `pane` 滚动条：闲置时细长，悬停 / 拖动时变粗并略缩短，无轨道边线。滑块在 DOM 中绘制，Tooltip 可以正常遮挡；原生 viewport 继续负责滚动、虚拟化与阅读位置。详见 [复盘](../bug_fix/linux-overlay-scrollbar-tooltip.md)。
+- WebKitGTK 的浮动滚动条不遵循层叠顺序，任何浮层都盖不住。`<html data-overlay-scrollbars>` 下，Radix 浮层（`[data-radix-popper-content-wrapper]`）或 `ViewportFloating` 打开期间，`index.css` 对页面滚动容器设置 `scrollbar-width: none`，浮层内部滚动条不受影响；详见 [复盘](../bug_fix/linux-overlay-scrollbar-tooltip.md)。新的自定义浮层需要挂到 `body` 下并带上 `data-viewport-floating`。
 - `overlay-stack`：`Esc` / `⌘W` 先关最顶层 sheet/Dialog，再关 active panel。
 - 弹层可标记为 `modal: false`（如 Agent 面板底部 ask-user 表单），保留 `Esc` 关闭能力，但不阻塞 `whenSettingsClosed` 类的全局快捷键（如 `⌘B` / `⌥⌘S` 切换侧边栏）。
 - 仅剩全库 Library 且无弹层时，`⌘W` 关窗。

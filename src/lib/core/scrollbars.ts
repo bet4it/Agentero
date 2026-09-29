@@ -28,8 +28,26 @@ function handleScroll(event: Event) {
 		}, HIDE_DELAY_MS);
 }
 
+/**
+ * Mark `<html data-overlay-scrollbars>` when scrollbars float over content
+ * (WebKitGTK / macOS) instead of reserving layout space (Windows WebView2).
+ * index.css hides overlay scrollbars while a tooltip or menu is open; doing
+ * that with classic scrollbars would reflow the page on every hover.
+ */
+function markOverlayScrollbars() {
+	const probe = document.createElement("div");
+	probe.style.cssText =
+		"position:absolute;top:-9999px;width:100px;height:100px;overflow:scroll";
+	document.body.appendChild(probe);
+	const overlay = probe.offsetWidth === probe.clientWidth;
+	probe.remove();
+	document.documentElement.toggleAttribute("data-overlay-scrollbars", overlay);
+}
+
 export function initAutoHideScrollbars() {
 	if (typeof document === "undefined") return;
+
+	markOverlayScrollbars();
 
 	document.addEventListener("scroll", handleScroll, {
 		capture: true,

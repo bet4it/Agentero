@@ -8,7 +8,6 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { FileTree as AiFileTree } from "@/components/ai-elements/file-tree";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useSettings } from "@/hooks/use-app-stores";
 import { cn } from "@/lib/core/utils";
@@ -409,10 +408,9 @@ export const FileTree = memo(
 						vaultPath={vaultPath}
 						nodes={nodes}
 					/>
-					<ScrollArea
-						variant="pane"
-						className="min-h-0 flex-1"
-						viewportProps={{ ref: treeScrollRef, className: "py-1 pr-3" }}
+					<div
+						ref={treeScrollRef}
+						className="agentero-scroll min-h-0 flex-1 overflow-y-auto py-1 [scrollbar-gutter:stable]"
 					>
 						{nodes.length === 0 && !createDraft ? (
 							<>
@@ -475,7 +473,7 @@ export const FileTree = memo(
 								{revealError}
 							</p>
 						) : null}
-					</ScrollArea>
+					</div>
 					{menuProps ? <TreeContextMenuPortal {...menuProps} /> : null}
 				</div>
 			</TooltipProvider>

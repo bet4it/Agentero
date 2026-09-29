@@ -222,7 +222,7 @@ export function PdfTranslationViewerInner({
 				documentId={docId}
 				hostRef={hostRef}
 				rightGutter={0}
-				className="min-h-0 min-w-0 flex-1"
+				className="agentero-scroll-both min-h-0 min-w-0 flex-1"
 			>
 				<WheelZoomHandler docId={docId} />
 				<PanDragHandler
