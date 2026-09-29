@@ -35,12 +35,16 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
-      # No updater signing key here, so skip updater artifacts.
+      # No updater signing key here, so skip updater artifacts. Keep the default
+      # shell: Git Bash's GNU tar misreads `C:\...` as a remote host and breaks
+      # scripts/prepare-pdfium.mjs; the config goes through a file to avoid
+      # PowerShell quoting.
       - name: Build NSIS installer
-        shell: bash
         env:
           NODE_OPTIONS: --max-old-space-size=6144
-        run: pnpm tauri build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":false}}'
+        run: |
+          Set-Content -Path "$env:RUNNER_TEMP/preview.conf.json" -Value '{"bundle":{"createUpdaterArtifacts":false}}'
+          pnpm tauri build --bundles nsis --config "$env:RUNNER_TEMP/preview.conf.json"
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
