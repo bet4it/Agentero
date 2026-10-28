@@ -244,6 +244,7 @@
 		"copy": "复制",
 		"copyFailed": "无法复制选中的文本。",
 		"note": "批注",
+		"chatActions": "对话操作",
 		"quickChat": "快速对话",
 		"addToChat": "加入对话",
 		"chatCommentPlaceholder": "添加批注（可选）…",

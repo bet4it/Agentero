@@ -58,7 +58,10 @@ import {
 	listenOpenAgentWithPrompt,
 	setPendingAgentComposerPrompt,
 } from "@/lib/agent/composer-seed";
-import { runSelectionQuickChat } from "@/lib/agent/selection-quick-chat";
+import {
+	runSelectionAddToChat,
+	runSelectionQuickChat,
+} from "@/lib/agent/selection-quick-chat";
 import { pinActiveSelection } from "@/lib/agent/selection-store";
 import { closeTopOverlay } from "@/lib/core/overlay-stack";
 import { isMacOS, isTauri } from "@/lib/core/tauri";
@@ -380,7 +383,7 @@ export default function App() {
 		toggleSidebar,
 		// ⌘L: Add to chat when a selection is staged; otherwise toggle the rail.
 		toggleChat: () => {
-			if (pinActiveSelection()) {
+			if (runSelectionAddToChat() || pinActiveSelection()) {
 				openRightTab("agent");
 			} else toggleChat();
 		},

@@ -6,9 +6,8 @@ import { layoutAnalysisStore } from "@/lib/pdf/layout/store";
 /**
  * Selection actions (highlight / note / copy / ask / add-to-chat / translate).
  *
- * Highlight / ask (quick chat) / add-to-chat / translate / copy are wired to the
- * floating selection toolbar; note is typed on the right-rail selection
- * comment chip and committed from there. Copy leaves the toolbar open.
+ * The floating toolbar opens actions; notes are edited in the right rail.
+ * Copy leaves the toolbar open.
  * Detection and menu state stay in {@link usePdfTextSelection}; each action's
  * real work belongs to its own cluster.
  */
@@ -61,7 +60,7 @@ export type PdfSelectionActions = {
 	handleHighlight: (color: HighlightColor) => void;
 	/**
 	 * Create a highlight + comment from a snapped selection draft. Used by the
-	 * right-rail chip so typing can survive EmbedPDF clearing the live selection.
+	 * right-rail editor so typing can survive EmbedPDF clearing the live selection.
 	 */
 	handleCommitSelectionNote: (
 		draft: {
@@ -89,7 +88,7 @@ export function usePdfSelectionActions({
 	paperRelPath,
 	paperAbsPath,
 }: UsePdfSelectionActionsOptions): PdfSelectionActions {
-	// The right-rail annotate chip lives inside the page DOM. EmbedPDF often
+	// The right-rail note editor lives inside the page DOM. EmbedPDF often
 	// clears the live selection on pointerdown before React re-renders, so
 	// action handlers read this snapshot instead of the possibly-null state.
 	const { t } = useTranslation("viewer");

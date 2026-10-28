@@ -34,6 +34,7 @@ import {
 	parseWebBridgeMessage,
 } from "@/components/viewer/web-view/bridge-message";
 import { cancelAgentRun, disposeAgentRun } from "@/lib/agent";
+import { registerSelectionAddToChat } from "@/lib/agent/selection-quick-chat";
 import { copyTextToClipboard } from "@/lib/core/clipboard";
 import { openExternalUrl } from "@/lib/core/open-external";
 import {
@@ -265,13 +266,23 @@ export function useWebViewSelection({
 		setTranslateError(null);
 	}, [stopTranslateSession]);
 
-	// ⌘K Quick chat — while this web selection toolbar is armed. ⌘L arrives
-	// from the bridge (keyboard focus never leaves the frame).
+	// Toolbar menus can move keyboard focus from the iframe to the parent.
 	useSelectionQuickChat(() => menu != null, handleAsk);
 	const handleAskRef = useRef(handleAsk);
 	handleAskRef.current = handleAsk;
 	const handleAddToChatRef = useRef(handleAddToChat);
 	handleAddToChatRef.current = handleAddToChat;
+	const menuRef = useRef(menu);
+	menuRef.current = menu;
+	useEffect(
+		() =>
+			registerSelectionAddToChat(() => {
+				if (!menuRef.current) return false;
+				handleAddToChatRef.current();
+				return true;
+			}),
+		[],
+	);
 
 	// Bridge messages: selections position the toolbar, scroll hides it,
 	// shortcuts trigger the actions, external links go to the system browser.

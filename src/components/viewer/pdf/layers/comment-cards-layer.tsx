@@ -8,14 +8,8 @@
  * textarea, ⌘/Ctrl+Enter or blur saves, Escape cancels. No floating editor.
  */
 
-import {
-	Crop,
-	Link2,
-	MessageSquare,
-	MessageSquarePlus,
-	Trash2,
-} from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Crop, Link2, MessageSquarePlus, Trash2 } from "lucide-react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { MessageResponse } from "@/components/ai-elements/message";
 import { Button } from "@/components/ui/button";
@@ -83,14 +77,11 @@ type CommentCardsLayerProps = {
 	wikiTarget: string | null;
 	/** Id of the card currently being hovered; null when idle. */
 	hoveredId: string | null;
-	/**
-	 * Sticky chip for the active (or just-cleared) text selection. Hover enters
-	 * edit; leave with empty text collapses back to the icon card.
-	 */
+	/** Selection snapshot opened for editing from the toolbar. */
 	selectionDraft?: SelectionCommentDraft | null;
 	/** Persist a note from `selectionDraft` (non-empty text only). */
 	onCommitSelectionComment?: (comment: string) => void;
-	/** Chip was hovered / focused — keeps the sticky draft after selection clear. */
+	/** Editor is focused — keeps the draft after selection clear. */
 	onSelectionCommentActiveChange?: (active: boolean) => void;
 	/** Drop the sticky draft (Escape). */
 	onDismissSelectionComment?: () => void;
@@ -628,12 +619,7 @@ type SelectionCommentAffordanceProps = {
 	onDismiss?: () => void;
 };
 
-/**
- * Collapsed icon chip at the selection's rail height.
- * Hover → expand and enter edit (focus textarea).
- * Leave with no input → collapse back to the icon card.
- * Leave with input → stay in edit until commit / blur / Escape.
- */
+/** Selection note editor opened explicitly from the floating toolbar. */
 const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 	draft,
 	pageHeightPx,
@@ -642,8 +628,6 @@ const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 	onDismiss,
 }: SelectionCommentAffordanceProps) {
 	const { t } = useTranslation("viewer");
-	const [hovered, setHovered] = useState(false);
-	const [focused, setFocused] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const draftTextRef = useRef("");
@@ -658,7 +642,6 @@ const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 	const closingRef = useRef(false);
 	const { isBlockedByIme, compositionProps } = useImeGuard();
 
-	const editing = hovered || focused;
 	const heightPx = estimateCommentCardHeight(
 		{
 			id: "__selection-draft__",
@@ -671,37 +654,12 @@ const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 			kind: "highlight",
 			linkAlias: null,
 		},
-		editing,
+		true,
 	);
 	const topPx = Math.max(
 		0,
 		Math.min(draft.anchorY * pageHeightPx, pageHeightPx - heightPx),
 	);
-
-	const enterEdit = useCallback(() => {
-		if (committedRef.current || closingRef.current) return;
-		setHovered(true);
-		setFocused(true);
-		// Mark sticky before focus so EmbedPDF clearing the selection does not
-		// unmount this chip mid-hover.
-		onActiveChangeRef.current?.(true);
-		requestAnimationFrame(() => {
-			if (committedRef.current || closingRef.current) return;
-			const el = textareaRef.current;
-			if (!el) return;
-			el.focus();
-			autosizeTextarea(el);
-		});
-	}, []);
-
-	const collapseToCard = useCallback(() => {
-		draftTextRef.current = "";
-		if (textareaRef.current) textareaRef.current.value = "";
-		setFocused(false);
-		setHovered(false);
-		// Keep sticky draft so the icon card remains after selection was cleared.
-		onActiveChangeRef.current?.(true);
-	}, []);
 
 	const commit = useCallback((text: string) => {
 		if (committedRef.current) return;
@@ -714,7 +672,16 @@ const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 	}, []);
 
 	useEffect(() => {
+		aliveRef.current = true;
+		onActiveChangeRef.current?.(true);
+		const frame = requestAnimationFrame(() => {
+			const el = textareaRef.current;
+			if (!el || closingRef.current) return;
+			el.focus();
+			autosizeTextarea(el);
+		});
 		return () => {
+			cancelAnimationFrame(frame);
 			aliveRef.current = false;
 			onActiveChangeRef.current?.(false);
 		};
@@ -757,16 +724,11 @@ const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 			data-selection-comment=""
 			className={cn(
 				COMMENT_DRAFT_SURFACE_CLASS,
-				"transition-[width,box-shadow,background-color] duration-200 ease-out motion-reduce:transition-none",
-				editing
-					? "z-[7] w-56 bg-background/92 shadow-[0_18px_44px_rgba(15,23,42,0.22),0_4px_16px_rgba(15,23,42,0.12)] ring-2 ring-primary/45 dark:shadow-[0_18px_46px_rgba(0,0,0,0.6),0_4px_16px_rgba(0,0,0,0.45)]"
-					: "w-9 select-none hover:shadow-[0_14px_34px_rgba(15,23,42,0.2),0_3px_12px_rgba(15,23,42,0.12)] dark:hover:shadow-[0_14px_34px_rgba(0,0,0,0.5),0_3px_12px_rgba(0,0,0,0.4)]",
-				focused && "ring-2 ring-ring/50",
+				"z-[7] w-56 bg-background/92 shadow-[0_18px_44px_rgba(15,23,42,0.22),0_4px_16px_rgba(15,23,42,0.12)] ring-2 ring-ring/50 dark:shadow-[0_18px_46px_rgba(0,0,0,0.6),0_4px_16px_rgba(0,0,0,0.45)]",
 			)}
 			style={{
 				left: `calc(100% + ${COMMENT_CARD_GAP_PX}px)`,
 				top: topPx,
-				height: editing ? undefined : heightPx,
 				minHeight: heightPx,
 			}}
 			onPointerDown={(e) => {
@@ -774,35 +736,8 @@ const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 				// before the textarea can take focus. Do not preventDefault.
 				e.stopPropagation();
 			}}
-			onPointerEnter={() => enterEdit()}
-			onPointerLeave={(e) => {
-				const next = e.relatedTarget as Node | null;
-				if (next && rootRef.current?.contains(next)) return;
-				if (draftTextRef.current.trim()) {
-					// Has input: stay in edit (focused) even if the pointer left.
-					setHovered(false);
-					return;
-				}
-				// No input: collapse back to the icon card.
-				collapseToCard();
-				textareaRef.current?.blur();
-			}}
 		>
-			<span
-				className={cn(
-					"absolute inset-0 flex items-center justify-center text-muted-foreground transition-opacity duration-150",
-					editing && "pointer-events-none opacity-0",
-				)}
-				aria-hidden
-			>
-				<MessageSquare className="size-4" />
-			</span>
-			<div
-				className={cn(
-					"w-56 px-2.5 py-2 transition-opacity duration-150",
-					editing ? "opacity-100" : "opacity-0",
-				)}
-			>
+			<div className="w-56 px-2.5 py-2">
 				<span
 					className={cn(
 						"block size-2 rounded-full",
@@ -816,10 +751,8 @@ const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 					placeholder={t("annotations.placeholder")}
 					aria-label={t("annotations.editorLabel")}
 					rows={EDIT_MIN_COMMENT_LINES}
-					tabIndex={editing ? 0 : -1}
 					{...compositionProps}
 					onFocus={() => {
-						setFocused(true);
 						onActiveChangeRef.current?.(true);
 					}}
 					onChange={(e) => {
@@ -835,8 +768,8 @@ const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 							commit(text);
 							return;
 						}
-						// Empty blur (e.g. leave hover): back to icon card.
-						collapseToCard();
+						closingRef.current = true;
+						onDismissRef.current?.();
 					}}
 					onClick={(e) => e.stopPropagation()}
 					onPointerDown={(e) => e.stopPropagation()}
@@ -853,8 +786,7 @@ const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 							e.preventDefault();
 							draftTextRef.current = "";
 							e.currentTarget.value = "";
-							setFocused(false);
-							setHovered(false);
+							closingRef.current = true;
 							onActiveChangeRef.current?.(false);
 							onDismissRef.current?.();
 							e.currentTarget.blur();

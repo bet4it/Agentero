@@ -33,6 +33,7 @@ type PdfCardStackProps = {
 		onTranslate: () => void;
 		onCopy?: () => Promise<boolean>;
 		onBookmark?: () => void;
+		onNote?: () => void;
 		/** Hide highlight / translate (no marks/ to persist into); keep Ask. */
 		showHighlight?: boolean;
 		showTranslate?: boolean;
@@ -126,6 +127,7 @@ export const PdfCardStack = memo(function PdfCardStack({
 					onTranslate={selectionMenu.onTranslate}
 					onCopy={selectionMenu.onCopy}
 					onBookmark={selectionMenu.onBookmark}
+					onNote={selectionMenu.onNote}
 					showHighlight={selectionMenu.showHighlight}
 					showTranslate={selectionMenu.showTranslate}
 					contributionContext={selectionMenu.contributionContext}

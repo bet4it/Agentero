@@ -1,4 +1,11 @@
-import { Bookmark, Check, Copy, Languages } from "lucide-react";
+import {
+	Bookmark,
+	Check,
+	ChevronDown,
+	Copy,
+	Languages,
+	MessageSquare,
+} from "lucide-react";
 import {
 	useCallback,
 	useEffect,
@@ -8,6 +15,12 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
 	Tooltip,
 	TooltipContent,
@@ -42,6 +55,7 @@ type SelectionMenuProps = {
 	onTranslate: () => void;
 	onCopy?: () => Promise<boolean>;
 	onBookmark?: () => void;
+	onNote?: () => void;
 	/** Show the highlight color stack (needs marks/ to persist into). */
 	showHighlight?: boolean;
 	/** Show the translate action (ephemeral cards on surfaces without marks/). */
@@ -118,11 +132,10 @@ function SelectionCopyButton({
 
 /**
  * Floating action bar shown next to a text selection: overlapping highlight
- * color dots (fan left on hover), then Translate / Copy / Quick chat / Add to chat.
+ * color dots (fan left on hover), Note / Translate / Copy / Quick chat menu.
  * Copy keeps the bar open and swaps the icon for a check; it does not toast.
  * The bar is pinned by its right edge so expanding colors only grow left —
  * action buttons never shift.
- * Annotate lives on the right-rail selection comment chip instead.
  * `showHighlight` / `showTranslate` hide the persistent actions on surfaces
  * without marks/ (remote papers, proxied web pages).
  * Visible `pdf.selection` contributions append after the built-in buttons.
@@ -135,6 +148,7 @@ export function SelectionMenu({
 	onTranslate,
 	onCopy,
 	onBookmark,
+	onNote,
 	showHighlight = true,
 	showTranslate = true,
 	contributionContext,
@@ -231,8 +245,29 @@ export function SelectionMenu({
 				{showHighlight ? (
 					<>
 						<HighlightColorStack ref={colorsRef} onSelect={onHighlight} />
+						{onNote ? (
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon-sm"
+										className="size-7"
+										aria-label={t("selection.note")}
+										onPointerDown={(event) => event.preventDefault()}
+										onClick={onNote}
+									>
+										<MessageSquare className="size-3.5" />
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent side="top">
+									{t("selection.note")}
+								</TooltipContent>
+							</Tooltip>
+						) : null}
 						<div
 							ref={dividerRef}
+							data-selection-anchor=""
 							className="mx-0.5 h-4 w-px shrink-0 bg-border"
 						/>
 					</>
@@ -282,29 +317,43 @@ export function SelectionMenu({
 						shortcut={copyShortcut}
 					/>
 				) : null}
-				<button
-					type="button"
-					className="inline-flex h-7 shrink-0 items-center gap-1 rounded-md px-1.5 text-caption font-medium text-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-[0.97] motion-reduce:active:scale-100"
-					aria-label={`${t("selection.quickChat")} ${quickChatShortcut}`}
-					onClick={onAsk}
-				>
-					<span>{t("selection.quickChat")}</span>
-					<kbd className="translate-y-px scale-90 text-caption font-normal text-muted-foreground/80 tabular-nums">
-						{quickChatShortcut}
-					</kbd>
-				</button>
-				<button
-					type="button"
-					className="inline-flex h-7 shrink-0 items-center gap-1 rounded-md px-1.5 text-caption font-medium text-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-[0.97] motion-reduce:active:scale-100"
-					aria-label={`${t("selection.addToChat")} ${addToChatShortcut}`}
-					onPointerDown={(event) => event.preventDefault()}
-					onClick={onAddToChat}
-				>
-					<span>{t("selection.addToChat")}</span>
-					<kbd className="translate-y-px scale-90 text-caption font-normal text-muted-foreground/80 tabular-nums">
-						{addToChatShortcut}
-					</kbd>
-				</button>
+
+				<div className="mx-0.5 h-4 w-px shrink-0 bg-border" />
+				<div className="flex shrink-0 items-center">
+					<button
+						type="button"
+						className="inline-flex h-7 shrink-0 items-center gap-1 rounded-l-md px-1.5 text-caption font-medium text-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-[0.97] motion-reduce:active:scale-100"
+						aria-label={`${t("selection.quickChat")} ${quickChatShortcut}`}
+						onPointerDown={(event) => event.preventDefault()}
+						onClick={onAsk}
+					>
+						<span>{t("selection.quickChat")}</span>
+						<kbd className="translate-y-px scale-90 text-caption font-normal text-muted-foreground/80 tabular-nums">
+							{quickChatShortcut}
+						</kbd>
+					</button>
+					<DropdownMenu modal={false}>
+						<DropdownMenuTrigger asChild>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-sm"
+								className="h-7 w-6 rounded-l-none"
+								aria-label={t("selection.chatActions")}
+							>
+								<ChevronDown className="size-3" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" data-pdf-chrome>
+							<DropdownMenuItem onSelect={onAddToChat}>
+								{t("selection.addToChat")}
+								<kbd className="ml-auto pl-3 text-xs text-muted-foreground">
+									{addToChatShortcut}
+								</kbd>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
 				{contributions.length > 0 ? (
 					<>
 						<div className="mx-0.5 h-4 w-px shrink-0 bg-border" />

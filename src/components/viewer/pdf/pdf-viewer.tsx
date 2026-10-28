@@ -1732,9 +1732,7 @@ function PdfViewerInner({
 		translateSelection(selectionMenu.anchor);
 	}, [autoTranslateSelection, plainViewer, selectionMenu, translateSelection]);
 
-	// Right-rail note for the current selection. Focusing the field clears the
-	// browser selection, so the draft (and its veil) stay while the field is
-	// engaged. A new gesture outside that field drops them.
+	// Keep the clicked selection while focusing the comment editor clears it.
 	const [selectionCommentDraft, setSelectionCommentDraft] =
 		useState<SelectionCommentDraft | null>(null);
 	const selectionCommentDraftRef = useRef(selectionCommentDraft);
@@ -1744,27 +1742,31 @@ function PdfViewerInner({
 	const selectionCommentKeyValue = selectionCommentKey(selectionMenu);
 
 	useEffect(() => {
-		if (isRemotePaper || plainViewer || regionSelecting) {
+		if (
+			isRemotePaper ||
+			plainViewer ||
+			regionSelecting ||
+			selectionCommentKeyValue
+		) {
 			selectionCommentEngagedRef.current = false;
-			setSelectionCommentDraft(null);
-			return;
-		}
-		const menu = selectionMenuRef.current;
-		if (selectionCommentKeyValue && menu) {
-			const visible = selectionAnchorFromVisible(menu.visiblePages ?? []);
-			setSelectionCommentDraft({
-				page: visible?.page ?? menu.anchor.page,
-				anchorY: visible?.anchorY ?? menu.anchor.rects[0]?.y ?? 0,
-				quote: menu.anchor.quote ?? "",
-				pages: menu.pages,
-				visiblePages: menu.visiblePages,
-			});
-			return;
-		}
-		if (!selectionCommentEngagedRef.current) {
 			setSelectionCommentDraft(null);
 		}
 	}, [isRemotePaper, plainViewer, regionSelecting, selectionCommentKeyValue]);
+
+	const handleMenuNote = useCallback(() => {
+		const menu = selectionMenuRef.current;
+		if (!menu || isRemotePaper || plainViewer || regionSelecting) return;
+		const visible = selectionAnchorFromVisible(menu.visiblePages ?? []);
+		selectionCommentEngagedRef.current = true;
+		setSelectionCommentDraft({
+			page: visible?.page ?? menu.anchor.page,
+			anchorY: visible?.anchorY ?? menu.anchor.rects[0]?.y ?? 0,
+			quote: menu.anchor.quote ?? "",
+			pages: menu.pages,
+			visiblePages: menu.visiblePages,
+		});
+		closeSelectionMenu();
+	}, [isRemotePaper, plainViewer, regionSelecting, closeSelectionMenu]);
 
 	const handleSelectionCommentActiveChange = useCallback((active: boolean) => {
 		selectionCommentEngagedRef.current = active;
@@ -2260,6 +2262,7 @@ function PdfViewerInner({
 		() => ({
 			state: selectionMenu,
 			onHighlight: handleHighlight,
+			onNote: !isRemotePaper && !plainViewer ? handleMenuNote : undefined,
 			onAsk: handleMenuAsk,
 			onAddToChat: handleMenuAddToChat,
 			onTranslate: handleMenuTranslate,
@@ -2283,6 +2286,7 @@ function PdfViewerInner({
 			plainViewer,
 			selectionMenu,
 			handleHighlight,
+			handleMenuNote,
 			handleMenuAsk,
 			handleMenuAddToChat,
 			handleMenuTranslate,

@@ -44,6 +44,7 @@ function measuredBox(element: HTMLElement): DOMRect {
 	const children = Array.from(menu.children) as HTMLElement[];
 	const widths = children.map((child) => {
 		if (child.tagName === "FIELDSET") return colorWidth;
+		if (child.querySelector("[aria-haspopup]")) return 120;
 		if (child.tagName === "BUTTON") {
 			return child.querySelector("span")
 				? (child.textContent?.length ?? 0) * 7 + 12
@@ -92,7 +93,7 @@ async function render(
 }
 
 function dividerCenter(menu: HTMLElement): number {
-	const divider = menu.querySelector("fieldset")?.nextElementSibling;
+	const divider = menu.querySelector("[data-selection-anchor]");
 	if (!divider) throw new Error("Highlight divider did not render");
 	const rect = divider.getBoundingClientRect();
 	return rect.left + rect.width / 2;
@@ -133,7 +134,11 @@ afterEach(async () => {
 });
 
 it("anchors the divider after optional actions, locale, and plugin widths change", async () => {
-	const menu = await render({ showTranslate: false, onCopy: undefined });
+	const menu = await render({
+		showTranslate: false,
+		onCopy: undefined,
+		onNote: vi.fn(),
+	});
 	expect(dividerCenter(menu)).toBe(500);
 	english = true;
 	contributions = [
@@ -200,4 +205,43 @@ it("centers surfaces without highlights and retains vertical flipping and clampi
 	await render({ showHighlight: false, screen: { x: 500, y: 1000 } });
 	expect(menu.style.top).toBe("756px");
 	expect(menu.className).toContain("opacity-70");
+});
+
+it("keeps note clicks explicit and opens the secondary chat action through its arrow", async () => {
+	const onNote = vi.fn();
+	const onAsk = vi.fn();
+	const onAddToChat = vi.fn();
+	const menu = await render({ onNote, onAsk, onAddToChat });
+	const note = menu.querySelector<HTMLButtonElement>(
+		'[aria-label="selection.note"]',
+	);
+	const trigger = menu.querySelector<HTMLButtonElement>(
+		'[aria-haspopup="menu"]',
+	);
+	if (!note || !trigger) throw new Error("Selection actions missing");
+	await act(() =>
+		note.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true })),
+	);
+	expect(onNote).not.toHaveBeenCalled();
+	await act(() => note.click());
+	expect(onNote).toHaveBeenCalledOnce();
+	await act(() =>
+		menu.querySelector<HTMLButtonElement>('[aria-label^="快速对话"]')?.click(),
+	);
+	expect(onAsk).toHaveBeenCalledOnce();
+	expect(document.querySelector('[role="menuitem"]')).toBeNull();
+	await act(() =>
+		trigger.dispatchEvent(
+			new PointerEvent("pointerdown", {
+				bubbles: true,
+				button: 0,
+				pointerType: "mouse",
+			}),
+		),
+	);
+	const item = document.querySelector<HTMLElement>('[role="menuitem"]');
+	expect(item?.textContent).toContain("加入对话");
+	expect(onAddToChat).not.toHaveBeenCalled();
+	await act(() => item?.click());
+	expect(onAddToChat).toHaveBeenCalledOnce();
 });

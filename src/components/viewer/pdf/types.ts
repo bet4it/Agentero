@@ -179,9 +179,8 @@ export type SelectionMenuState = {
 };
 
 /**
- * Sticky right-rail chip for annotating the current (or just-cleared) text
- * selection. Hover enters edit; leave with empty text collapses to the icon
- * card. Commit uses snapped `pages` even if EmbedPDF cleared the live selection.
+ * Right-rail editor opened from the selection toolbar. Commit uses snapped
+ * `pages` even if focusing the editor cleared the live selection.
  */
 export type SelectionCommentDraft = {
 	/** 1-based page number (matches `commentsByPage` keys). */
@@ -189,10 +188,10 @@ export type SelectionCommentDraft = {
 	/** Normalized Y of the selection top (0–1). */
 	anchorY: number;
 	quote: string;
-	/** EmbedPDF selection pages snapped when the chip was armed. */
+	/** EmbedPDF selection pages snapped when the editor was opened. */
 	pages: FormattedSelection[];
 	/**
-	 * Translation boxes to keep painted while the chip is open. Omitted for an
+	 * Translation boxes to keep painted while the editor is open. Omitted for an
 	 * English text-layer selection, which EmbedPDF already tints.
 	 */
 	visiblePages?: VisibleSelectionPage[];

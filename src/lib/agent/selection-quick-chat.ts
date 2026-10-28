@@ -24,3 +24,21 @@ export function runSelectionQuickChat(): boolean {
 	}
 	return false;
 }
+
+const addToChatHandlers = new Set<QuickChatHandler>();
+
+/** Register an iframe selection action for shortcuts received by the parent. */
+export function registerSelectionAddToChat(next: QuickChatHandler): () => void {
+	addToChatHandlers.add(next);
+	return () => {
+		addToChatHandlers.delete(next);
+	};
+}
+
+/** Offer the chord to an armed iframe selection before the global rail toggle. */
+export function runSelectionAddToChat(): boolean {
+	for (const handler of [...addToChatHandlers].reverse()) {
+		if (handler()) return true;
+	}
+	return false;
+}
