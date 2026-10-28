@@ -15,6 +15,7 @@ import {
 	type AgentPlanEvent,
 	type AgentResultPayload,
 	type AgentToolEvent,
+	listAgents,
 	listenAgentCompleted,
 	listenAgentFailed,
 	listenAgentPlan,
@@ -31,6 +32,7 @@ import { setPaperIsRead } from "@/lib/paper/api";
 import { loadPaperMetadata } from "@/lib/paper/load-meta";
 import { paperTaskLabel } from "@/lib/paper/task-label";
 import { loadSettings } from "@/lib/settings";
+import { resolveTranslateAgent } from "@/lib/translate";
 import { joinVaultPath } from "@/lib/vault";
 
 const PAPER_READER_SKILL_ID = "paper-reader";
@@ -71,6 +73,22 @@ export function buildPaperReaderUserPrompt(
 		paperReaderLanguageInstruction(language),
 		"Keep valid [[wikilinks]]. Use inline PDF fragment links or notes wikilinks for citations; do not add a trailing ## Sources block.",
 	].join("\n");
+}
+
+/**
+ * Agent seat for the background paper-reader run: the `paperReader` settings
+ * seat (empty = default Agent + the model last picked for it).
+ *
+ * ACP sessions otherwise start on whatever model the Agent CLI defaults to
+ * (for OpenCode that is a free Zen model), so the workflow has to pin the model
+ * explicitly — same fallback the chat composer and the other seats resolve.
+ */
+async function resolvePaperReaderSeat(): Promise<{
+	agentId?: string;
+	modelId?: string;
+}> {
+	const registry = await listAgents().catch(() => null);
+	return resolveTranslateAgent(loadSettings().paperReader, registry);
 }
 
 function planDetail(entries: AgentPlanEntry[]): string {
@@ -195,8 +213,11 @@ export async function runPaperReaderWorkflow(opts: {
 				setDetail(i18n.t("app:tasks.paperReadStarting"));
 
 				const userPrompt = buildPaperReaderUserPrompt(paperRel);
+				const seat = await resolvePaperReaderSeat();
 
 				const accepted: RunOnceAccepted = await runOnce({
+					agentId: seat.agentId,
+					modelId: seat.modelId,
 					vaultPath: opts.vaultRoot,
 					workflow: "paper_reader",
 					target: paperRel,

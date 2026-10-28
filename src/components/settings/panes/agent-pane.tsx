@@ -65,8 +65,8 @@ export function AgentPane({
 		patchUserAgent,
 	} = useAgentCatalog({ transport: "local" });
 
-	// PDF Ask agent/model (same listAgents registry as Translate → Agent)
-	const { registry: pdfAskRegistry, refresh: refreshPdfAskRegistry } =
+	// Agent/model seats (PDF Ask + 精读 paper-reader) share one listAgents registry
+	const { registry: seatRegistry, refresh: refreshSeatRegistry } =
 		useAgentRegistry(catalog);
 	const pdfAsk = settings.pdfAsk;
 	const pdfAskValue = useMemo(
@@ -78,6 +78,17 @@ export function AgentPane({
 			patch({ pdfAsk: { ...settings.pdfAsk, ...next } });
 		},
 		[patch, settings.pdfAsk],
+	);
+	const paperReader = settings.paperReader;
+	const paperReaderValue = useMemo(
+		() => ({ agentId: paperReader.agentId, modelId: paperReader.modelId }),
+		[paperReader.agentId, paperReader.modelId],
+	);
+	const onPaperReaderChange = useCallback(
+		(next: { agentId: string; modelId: string }) => {
+			patch({ paperReader: { ...settings.paperReader, ...next } });
+		},
+		[patch, settings.paperReader],
 	);
 
 	/** Silent install/update/uninstall: Host scopes Agent vs ACP from PATH (no free-form shell). */
@@ -164,7 +175,7 @@ export function AgentPane({
 			<AgentDefaultBlock
 				catalog={catalog}
 				scanOnce={scanOnce}
-				onDefaultApplied={() => void refreshPdfAskRegistry()}
+				onDefaultApplied={() => void refreshSeatRegistry()}
 			/>
 
 			{!isTauri() ? (
@@ -233,9 +244,32 @@ export function AgentPane({
 				<AgentModelPicker
 					value={pdfAskValue}
 					onChange={onPdfAskChange}
-					registry={pdfAskRegistry}
+					registry={seatRegistry}
 					agentLabel={t("agent.pdfAsk.agentId.label")}
 					modelLabel={t("agent.pdfAsk.modelId.label")}
+					followDefaultLabel={t("agent.pdfAsk.agentId.followDefault")}
+					followDefaultNamedLabel={(name) =>
+						t("agent.pdfAsk.agentId.followDefaultNamed", { name })
+					}
+					followModelLabel={t("agent.pdfAsk.modelId.followAgent")}
+					emptyState={
+						<p className="px-3 py-2 text-muted-foreground text-xs">
+							{t("agent.pdfAsk.agentId.empty")}
+						</p>
+					}
+				/>
+			</SettingsGroup>
+
+			<SettingsSectionLabel className="mt-4">
+				{t("agent.paperReader.section")}
+			</SettingsSectionLabel>
+			<SettingsGroup>
+				<AgentModelPicker
+					value={paperReaderValue}
+					onChange={onPaperReaderChange}
+					registry={seatRegistry}
+					agentLabel={t("agent.paperReader.agentId.label")}
+					modelLabel={t("agent.paperReader.modelId.label")}
 					followDefaultLabel={t("agent.pdfAsk.agentId.followDefault")}
 					followDefaultNamedLabel={(name) =>
 						t("agent.pdfAsk.agentId.followDefaultNamed", { name })

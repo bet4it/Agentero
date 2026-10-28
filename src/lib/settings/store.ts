@@ -27,6 +27,7 @@ import {
 	DECISION_PROVIDER_PRESETS,
 	DEFAULT_DECISION_SETTINGS,
 	DEFAULT_EMBEDDING_SETTINGS,
+	DEFAULT_PAPER_READER_SETTINGS,
 	DEFAULT_PDF_ASK_SETTINGS,
 	DEFAULT_SETTINGS,
 	DEFAULT_TRANSLATOR_BASE_URL,
@@ -47,6 +48,7 @@ import {
 	LIBRARY_COLUMN_KEYS,
 	type LibraryColumnKey,
 	type LibraryColumnPref,
+	type PaperReaderSettings,
 	type PdfAskSettings,
 } from "@/lib/settings/types";
 import { DEFAULT_TRANSLATE_SETTINGS } from "@/lib/translate/defaults";
@@ -90,6 +92,7 @@ let cache: AppSettings = {
 	translate: { ...DEFAULT_TRANSLATE_SETTINGS },
 	layout: { ...DEFAULT_SETTINGS.layout, providerConfigs: {} },
 	pdfAsk: { ...DEFAULT_PDF_ASK_SETTINGS },
+	paperReader: { ...DEFAULT_PAPER_READER_SETTINGS },
 	embedding: { ...DEFAULT_EMBEDDING_SETTINGS },
 	dismissedReminders: [],
 	decision: { ...DEFAULT_DECISION_SETTINGS },
@@ -102,6 +105,7 @@ function cloneSettings(s: AppSettings): AppSettings {
 		...s,
 		libraryColumns: s.libraryColumns.map((c) => ({ ...c })),
 		pdfAsk: { ...s.pdfAsk },
+		paperReader: { ...s.paperReader },
 		embedding: { ...s.embedding },
 		translate: { ...s.translate },
 		layout: { ...s.layout, providerConfigs: { ...s.layout.providerConfigs } },
@@ -501,8 +505,13 @@ function normalizePartial(
 	) {
 		merged.aiResponseLanguage = DEFAULT_SETTINGS.aiResponseLanguage;
 	}
-	merged.pdfAsk = normalizePdfAskSettings(
+	merged.pdfAsk = normalizeAgentSeatSettings(
 		(parsed as { pdfAsk?: Partial<PdfAskSettings> }).pdfAsk,
+		DEFAULT_PDF_ASK_SETTINGS,
+	);
+	merged.paperReader = normalizeAgentSeatSettings(
+		(parsed as { paperReader?: Partial<PaperReaderSettings> }).paperReader,
+		DEFAULT_PAPER_READER_SETTINGS,
 	);
 	merged.embedding = normalizeEmbeddingSettings(
 		(parsed as { embedding?: Partial<EmbeddingSettings> }).embedding,
@@ -620,18 +629,18 @@ function normalizeLibraryColumns(raw: unknown): LibraryColumnPref[] {
 	return out;
 }
 
-function normalizePdfAskSettings(
-	raw: Partial<PdfAskSettings> | undefined,
-): PdfAskSettings {
-	const base = { ...DEFAULT_PDF_ASK_SETTINGS };
-	if (!raw || typeof raw !== "object") return base;
+function normalizeAgentSeatSettings<
+	T extends { agentId: string; modelId: string },
+>(raw: Partial<T> | undefined, base: T): T {
+	const seat = { ...base };
+	if (!raw || typeof raw !== "object") return seat;
 	if (typeof raw.agentId === "string") {
-		base.agentId = raw.agentId.trim();
+		seat.agentId = raw.agentId.trim();
 	}
 	if (typeof raw.modelId === "string") {
-		base.modelId = raw.modelId.trim();
+		seat.modelId = raw.modelId.trim();
 	}
-	return base;
+	return seat;
 }
 
 function normalizeEmbeddingSettings(

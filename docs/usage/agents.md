@@ -123,6 +123,10 @@ Settings → Agent → 全局权限模式（对所有 Agent 生效，非 per-pro
 
 Settings → Agent 开启 **自动精读**（`autoPaperReader`，默认关）。魔棒入库或单篇 Download 资源就绪后可自动启动。**批量**导入 / 批量 Download **不会**连跑精读。
 
+### 选择精读用的模型
+
+Settings → Agent → **精读论文** 可单独指定「精读 Agent」与「精读模型」，与「PDF 划词提问」互不影响。留空则跟随默认 Agent 及其上次在输入区选择的模型；若两者都未确定，精读会使用 Agent CLI 自身的默认模型（例如 OpenCode 的免费 Zen 模型，额度用尽时报 `Free usage limit reached`），此时在该处显式选一个模型即可。
+
 ## 常见问题
 
 ### 探测失败

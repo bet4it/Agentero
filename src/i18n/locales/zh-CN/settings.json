@@ -441,6 +441,15 @@
 				"followAgent": "跟随 Agent 默认"
 			}
 		},
+		"paperReader": {
+			"section": "精读论文",
+			"agentId": {
+				"label": "精读 Agent"
+			},
+			"modelId": {
+				"label": "精读模型"
+			}
+		},
 		"form": {
 			"defaultName": "Desktop",
 			"name": "名称",
