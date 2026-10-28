@@ -20,7 +20,6 @@ import {
 	listenAgentFailed,
 	listenAgentPlan,
 	listenAgentTool,
-	loadModelPref,
 	type RunOnceAccepted,
 	runOnce,
 } from "@/lib/agent";
@@ -33,6 +32,7 @@ import { setPaperIsRead } from "@/lib/paper/api";
 import { loadPaperMetadata } from "@/lib/paper/load-meta";
 import { paperTaskLabel } from "@/lib/paper/task-label";
 import { loadSettings } from "@/lib/settings";
+import { resolveTranslateAgent } from "@/lib/translate";
 import { joinVaultPath } from "@/lib/vault";
 
 const PAPER_READER_SKILL_ID = "paper-reader";
@@ -76,8 +76,8 @@ export function buildPaperReaderUserPrompt(
 }
 
 /**
- * Agent seat for the background paper-reader run: the default Agent plus the
- * model the user last picked for it.
+ * Agent seat for the background paper-reader run: the `paperReader` settings
+ * seat (empty = default Agent + the model last picked for it).
  *
  * ACP sessions otherwise start on whatever model the Agent CLI defaults to
  * (for OpenCode that is a free Zen model), so the workflow has to pin the model
@@ -88,9 +88,7 @@ async function resolvePaperReaderSeat(): Promise<{
 	modelId?: string;
 }> {
 	const registry = await listAgents().catch(() => null);
-	const agentId = registry?.defaultId || undefined;
-	if (!agentId) return {};
-	return { agentId, modelId: loadModelPref(agentId) ?? undefined };
+	return resolveTranslateAgent(loadSettings().paperReader, registry);
 }
 
 function planDetail(entries: AgentPlanEntry[]): string {

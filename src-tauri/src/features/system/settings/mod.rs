@@ -188,6 +188,10 @@ pub struct AppSettings {
     pub agent_personal_prompt: String,
     #[serde(default)]
     pub pdf_ask: PdfAskSettings,
+    /// Background paper-reader (精读) Agent seat. Empty = follow the default
+    /// agent and its last picked model.
+    #[serde(default)]
+    pub paper_reader: PaperReaderSettings,
     /// Decision-layer provider (System One: jEV / Cloudflare Clef / compatible).
     /// The legacy `jev` key is still read for backward compatibility.
     #[serde(default, alias = "jev")]
@@ -222,6 +226,19 @@ pub struct AppSettings {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct PdfAskSettings {
+    #[serde(default)]
+    pub agent_id: String,
+    #[serde(default)]
+    pub model_id: String,
+}
+
+/// Agent seat for the background paper-reader workflow.
+///
+/// Empty fields follow the default agent and the model last picked for it;
+/// pinning them keeps the workflow off the agent CLI's own default model.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct PaperReaderSettings {
     #[serde(default)]
     pub agent_id: String,
     #[serde(default)]
@@ -459,6 +476,7 @@ impl Default for AppSettings {
             ai_response_language: default_ai_response_language(),
             agent_personal_prompt: String::new(),
             pdf_ask: PdfAskSettings::default(),
+            paper_reader: PaperReaderSettings::default(),
             decision: DecisionSettings::default(),
             embedding: EmbeddingSettings::default(),
             translate: TranslateSettings::default(),
@@ -1387,6 +1405,8 @@ fn normalize(s: &mut AppSettings) {
 
     s.pdf_ask.agent_id = s.pdf_ask.agent_id.trim().to_string();
     s.pdf_ask.model_id = s.pdf_ask.model_id.trim().to_string();
+    s.paper_reader.agent_id = s.paper_reader.agent_id.trim().to_string();
+    s.paper_reader.model_id = s.paper_reader.model_id.trim().to_string();
 
     // Keep trailing slashes on base_url (same reason as translate/layout configs):
     // normalize runs on every save and echoes back into the settings UI.

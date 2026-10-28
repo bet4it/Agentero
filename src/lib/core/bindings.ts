@@ -1672,6 +1672,11 @@ export type AppSettings_Deserialize = {
 	aiResponseLanguage?: string,
 	agentPersonalPrompt?: string,
 	pdfAsk?: PdfAskSettings,
+	/**
+	 *  Background paper-reader (精读) Agent seat. Empty = follow the default
+	 *  agent and its last picked model.
+	 */
+	paperReader?: PaperReaderSettings,
 	embedding?: EmbeddingSettings,
 	translate?: TranslateSettings,
 	layout?: LayoutSettings,
@@ -1800,6 +1805,11 @@ export type AppSettings_Serialize = {
 	aiResponseLanguage: string,
 	agentPersonalPrompt: string,
 	pdfAsk: PdfAskSettings,
+	/**
+	 *  Background paper-reader (精读) Agent seat. Empty = follow the default
+	 *  agent and its last picked model.
+	 */
+	paperReader: PaperReaderSettings,
 	/**
 	 *  Decision-layer provider (System One: jEV / Cloudflare Clef / compatible).
 	 *  The legacy `jev` key is still read for backward compatibility.
@@ -4261,6 +4271,17 @@ export type PaperOpenBundle_Serialize = {
 
 export type PaperPageCountsArgs = {
 	vaultPath: string,
+};
+
+/**
+ *  Agent seat for the background paper-reader workflow.
+ * 
+ *  Empty fields follow the default agent and the model last picked for it;
+ *  pinning them keeps the workflow off the agent CLI's own default model.
+ */
+export type PaperReaderSettings = {
+	agentId?: string,
+	modelId?: string,
 };
 
 export type PaperReadingActivityBatchArgs = {

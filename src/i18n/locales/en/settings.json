@@ -441,6 +441,15 @@
 				"followAgent": "Follow agent default"
 			}
 		},
+		"paperReader": {
+			"section": "Paper reading",
+			"agentId": {
+				"label": "Reading agent"
+			},
+			"modelId": {
+				"label": "Reading model"
+			}
+		},
 		"form": {
 			"defaultName": "Desktop",
 			"name": "Name",

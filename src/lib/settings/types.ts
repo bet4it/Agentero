@@ -350,6 +350,12 @@ export type AppSettings = {
 	 */
 	pdfAsk: PdfAskSettings;
 	/**
+	 * Agent seat + model for the background paper-reader (精读) workflow.
+	 * Independent of Chat's current agent and of `pdfAsk`.
+	 * Empty = follow app default agent / that agent's model pref.
+	 */
+	paperReader: PaperReaderSettings;
+	/**
 	 * OpenAI-compatible embedding endpoint (BYOK) for arxiv daily recommendation
 	 * and other semantic features. All fields empty = feature disabled.
 	 */
@@ -426,6 +432,13 @@ export function isConfigReminderId(value: unknown): value is ConfigReminderId {
 
 /** PDF selection Ask (question popover) agent/model prefs. */
 export type PdfAskSettings = {
+	/** Empty = follow registry default agent. */
+	agentId: string;
+	/** Empty = follow loadModelPref(agentId). */
+	modelId: string;
+};
+
+export type PaperReaderSettings = {
 	/** Empty = follow registry default agent. */
 	agentId: string;
 	/** Empty = follow loadModelPref(agentId). */
