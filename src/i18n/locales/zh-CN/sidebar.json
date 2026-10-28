@@ -2,6 +2,7 @@
 	"fileTree": {
 		"empty": "空文件夹",
 		"newFile": "新建文件",
+		"untitledNote": "未命名",
 		"openNotes": "打开笔记",
 		"addToChat": "添加到对话",
 		"newFolder": "新建文件夹",

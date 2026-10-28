@@ -9,7 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useImeGuard } from "@/hooks/use-ime-guard";
 import { cn } from "@/lib/core/utils";
-import { isPapersParent, isValidVaultEntryName } from "@/lib/vault";
+import { hasVaultFileExtension, isValidVaultEntryName } from "@/lib/vault";
 import type { TreeCreateKind } from "./types";
 
 type NameInputProps = {
@@ -131,30 +131,26 @@ export function TreeCreateInput({
 	kind,
 	onConfirm,
 	onCancel,
-	parentPath,
-	vaultRoot,
 }: {
 	kind: TreeCreateKind;
 	onConfirm: (name: string) => void;
 	onCancel: () => void;
-	/** Absolute path of the parent directory. */
-	parentPath?: string;
-	/** Vault root absolute path. */
-	vaultRoot?: string;
 }) {
 	const { t } = useTranslation("sidebar");
-	const insidePapers =
-		parentPath && vaultRoot ? isPapersParent(parentPath, vaultRoot) : true;
 	const Icon = kind === "file" ? FileText : FolderPlus;
 	return (
 		<TreeNameInput
 			initialName={
-				kind === "file" ? (insidePapers ? "Untitled.md" : "") : "New Folder"
+				kind === "file" ? `${t("fileTree.untitledNote")}.md` : "New Folder"
 			}
 			icon={<Icon className="size-4 shrink-0 text-muted-foreground" />}
 			label={kind === "file" ? t("fileTree.newFile") : t("fileTree.newFolder")}
-			selectBasename={kind === "file" && insidePapers}
-			onConfirm={onConfirm}
+			selectBasename={kind === "file"}
+			onConfirm={(name) =>
+				onConfirm(
+					kind === "file" && !hasVaultFileExtension(name) ? `${name}.md` : name,
+				)
+			}
 			onCancel={onCancel}
 		/>
 	);

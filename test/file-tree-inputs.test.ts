@@ -43,7 +43,7 @@ afterEach(async () => {
 	vi.unstubAllGlobals();
 });
 
-async function mount(mode: Mode, outsidePapers = false) {
+async function mount(mode: Mode) {
 	const onConfirm = vi.fn();
 	const onCancel = vi.fn();
 	const onOpenChange = vi.fn();
@@ -78,8 +78,6 @@ async function mount(mode: Mode, outsidePapers = false) {
 						})
 					: createElement(TreeCreateInput, {
 							kind: mode,
-							parentPath: outsidePapers ? "/vault/notes" : "/vault/papers",
-							vaultRoot: "/vault",
 							onConfirm,
 							onCancel,
 						}),
@@ -156,7 +154,11 @@ describe.each<Mode>([
 		await type(input, "文件名称");
 		await key(input, "Enter");
 		expect(onConfirm).toHaveBeenCalledExactlyOnceWith(
-			mode === "move" ? "papers/文件名称" : "文件名称",
+			mode === "move"
+				? "papers/文件名称"
+				: mode === "file"
+					? "文件名称.md"
+					: "文件名称",
 		);
 	});
 
@@ -198,9 +200,13 @@ describe.each<Mode>([
 			input.dispatchEvent(new Event("input", { bubbles: true }));
 		});
 		await finishGrace();
-		expect(onConfirm).toHaveBeenCalledExactlyOnceWith("文件名称");
+		expect(onConfirm).toHaveBeenCalledExactlyOnceWith(
+			mode === "file" ? "文件名称.md" : "文件名称",
+		);
 		await key(input, "Enter");
-		expect(onConfirm).toHaveBeenCalledExactlyOnceWith("文件名称");
+		expect(onConfirm).toHaveBeenCalledExactlyOnceWith(
+			mode === "file" ? "文件名称.md" : "文件名称",
+		);
 	});
 
 	it("does not submit twice when Enter is followed by blur", async () => {
@@ -209,7 +215,9 @@ describe.each<Mode>([
 		await key(input, "Enter");
 		await act(() => input.blur());
 		await finishGrace();
-		expect(onConfirm).toHaveBeenCalledExactlyOnceWith("new-name");
+		expect(onConfirm).toHaveBeenCalledExactlyOnceWith(
+			mode === "file" ? "new-name.md" : "new-name",
+		);
 	});
 
 	it("keeps invalid names editable and cancels empty names", async () => {
@@ -232,13 +240,21 @@ it("preserves initial selection and unchanged-name behavior", async () => {
 	expect(onConfirm).not.toHaveBeenCalled();
 });
 
-it("selects the new file basename inside papers", async () => {
+it("selects the new file basename while keeping the Markdown suffix", async () => {
 	const { input } = await mount("file");
-	expect(input.value).toBe("Untitled.md");
-	expect([input.selectionStart, input.selectionEnd]).toEqual([0, 8]);
+	expect(input.getAttribute("aria-label")).toBe("fileTree.newFile");
+	expect(input.value).toBe("fileTree.untitledNote.md");
+	expect([input.selectionStart, input.selectionEnd]).toEqual([0, 21]);
 });
 
-it("starts new files outside papers with an empty name", async () => {
-	const { input } = await mount("file", true);
-	expect(input.value).toBe("");
+it.each([
+	["读书笔记", "读书笔记.md"],
+	["note.md", "note.md"],
+	["note.MD", "note.MD"],
+	["note.txt", "note.txt"],
+])("creates %s as %s", async (name, expected) => {
+	const { input, onConfirm } = await mount("file");
+	await type(input, name);
+	await key(input, "Enter");
+	expect(onConfirm).toHaveBeenCalledExactlyOnceWith(expected);
 });

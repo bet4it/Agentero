@@ -2,6 +2,7 @@
 	"fileTree": {
 		"empty": "Empty folder",
 		"newFile": "New file",
+		"untitledNote": "Untitled",
 		"openNotes": "Open Notes",
 		"addToChat": "Add to conversation",
 		"newFolder": "New folder",

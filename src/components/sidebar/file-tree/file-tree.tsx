@@ -422,8 +422,6 @@ export const FileTree = memo(
 					kind={createDraft.kind}
 					onConfirm={onConfirmCreate}
 					onCancel={onCancelCreate}
-					parentPath={createDraft.parentPath}
-					vaultRoot={vaultPath}
 				/>
 			) : null;
 

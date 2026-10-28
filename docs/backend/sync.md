@@ -122,8 +122,8 @@ S3 / WebDAV 共用同一套状态化同步协议（内容寻址 blob + 不可变
 
 远端一致性由 CAS `HEAD` 保证（多设备天然串行化）；同一台设备上桌面端与 CLI（或 cron）同时跑 pass 的**本地**写入交错，由 `engine::sync_vault_locked` 入口处的 `.agentero/sync/lock` advisory 文件锁串行化：
 
-- 拿不到锁立即失败，域码 `sync_busy`（CLI 退出码 1，桌面端记入 `sync:state` error）。
-- 锁随文件句柄存活：进程退出、崩溃或被杀即释放，无陈旧锁清理。
+- 拿不到锁立即失败，域码 `sync_busy`（CLI 退出码 1，桌面端记入 `sync:state` error）；使用 `fs2` 的平台锁冲突错误码识别占用，避免 Windows 的 `ERROR_LOCK_VIOLATION` 被误报为普通 IO 错误。
+- 正常释放 guard 时显式解锁，再关闭文件句柄，避免复制的句柄（包括 Unix 并发 `fork` / `dup` 继承的描述符）延迟释放同一把锁。进程退出、崩溃或被杀时仍由系统在最后一个相关句柄关闭后释放，无陈旧锁文件清理。
 - 桌面端手动 / 自动 / 退出同步与 CLI `sync now` 均走该入口；`SyncRunLease` 仅叠加进程内 UI 状态（`running`）。
 - 锁只覆盖 pass 本身；`catalog.sqlite` 并发访问由 WAL + busy_timeout 兜底（CLI 与桌面端共用 `with_catalog` 的连接缓存语义）。
 
