@@ -9,7 +9,9 @@ import {
 import {
 	type AgentListResponse,
 	listAgents,
+	listenAgentModels,
 	loadModelCatalog,
+	saveModelCatalog,
 	warmAgent,
 } from "@/lib/agent";
 import { ensureModelsInclude } from "@/lib/agent/chat-state";
@@ -97,7 +99,33 @@ export function useAgentModelCatalog({
 		);
 		if (!isTauri()) return;
 		let cancelled = false;
+		let unlisten: (() => void) | undefined;
 		void warmAgent({ agentId: resolvedAgentId }).catch(() => undefined);
+		// The warm session advertises its model catalog; persist it here so the
+		// Select fills in without opening the Agent panel first (the composer was
+		// the only writer of this cache).
+		void listenAgentModels((ev) => {
+			if (cancelled || ev.agentId !== resolvedAgentId) return;
+			const list = ensureModelsInclude(ev.models, [
+				pinnedModelId,
+				ev.currentId,
+			]);
+			if (!list.length) return;
+			saveModelCatalog(resolvedAgentId, {
+				configId: ev.configId,
+				currentId: ev.currentId,
+				models: list,
+			});
+			setModels(list);
+		})
+			.then((fn) => {
+				if (cancelled) {
+					fn();
+					return;
+				}
+				unlisten = fn;
+			})
+			.catch(() => undefined);
 		const tmr = window.setTimeout(() => {
 			if (cancelled) return;
 			const next = loadModelCatalog(resolvedAgentId);
@@ -116,6 +144,7 @@ export function useAgentModelCatalog({
 		}, 800);
 		return () => {
 			cancelled = true;
+			unlisten?.();
 			window.clearTimeout(tmr);
 		};
 	}, [active, resolvedAgentId]);
