@@ -331,7 +331,11 @@ export const COLUMN_META = {
 export { SortIcon };
 
 import { SelectCell } from "@/components/library/select-cell";
-import { customPropertiesStore } from "@/lib/paper/custom-properties-store";
+import { TextCell } from "@/components/library/text-cell";
+import {
+	customPropertiesStore,
+	propertyType,
+} from "@/lib/paper/custom-properties-store";
 
 export function getColumnMeta(key: SortKey): ColumnDef {
 	if (Object.hasOwn(COLUMN_META, key)) {
@@ -346,19 +350,30 @@ export function getColumnMeta(key: SortKey): ColumnDef {
 			labelKey: prop?.name ?? propId,
 			widthWeight: 14,
 			headerClassName: "min-w-[120px]",
-			render: (p) => (
-				<td className="min-w-0 max-w-0 overflow-hidden px-3 py-2.5">
-					{prop ? (
-						<SelectCell
-							paperPath={p.path ?? ""}
-							property={prop}
-							selectedOptionId={p.custom_props?.[prop.id]}
-						/>
-					) : (
-						"—"
-					)}
-				</td>
-			),
+			render: (p) => {
+				if (!prop) {
+					return (
+						<td className="px-3 py-2.5 text-muted-foreground text-xs">—</td>
+					);
+				}
+				return (
+					<td className="min-w-0 max-w-0 overflow-hidden px-3 py-2.5">
+						{propertyType(prop) === "text" ? (
+							<TextCell
+								paperPath={p.path ?? ""}
+								property={prop}
+								value={p.custom_props?.[prop.id]}
+							/>
+						) : (
+							<SelectCell
+								paperPath={p.path ?? ""}
+								property={prop}
+								selectedOptionId={p.custom_props?.[prop.id]}
+							/>
+						)}
+					</td>
+				);
+			},
 		};
 	}
 	return {

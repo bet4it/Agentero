@@ -1,8 +1,13 @@
 //! Vault custom properties: `.agentero/properties.json` and `custom_properties` table.
 //!
-//! Authoritative store for custom metadata property definitions (select).
+//! Authoritative store for custom metadata property definitions (`select` / `text`).
 //! Each paper's custom property assignments are stored in `papers.custom_props_json`
 //! and projected to `{paper}/metadata.json` sidecars.
+//!
+//! The value map is a plain `property_id -> String` regardless of type: a `select`
+//! stores an `option_id`, a `text` stores the user's raw text. The property
+//! definition's `type` decides how the value is validated and rendered, so adding
+//! a type needs no schema migration.
 
 use super::papers::{self, PaperRecord};
 use super::schema::with_catalog;
@@ -14,6 +19,27 @@ use std::fs;
 use std::path::Path;
 
 pub const PROPERTIES_FILE: &str = "properties.json";
+
+/// Property with a fixed option pool; paper value = `option_id`.
+pub const PROPERTY_TYPE_SELECT: &str = "select";
+/// Property with free text; paper value = the text itself.
+pub const PROPERTY_TYPE_TEXT: &str = "text";
+
+/// Upper bound for a text property value (characters), so one cell cannot
+/// bloat `properties.json` / `metadata.json` sidecars without limit.
+pub const TEXT_VALUE_MAX_CHARS: usize = 2000;
+
+/// Normalize a user/IPC supplied type; unknown types are rejected so a typo
+/// cannot create a column nothing knows how to render.
+pub fn normalize_property_type(raw: &str) -> Result<String, AppError> {
+    match raw.trim().to_ascii_lowercase().as_str() {
+        "" | PROPERTY_TYPE_SELECT => Ok(PROPERTY_TYPE_SELECT.to_string()),
+        PROPERTY_TYPE_TEXT => Ok(PROPERTY_TYPE_TEXT.to_string()),
+        other => Err(AppError::message(format!(
+            "unsupported property type: {other}"
+        ))),
+    }
+}
 
 /// Apple system color–inspired tag color ids.
 const TAG_COLOR_IDS: &[&str] = &[
@@ -171,42 +197,51 @@ pub fn save_properties_to_conn(
     Ok(())
 }
 
-/// Create a new custom Select property.
+/// Create a new custom property (`select` or `text`).
+///
+/// `options` only applies to `select`; a `text` property always starts with an
+/// empty option pool.
 pub fn create_property(
     vault_root: &Path,
     name: &str,
+    property_type: &str,
     options: Vec<PropertyOption>,
 ) -> Result<CustomProperty, AppError> {
     let name = name.trim();
     if name.is_empty() {
         return Err(AppError::message("property name cannot be empty"));
     }
+    let property_type = normalize_property_type(property_type)?;
     let now = crate::time::now_rfc3339_millis();
     let prop_id = format!("prop_{}", uuid::Uuid::new_v4().simple());
     let mut props = list_properties(vault_root)?;
     let order_index = props.last().map_or(0, |p| p.order_index + 1);
 
-    let clean_options: Vec<PropertyOption> = options
-        .into_iter()
-        .map(|opt| {
-            let opt_id = if opt.id.trim().is_empty() {
-                format!("opt_{}", uuid::Uuid::new_v4().simple())
-            } else {
-                opt.id.trim().to_string()
-            };
-            PropertyOption {
-                id: opt_id,
-                name: opt.name.trim().to_string(),
-                color: normalize_color(opt.color.as_deref()),
-            }
-        })
-        .filter(|opt| !opt.name.is_empty())
-        .collect();
+    let clean_options: Vec<PropertyOption> = if property_type == PROPERTY_TYPE_TEXT {
+        Vec::new()
+    } else {
+        options
+            .into_iter()
+            .map(|opt| {
+                let opt_id = if opt.id.trim().is_empty() {
+                    format!("opt_{}", uuid::Uuid::new_v4().simple())
+                } else {
+                    opt.id.trim().to_string()
+                };
+                PropertyOption {
+                    id: opt_id,
+                    name: opt.name.trim().to_string(),
+                    color: normalize_color(opt.color.as_deref()),
+                }
+            })
+            .filter(|opt| !opt.name.is_empty())
+            .collect()
+    };
 
     let new_prop = CustomProperty {
         id: prop_id,
         name: name.to_string(),
-        property_type: "select".to_string(),
+        property_type,
         order_index,
         options: clean_options,
         created_at: now.clone(),
@@ -246,8 +281,15 @@ pub fn update_property(
         .collect();
 
     let now = crate::time::now_rfc3339_millis();
+    // The type is immutable after creation: switching select <-> text would
+    // invalidate every stored value (option ids vs raw text).
+    let existing_type = props[existing_idx].property_type.clone();
     let mut updated = prop.clone();
     updated.name = name.to_string();
+    updated.property_type = existing_type.clone();
+    if existing_type == PROPERTY_TYPE_TEXT {
+        updated.options = Vec::new();
+    }
     updated.updated_at = now;
     props[existing_idx] = updated.clone();
 
@@ -294,6 +336,11 @@ pub fn create_option_and_set(
         .iter()
         .position(|p| p.id == property_id)
         .ok_or_else(|| AppError::message(format!("property not found: {property_id}")))?;
+    if props[prop_idx].property_type == PROPERTY_TYPE_TEXT {
+        return Err(AppError::message(
+            "text properties have no options; set the text value instead",
+        ));
+    }
 
     let opt_id = if let Some(existing) = props[prop_idx]
         .options
@@ -344,11 +391,14 @@ pub fn delete_property_option(
 }
 
 /// Set or clear a paper's property value.
+///
+/// `value` is an `option_id` for `select` properties and the raw text for
+/// `text` properties; `None` or a blank value clears the assignment.
 pub fn set_paper_property(
     vault_root: &Path,
     paper_path: &str,
     property_id: &str,
-    option_id: Option<&str>,
+    value: Option<&str>,
 ) -> Result<PaperRecord, AppError> {
     let props = list_properties(vault_root)?;
     let prop = props
@@ -356,18 +406,30 @@ pub fn set_paper_property(
         .find(|p| p.id == property_id)
         .ok_or_else(|| AppError::message(format!("property not found: {property_id}")))?;
 
-    if let Some(opt_id) = option_id {
-        if !prop.options.iter().any(|o| o.id == opt_id) {
-            return Err(AppError::message(format!(
-                "option {} does not exist in property {}",
-                opt_id, property_id
-            )));
+    let next_value = match value.map(str::trim).filter(|v| !v.is_empty()) {
+        None => None,
+        Some(raw) if prop.property_type == PROPERTY_TYPE_TEXT => {
+            if raw.chars().count() > TEXT_VALUE_MAX_CHARS {
+                return Err(AppError::message(format!(
+                    "text value is longer than {TEXT_VALUE_MAX_CHARS} characters"
+                )));
+            }
+            Some(raw.to_string())
         }
-    }
-
-    papers::mutate_paper_custom_props(vault_root, paper_path, |map| match option_id {
         Some(opt_id) => {
-            map.insert(property_id.to_string(), opt_id.to_string());
+            if !prop.options.iter().any(|o| o.id == opt_id) {
+                return Err(AppError::message(format!(
+                    "option {} does not exist in property {}",
+                    opt_id, property_id
+                )));
+            }
+            Some(opt_id.to_string())
+        }
+    };
+
+    papers::mutate_paper_custom_props(vault_root, paper_path, |map| match next_value {
+        Some(value) => {
+            map.insert(property_id.to_string(), value);
         }
         None => {
             map.remove(property_id);
@@ -421,6 +483,7 @@ mod tests {
         let prop = create_property(
             vault,
             "Status",
+            "select",
             vec![
                 PropertyOption {
                     id: "opt_reading".into(),
@@ -519,5 +582,120 @@ mod tests {
         // 6. Delete property cleans up
         delete_property(vault, &prop.id).unwrap();
         assert!(list_properties(vault).unwrap().is_empty());
+    }
+
+    fn insert_test_paper(vault: &Path, path: &str) {
+        let paper = PaperRecord {
+            path: path.into(),
+            id: "test".into(),
+            paper_type: papers::PaperKind::Other,
+            title: "Test".into(),
+            authors: vec![],
+            creators: None,
+            year: None,
+            date: None,
+            abstract_text: None,
+            tags: vec![],
+            arxiv_id: None,
+            doi: None,
+            isbn: None,
+            issn: None,
+            pmid: None,
+            publication: None,
+            volume: None,
+            issue: None,
+            pages: None,
+            publisher: None,
+            place: None,
+            series: None,
+            language: None,
+            pdf_url: None,
+            html_url: None,
+            source_url: None,
+            code_repo: None,
+            openreview_url: None,
+            body_source: None,
+            body_quality: None,
+            bibtex_key: None,
+            citation_count: None,
+            zotero_item_type: None,
+            meta_source: None,
+            extra: None,
+            summary: None,
+            status: "completed".into(),
+            is_read: false,
+            zotero_item_id: None,
+            zotero_last_synced: None,
+            custom_props: Default::default(),
+            added_at: "t".into(),
+            updated_at: "t".into(),
+        };
+        std::fs::create_dir_all(vault.join(path)).unwrap();
+        papers::upsert_paper(vault, &paper).unwrap();
+    }
+
+    #[test]
+    fn test_text_property_lifecycle() {
+        let dir = tempdir().unwrap();
+        let vault = dir.path();
+        crate::features::paper::catalog::schema::ensure_catalog(vault).unwrap();
+
+        // A text property never carries an option pool, even if one is passed.
+        let prop = create_property(
+            vault,
+            "Lab Note",
+            "text",
+            vec![PropertyOption {
+                id: "opt_ignored".into(),
+                name: "Ignored".into(),
+                color: None,
+            }],
+        )
+        .unwrap();
+        assert_eq!(prop.property_type, PROPERTY_TYPE_TEXT);
+        assert!(prop.options.is_empty());
+
+        insert_test_paper(vault, "papers/text-prop");
+
+        // Free text is stored verbatim (trimmed) and cleared by blank input.
+        let updated =
+            set_paper_property(vault, "papers/text-prop", &prop.id, Some("  see  §3  ")).unwrap();
+        assert_eq!(
+            updated.custom_props.get(&prop.id),
+            Some(&"see  §3".to_string())
+        );
+        let cleared = set_paper_property(vault, "papers/text-prop", &prop.id, Some("   ")).unwrap();
+        assert_eq!(cleared.custom_props.get(&prop.id), None);
+
+        // Length guard rejects oversized values instead of silently truncating.
+        let too_long = "x".repeat(TEXT_VALUE_MAX_CHARS + 1);
+        assert!(set_paper_property(vault, "papers/text-prop", &prop.id, Some(&too_long)).is_err());
+
+        // Text properties have no options to create.
+        assert!(create_option_and_set(vault, "papers/text-prop", &prop.id, "nope", None).is_err());
+
+        // Type is immutable across rename.
+        let renamed = update_property(
+            vault,
+            &CustomProperty {
+                property_type: "select".into(),
+                name: "Lab Note 2".into(),
+                ..prop.clone()
+            },
+        )
+        .unwrap();
+        assert_eq!(renamed.name, "Lab Note 2");
+        assert_eq!(renamed.property_type, PROPERTY_TYPE_TEXT);
+
+        // Unknown types are rejected up front.
+        assert!(create_property(vault, "Bad", "number", vec![]).is_err());
+
+        // Deleting the property clears the value from papers and the file.
+        delete_property(vault, &prop.id).unwrap();
+        assert!(list_properties(vault).unwrap().is_empty());
+        let p = papers::get_by_path(vault, "papers/text-prop")
+            .unwrap()
+            .unwrap();
+        assert!(p.custom_props.is_empty());
     }
 }

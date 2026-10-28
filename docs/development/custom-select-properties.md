@@ -1,6 +1,8 @@
 # Library 自定义 Select（单选）属性设计规格
 
 > 状态：设计规格已闭合（评审通过，准备实施）。针对 Agentero 论文库（Papers Library）引入类似 Notion 的自定义属性系统（MVP 阶段聚焦 **Select 单选** 属性）。
+>
+> 后续演进：**Text（自由文本）属性已实现**，与 Select 共用 `custom_props` 的 `property_id -> String` 映射，由属性 `type` 决定取值语义（见 [../frontend/library.md](../frontend/library.md)、[../backend/catalog.md](../backend/catalog.md)）。下文「类型仅限 Select」只描述 MVP 范围。
 
 ---
 

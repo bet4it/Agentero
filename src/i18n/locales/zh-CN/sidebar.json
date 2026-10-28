@@ -203,7 +203,10 @@
 		"refreshMetadataPartial": "已更新 {{updated}} 篇，失败 {{failed}} 篇，未找到 {{empty}} 篇",
 		"customProperties": {
 			"addProperty": "添加属性",
-			"addPropertyDesc": "为文库中的论文创建新的单选 (Select) 自定义属性。",
+			"addPropertyDesc": "为文库中的论文创建新的自定义属性：单选 (Select) 提供固定选项，文本 (Text) 可自由填写。",
+			"typeSelect": "单选",
+			"typeText": "文本",
+			"editTextValue": "编辑文本",
 			"propertyNamePlaceholder": "属性名称（如：优先级、精读状态）",
 			"renameProperty": "重命名属性",
 			"deleteProperty": "删除属性",

@@ -14,6 +14,12 @@ import { setLibraryPapers } from "./library-store";
 
 export type CustomProperty = CustomProperty_Serialize;
 export type PropertyOption = PropertyOption_Serialize;
+export type PropertyType = "select" | "text";
+
+/** Read a property's type, defaulting legacy rows (no type) to `select`. */
+export function propertyType(prop: CustomProperty): PropertyType {
+	return prop.type === "text" ? "text" : "select";
+}
 
 type CustomPropertiesState = {
 	properties: CustomProperty[];
@@ -73,6 +79,7 @@ export async function loadCustomProperties(
 
 export async function createCustomProperty(
 	name: string,
+	type: PropertyType = "select",
 	options: PropertyOption[] = [],
 	vaultPathOverride?: string | null,
 ): Promise<CustomProperty | null> {
@@ -83,6 +90,7 @@ export async function createCustomProperty(
 			commands.catalogCreateProperty({
 				vaultPath,
 				name,
+				propertyType: type,
 				options: options.map((o) => ({
 					id: o.id,
 					name: o.name,
@@ -177,7 +185,7 @@ export async function deleteCustomProperty(
 export async function setPaperCustomProperty(
 	paperPath: string,
 	propertyId: string,
-	optionId: string | null,
+	value: string | null,
 ): Promise<boolean> {
 	const vaultPath = getVaultPath();
 	if (!vaultPath || !isTauri()) return false;
@@ -187,15 +195,16 @@ export async function setPaperCustomProperty(
 				vaultPath,
 				paperPath,
 				propertyId,
-				optionId,
+				optionId: value,
 			}),
 		);
 		setLibraryPapers((prev) =>
 			prev.map((p) => {
 				if (p.path !== paperPath) return p;
 				const custom_props = { ...(p.custom_props ?? {}) };
-				if (optionId) {
-					custom_props[propertyId] = optionId;
+				const trimmed = value?.trim();
+				if (trimmed) {
+					custom_props[propertyId] = trimmed;
 				} else {
 					delete custom_props[propertyId];
 				}

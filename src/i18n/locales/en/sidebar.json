@@ -203,7 +203,10 @@
 		"refreshMetadataPartial": "{{updated}} updated, {{failed}} failed, {{empty}} not found",
 		"customProperties": {
 			"addProperty": "Add Property",
-			"addPropertyDesc": "Create a new custom Select property for papers in your library.",
+			"addPropertyDesc": "Create a new custom property for papers in your library. Select offers a fixed option pool, Text accepts free text.",
+			"typeSelect": "Select",
+			"typeText": "Text",
+			"editTextValue": "Edit text",
 			"propertyNamePlaceholder": "Property name (e.g. Priority, Reading Status)",
 			"renameProperty": "Rename Property",
 			"deleteProperty": "Delete Property",

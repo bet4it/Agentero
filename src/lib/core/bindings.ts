@@ -2035,12 +2035,16 @@ export type CatalogCreatePropertyArgs = CatalogCreatePropertyArgs_Serialize | Ca
 export type CatalogCreatePropertyArgs_Deserialize = {
 	vaultPath: string,
 	name: string,
+	/**  `select` (default) or `text`. */
+	propertyType?: string | null,
 	options?: PropertyOption_Deserialize[],
 };
 
 export type CatalogCreatePropertyArgs_Serialize = {
 	vaultPath: string,
 	name: string,
+	/**  `select` (default) or `text`. */
+	propertyType: string | null,
 	options: PropertyOption_Serialize[],
 };
 
@@ -2217,6 +2221,7 @@ export type CatalogSetPaperPropertyArgs = {
 	vaultPath: string,
 	paperPath: string,
 	propertyId: string,
+	/**  `select`: option id. `text`: raw text. `None` clears the value. */
 	optionId: string | null,
 };
 

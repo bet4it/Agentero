@@ -604,7 +604,7 @@ pub async fn paper_repath(args: PaperRepathArgs) -> ApiResult<PaperRepathResult>
     .await
 }
 
-// Custom Select Properties Commands
+// Custom Properties Commands
 
 #[derive(Debug, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -632,6 +632,9 @@ pub async fn catalog_list_properties(
 pub struct CatalogCreatePropertyArgs {
     pub vault_path: String,
     pub name: String,
+    /// `select` (default) or `text`.
+    #[serde(default)]
+    pub property_type: Option<String>,
     #[serde(default)]
     pub options: Vec<crate::features::paper::catalog::properties::PropertyOption>,
 }
@@ -646,6 +649,7 @@ pub async fn catalog_create_property(
         match crate::features::paper::catalog::properties::create_property(
             &vault,
             &args.name,
+            args.property_type.as_deref().unwrap_or("select"),
             args.options,
         ) {
             Ok(v) => ApiResult::ok(v),
@@ -706,6 +710,7 @@ pub struct CatalogSetPaperPropertyArgs {
     pub vault_path: String,
     pub paper_path: String,
     pub property_id: String,
+    /// `select`: option id. `text`: raw text. `None` clears the value.
     pub option_id: Option<String>,
 }
 

@@ -48,6 +48,20 @@
 - 标签类型与语义（normalize / coerce / 可见性）：`src/lib/paper/tags.ts`（类型在 `src/lib/paper/types.ts`）；命名空间判定：`src/lib/paper/tag-namespaces.ts`；色板映射：`src/lib/ui/tag-colors.ts`。
 - CLI 标签见 [../backend/catalog.md](../backend/catalog.md)。
 
+## 自定义属性列（Select / Text）
+
+表头右侧 `+`（或表头右键菜单）新建自定义属性列；创建时在对话框里选类型，类型创建后不可更改（切换会作废已有取值）：
+
+| 类型 | 取值 | 单元格 |
+|---|---|---|
+| Select（单选） | `option_id` | 点击弹出搜索面板：选已有选项、输入即建新选项（可配色）、删除选项、清除值 |
+| Text（文本） | 自由文本（trim 后 ≤ 2000 字符） | 点击原地输入，Enter / 失焦提交，Esc 取消；空值等于清除 |
+
+- 两种类型共用 `papers.custom_props_json` 的 `property_id -> string` 映射，取值语义由属性定义的 `type` 决定，因此新增类型不需要 schema 迁移。
+- 列宽 / 显隐 / 顺序与内置列一致走 `libraryColumns`（`prop:<id>` 键）；属性删除时同步清理偏好与全部论文取值。
+- 排序在内存里就地做：Select 按选项名、Text 按原文小写比较，空值排最后（见 `library-row-utils.ts`）。
+- 定义落盘 `.agentero/properties.json`，取值随 `PaperRecord` 投影到 `{paper}/metadata.json`。后端语义见 [../backend/catalog.md](../backend/catalog.md)。
+
 ## 编辑元数据
 
 误识别/缺失的论文元数据可手动修正，三个入口共享同一对话框（`edit-paper-meta-dialog.tsx`，挂在 `app-dialogs.tsx`，经 `libraryStore.editMetaDraft` 打开）：
@@ -69,7 +83,7 @@ DOI 旁有 **刷新** 按钮：按当前 DOI（或 arXiv ID）拉取权威元数
 
 ## 代码
 
-- UI：`src/components/library/`（拖入：`library-pdf-drop-surface.tsx`）
+- UI：`src/components/library/`（拖入：`library-pdf-drop-surface.tsx`；自定义属性：`custom-property-dialogs.tsx` / `select-cell.tsx` / `text-cell.tsx`）
 - 状态：`src/lib/paper/library-store.ts`、`library-actions.ts`、`import-actions.ts`（`dropLocalPdfs`）
 - 单测：`test/library-scope.test.ts`、`test/prompt-image.test.ts`（`dataTransferLooksLikePdfs`）、`test/pdf-page-count.test.ts`（真实 EmbedPDF registry / 插件 + 跟踪文档和缓冲所有权的 engine 替身：重复探测、并发隔离、初始化与打开失败、页数读取异常和关闭重试；不以 WASM heap 缩小作为释放判据）
 - 原生资源回归：`test/pdf-page-count-native.test.ts` 使用安装的 PDFium WASM 和内存生成的三页 PDF，验证 32 次串行、8 次并发探测及损坏 PDF 后的文档缓存、受跟踪分配数量与字节数回到基线；WASM 从本地依赖经 data URL 加载，无网络或真实 Vault 依赖。

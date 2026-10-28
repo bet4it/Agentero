@@ -5,7 +5,10 @@
  */
 import type { ReactNode } from "react";
 import type { PaperLibraryRow, PaperMetadata } from "@/lib/paper";
-import { customPropertiesStore } from "@/lib/paper/custom-properties-store";
+import {
+	customPropertiesStore,
+	propertyType,
+} from "@/lib/paper/custom-properties-store";
 import { publicationDateSortKey } from "@/lib/paper/publication-date";
 import type { ReadingHeatmap } from "@/lib/paper/reading-heatmap";
 import {
@@ -129,9 +132,14 @@ export function buildPaperRow(p: PaperLibraryRow): PaperRow {
 	};
 	const customProps = customPropertiesStore.getState().properties;
 	for (const prop of customProps) {
-		const optId = p.custom_props?.[prop.id];
-		const opt = optId ? prop.options.find((o) => o.id === optId) : undefined;
-		row.sort[`prop:${prop.id}`] = opt ? opt.name.toLocaleLowerCase() : "";
+		const raw = p.custom_props?.[prop.id];
+		// Select stores an option id, text stores the raw text: resolve both to
+		// the string the user actually sees before sorting.
+		const label =
+			propertyType(prop) === "text"
+				? (raw ?? "")
+				: (prop.options.find((o) => o.id === raw)?.name ?? "");
+		row.sort[`prop:${prop.id}`] = label.toLocaleLowerCase();
 	}
 	paperRowCache.set(p, row);
 	return row;

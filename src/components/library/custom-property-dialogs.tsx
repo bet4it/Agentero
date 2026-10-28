@@ -1,3 +1,4 @@
+import { ChevronDown, Type } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -10,12 +11,30 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import type { CustomProperty } from "@/lib/paper/custom-properties-store";
+import { cn } from "@/lib/core/utils";
+import type {
+	CustomProperty,
+	PropertyType,
+} from "@/lib/paper/custom-properties-store";
 import {
 	createCustomProperty,
 	deleteCustomProperty,
 	updateCustomProperty,
 } from "@/lib/paper/custom-properties-store";
+
+/** The two creatable property kinds, in picker order. */
+const PROPERTY_TYPE_CHOICES = [
+	{
+		value: "select" as const,
+		labelKey: "papersLibrary.customProperties.typeSelect" as const,
+		icon: ChevronDown,
+	},
+	{
+		value: "text" as const,
+		labelKey: "papersLibrary.customProperties.typeText" as const,
+		icon: Type,
+	},
+];
 
 export function CreatePropertyDialog({
 	open,
@@ -28,6 +47,7 @@ export function CreatePropertyDialog({
 }) {
 	const { t } = useTranslation("sidebar");
 	const [name, setName] = useState("");
+	const [type, setType] = useState<PropertyType>("select");
 	const [submitting, setSubmitting] = useState(false);
 
 	const handleCreate = async () => {
@@ -35,8 +55,9 @@ export function CreatePropertyDialog({
 		if (!trimmed) return;
 		setSubmitting(true);
 		try {
-			await createCustomProperty(trimmed, [], vaultPath);
+			await createCustomProperty(trimmed, type, [], vaultPath);
 			setName("");
+			setType("select");
 			onOpenChange(false);
 		} finally {
 			setSubmitting(false);
@@ -53,11 +74,11 @@ export function CreatePropertyDialog({
 					<DialogDescription>
 						{t(
 							"papersLibrary.customProperties.addPropertyDesc",
-							"Create a new custom Select property for papers in your library.",
+							"Create a new custom property for papers in your library.",
 						)}
 					</DialogDescription>
 				</DialogHeader>
-				<div className="py-2">
+				<div className="flex flex-col gap-2 py-2">
 					<Input
 						value={name}
 						onChange={(e) => setName(e.target.value)}
@@ -70,6 +91,26 @@ export function CreatePropertyDialog({
 						)}
 						autoFocus
 					/>
+					{/* Type picker: two segmented buttons, no extra copy. */}
+					<div className="flex items-center gap-1 rounded-md bg-muted/60 p-0.5">
+						{PROPERTY_TYPE_CHOICES.map((choice) => (
+							<button
+								key={choice.value}
+								type="button"
+								aria-pressed={type === choice.value}
+								className={cn(
+									"flex flex-1 items-center justify-center gap-1.5 rounded px-2 py-1 text-xs transition-colors",
+									type === choice.value
+										? "bg-background font-medium text-foreground shadow-sm"
+										: "text-muted-foreground hover:text-foreground",
+								)}
+								onClick={() => setType(choice.value)}
+							>
+								<choice.icon className="size-3.5" aria-hidden />
+								<span>{t(choice.labelKey)}</span>
+							</button>
+						))}
+					</div>
 				</div>
 				<DialogFooter>
 					<Button
