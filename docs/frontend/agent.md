@@ -87,6 +87,7 @@ Tool 提升的作答：`formatAskUserAnswers` 后作为下一用户轮。若当�
 | 自动 | `autoPaperReader`（默认关）；魔棒/单篇 Download 后 |
 
 成功写 `NOTES.md`，`is_read = true`；进度在后台任务条。批量导入不连跑。  
+后台运行会显式指定 Agent 席位：默认 Agent（`registry.defaultId`）+ 该 Agent 上次在输入区选择的模型（`loadModelPref`）。不传模型时 ACP 会话会落在 Agent CLI 自身的默认模型上（如 OpenCode 的免费 Zen 模型，额度用尽即 429），属误配。
 Skill 语法由 Host 按 provider 分流（Claude `/id`，其它注入 `SKILL.md`）。  
 用户提示会按当前 App 语言（设置里的 `en` / `zh-CN` / 跟随系统解析后）注入一句输出语言说明：正文跟 App 语言，skill 固定的中文 `##` 结构标题保持不变。
 
