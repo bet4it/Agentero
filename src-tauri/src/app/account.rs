@@ -40,10 +40,14 @@ pub fn plugin<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
         .sign_in_url(format!("{web}/desktop"))
         .scheme("agentero")
         .client_id("app.agentero.desktop")
+        // `tauri dev` is a bare binary under target/. macOS only delivers
+        // agentero:// to an installed .app, so a forced deep link completes in
+        // the release bundle and leaves this process waiting. Auto uses
+        // loopback for that dev process and deep links for an installed app.
         .transport(if local {
             Transport::Loopback
         } else {
-            Transport::DeepLink
+            Transport::Auto
         })
         .api_routes(api, ["/api/desktop/transfer-ownership"]);
     for (method, path) in AUTH_ROUTES {

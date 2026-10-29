@@ -85,10 +85,6 @@ export function UserProfile({ className }: UserProfileProps) {
 
 	return (
 		<div>
-			<h2 className="text-sm font-semibold mb-3">
-				{localization.settings.userProfile}
-			</h2>
-
 			<form.AppForm>
 				<form.AuthFormRoot>
 					<Card className={cn(className)}>
@@ -141,6 +137,23 @@ export function UserProfile({ className }: UserProfileProps) {
 									}}
 								</form.AppField>
 							)}
+
+							{session?.user.email ? (
+								<Field>
+									<FieldLabel htmlFor="email">
+										{localization.auth.email}
+									</FieldLabel>
+									<Input
+										id="email"
+										name="email"
+										autoComplete="email"
+										value={session.user.email}
+										readOnly
+										tabIndex={-1}
+										className="bg-muted/40 focus-visible:ring-0"
+									/>
+								</Field>
+							) : null}
 
 							{profileFields.map((configuredField) => {
 								if (!session) {
