@@ -4,7 +4,6 @@
 use crate::core::error::{ApiResult, AppError};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
-use std::process::Stdio;
 use std::time::Duration;
 use tokio::process::Command;
 
@@ -789,17 +788,16 @@ async fn git_run(
         .arg("safe.directory=*")
         .args(args)
         .current_dir(dir)
-        .kill_on_drop(true)
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
         .env("GIT_TERMINAL_PROMPT", if interactive { "1" } else { "0" });
     if interactive {
         command.env("GCM_INTERACTIVE", "auto");
     }
-    #[cfg(windows)]
-    command.creation_flags(0x08000000);
-    match tokio::time::timeout(Duration::from_secs(secs), command.output()).await {
+    match tokio::time::timeout(
+        Duration::from_secs(secs),
+        crate::core::process::command_output(&mut command),
+    )
+    .await
+    {
         Ok(Ok(output)) => Ok(output),
         Ok(Err(err)) => Err(AppError::message(err.to_string())),
         Err(_) => Err(AppError::message("git timed out")),
