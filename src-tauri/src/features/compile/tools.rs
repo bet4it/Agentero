@@ -35,13 +35,13 @@ async fn tool_output(name: &str, args: &[String], cwd: &Path) -> Result<String, 
     command
         .env_remove("SYNCTEX_VIEWER")
         .env_remove("SYNCTEX_EDITOR");
-    let child = command
-        .spawn()
-        .map_err(|e| format!("failed to run {name}: {e}"))?;
-    let output = tokio::time::timeout(Duration::from_secs(30), child.wait_with_output())
-        .await
-        .map_err(|_| format!("{name} timed out"))?
-        .map_err(|e| e.to_string())?;
+    let output = tokio::time::timeout(
+        Duration::from_secs(30),
+        crate::core::process::command_output(&mut command),
+    )
+    .await
+    .map_err(|_| format!("{name} timed out"))?
+    .map_err(|e| e.to_string())?;
     if !output.status.success() {
         return Err(format!(
             "{name}: {}",

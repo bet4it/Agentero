@@ -355,7 +355,7 @@ async fn note_compile_line(
 }
 
 async fn wait_or_cancel(
-    child: &mut tokio::process::Child,
+    child: &mut crate::core::process::ProcessTree,
     token: &tokio_util::sync::CancellationToken,
 ) -> std::io::Result<Option<std::process::ExitStatus>> {
     tokio::select! {
@@ -384,26 +384,19 @@ fn clean_tool(root: &Path, artifact: &LatexArtifacts) -> LatexTool {
     }
 }
 
-async fn terminate(child: &mut tokio::process::Child) {
+async fn terminate(child: &mut crate::core::process::ProcessTree) {
+    #[cfg(unix)]
     if let Some(pid) = child.id() {
-        #[cfg(unix)]
-        {
-            // Each tool has its own process group, including latexmk's engine
-            // and bibliography descendants that inherit the output pipes.
-            let _ = tokio::process::Command::new("/bin/kill")
-                .args(["-KILL", "--", &format!("-{pid}")])
-                .status()
-                .await;
-        }
-        #[cfg(windows)]
-        {
-            let mut command = tokio::process::Command::new("taskkill.exe");
-            command
-                .args(["/T", "/F", "/PID", &pid.to_string()])
-                .creation_flags(0x08000000);
-            let _ = command.status().await;
-        }
+        // Each tool has its own process group, including latexmk's engine
+        // and bibliography descendants that inherit the output pipes.
+        let _ = tokio::process::Command::new("/bin/kill")
+            .args(["-KILL", "--", &format!("-{pid}")])
+            .status()
+            .await;
     }
+    // Windows closes the job inside `kill`, which ends the launcher and the
+    // engines it spawned. `taskkill /T` raced that tree and missed processes
+    // that had already been reparented.
     let _ = child.kill().await;
     let _ = child.wait().await;
 }
@@ -527,7 +520,7 @@ pub(super) async fn run_latexmk(
         );
         let _ = writeln!(logfile, "{description}");
         let _ = app.emit("compile:log",serde_json::json!({"jobId":started.snapshot.id,"rootPath":params.tex_path,"line":description}));
-        let mut child = match command.spawn() {
+        let mut child = match crate::core::process::ProcessTree::spawn(&mut command) {
             Ok(value) => value,
             Err(e) => {
                 outcome = RunOutcome::Failed(Some(format!("failed to run {command_name}: {e}")));
@@ -538,10 +531,10 @@ pub(super) async fn run_latexmk(
         #[cfg(not(windows))]
         {
             let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<String>();
-            if let Some(stdout) = child.stdout.take() {
+            if let Some(stdout) = child.stdout().take() {
                 tokio::spawn(forward_lines(stdout, tx.clone()));
             }
-            if let Some(stderr) = child.stderr.take() {
+            if let Some(stderr) = child.stderr().take() {
                 tokio::spawn(forward_lines(stderr, tx.clone()));
             }
             drop(tx);
@@ -895,9 +888,9 @@ mod tests {
             .stderr(Stdio::piped())
             .process_group(0)
             .kill_on_drop(true);
-        let mut child = command.spawn().unwrap();
-        let mut stdout = child.stdout.take().unwrap();
-        let mut stderr = child.stderr.take().unwrap();
+        let mut child = crate::core::process::ProcessTree::spawn(&mut command).unwrap();
+        let mut stdout = child.stdout().take().unwrap();
+        let mut stderr = child.stderr().take().unwrap();
         let mut bytes = Vec::new();
         stdout.read_to_end(&mut bytes).await.unwrap();
         stderr.read_to_end(&mut bytes).await.unwrap();

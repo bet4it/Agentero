@@ -180,12 +180,11 @@ pub async fn clean_latex_aux_files(tex_path: String) -> ApiResult<()> {
         .arg("-c")
         .arg(format!("-outdir={}", cwd.to_string_lossy()))
         .arg(&basename)
-        .kill_on_drop(true)
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped());
     tools::prepare_command(&mut cmd, &latexmk);
 
-    let output = match cmd.output().await {
+    let output = match crate::core::process::command_output(&mut cmd).await {
         Ok(output) => output,
         Err(e) => return ApiResult::err(AppError::message(format!("failed to run latexmk: {e}"))),
     };
@@ -293,13 +292,13 @@ pub async fn chktex_lint(tex_path: String, content: String) -> ApiResult<Vec<Lat
     // keeps kpsewhich etc. next to it, which chktex uses to find its rc file).
     tools::prepare_command(&mut cmd, &chktex);
 
-    let mut child = match cmd.spawn() {
+    let mut child = match crate::core::process::ProcessTree::spawn(&mut cmd) {
         Ok(child) => child,
         Err(e) => return ApiResult::err(AppError::message(format!("failed to run chktex: {e}"))),
     };
     // Feed the buffer and close stdin (EOF) from a side task so a large
     // document cannot deadlock against stdout being drained.
-    if let Some(mut stdin) = child.stdin.take() {
+    if let Some(mut stdin) = child.stdin().take() {
         tokio::spawn(async move {
             let _ = stdin.write_all(content.as_bytes()).await;
         });
