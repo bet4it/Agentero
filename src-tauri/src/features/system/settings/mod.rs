@@ -67,6 +67,9 @@ pub fn mask_translate_api_key(key: &str) -> String {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSettings {
+    /// Null disables a command; absent ids use their default shortcut.
+    #[serde(default)]
+    pub shortcut_overrides: HashMap<String, Option<ShortcutBinding>>,
     #[serde(default = "default_translator_base_url")]
     pub translator_base_url: String,
     /// EasyScholar key for journal ranking and impact-factor lookups.
@@ -221,6 +224,20 @@ pub struct AppSettings {
     /// (`layout-local-model` | `network-proxy`). Unknown ids are dropped on save.
     #[serde(default)]
     pub dismissed_reminders: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ShortcutBinding {
+    pub key: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub meta: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ctrl: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub alt: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shift: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default, specta::Type)]
@@ -432,6 +449,7 @@ pub struct LayoutProviderConfig {
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
+            shortcut_overrides: HashMap::new(),
             translator_base_url: DEFAULT_TRANSLATOR_BASE_URL.to_string(),
             easy_scholar_key: String::new(),
             zhihu_access_secret: String::new(),
@@ -1601,6 +1619,57 @@ mod tests {
         assert!(!loaded.onboarding_done);
         assert!(!loaded.feature_tour_done);
         let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn shortcut_overrides_roundtrip() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("settings.json");
+        let mut settings = AppSettings::default();
+        settings.shortcut_overrides.insert(
+            "workspace.search".into(),
+            Some(ShortcutBinding {
+                key: "K".into(),
+                meta: Some(true),
+                ctrl: Some(false),
+                alt: Some(true),
+                shift: Some(true),
+            }),
+        );
+        settings
+            .shortcut_overrides
+            .insert("workspace.close".into(), None);
+        settings.shortcut_overrides.insert(
+            "future.command".into(),
+            Some(ShortcutBinding {
+                key: "F12".into(),
+                ..Default::default()
+            }),
+        );
+        persist(&path, &settings).expect("write");
+        let json: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+        assert!(json["shortcutOverrides"]["workspace.close"].is_null());
+        assert_eq!(json["shortcutOverrides"]["workspace.search"]["ctrl"], false);
+        assert_eq!(
+            json["shortcutOverrides"]["future.command"],
+            serde_json::json!({"key": "F12"})
+        );
+        let (loaded, existed) = read_file(&path);
+        assert!(existed);
+        assert_eq!(loaded.shortcut_overrides, settings.shortcut_overrides);
+    }
+
+    #[test]
+    fn legacy_settings_default_to_empty_shortcut_overrides() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("settings.json");
+        fs::write(&path, r#"{"theme":"dark","locale":"zh-CN"}"#).unwrap();
+        let (loaded, existed) = read_file(&path);
+        assert!(existed);
+        assert!(loaded.shortcut_overrides.is_empty());
+        assert_eq!(loaded.theme, "dark");
+        assert_eq!(loaded.locale, "zh-CN");
     }
 
     #[test]

@@ -34,6 +34,7 @@ import {
 	snapUiScale,
 } from "@/lib/settings/defaults";
 import { normalizeFontFamilyValue } from "@/lib/settings/fonts";
+import { normalizeShortcutOverrides } from "@/lib/settings/shortcut-bindings";
 import {
 	type AppSettings,
 	DEFAULT_LIBRARY_COLUMNS,
@@ -88,6 +89,7 @@ function fromSettingsWire(raw: SettingsWire): AppSettings {
 /** In-memory snapshot (source of truth between Host round-trips). */
 let cache: AppSettings = {
 	...DEFAULT_SETTINGS,
+	shortcutOverrides: {},
 	libraryColumns: DEFAULT_LIBRARY_COLUMNS.map((c) => ({ ...c })),
 	translate: { ...DEFAULT_TRANSLATE_SETTINGS },
 	layout: { ...DEFAULT_SETTINGS.layout, providerConfigs: {} },
@@ -103,6 +105,7 @@ let loadPromise: Promise<AppSettings> | null = null;
 function cloneSettings(s: AppSettings): AppSettings {
 	return {
 		...s,
+		shortcutOverrides: normalizeShortcutOverrides(s.shortcutOverrides),
 		libraryColumns: s.libraryColumns.map((c) => ({ ...c })),
 		pdfAsk: { ...s.pdfAsk },
 		paperReader: { ...s.paperReader },
@@ -175,7 +178,7 @@ export async function ensureSettingsLoaded(): Promise<AppSettings> {
  */
 export function saveSettings(settings: AppSettings): void {
 	const next = normalizeSettings(settings);
-	setCache(next);
+	applyExternalSettings(next);
 	if (!isTauri()) return;
 	void persistToHost(next).catch((e) => {
 		console.warn("[settings] save failed", e);
@@ -186,7 +189,7 @@ type SettingsListener = (settings: AppSettings) => void;
 
 const settingsListeners = new Set<SettingsListener>();
 
-/** Subscribe to settings changes coming from other windows. Returns unsubscribe. */
+/** Subscribe to local saves and cross-window settings. Returns unsubscribe. */
 export function subscribeSettings(listener: SettingsListener): () => void {
 	settingsListeners.add(listener);
 	return () => {
@@ -245,7 +248,7 @@ export async function saveSettingsAsync(
 	settings: AppSettings,
 ): Promise<AppSettings> {
 	const next = normalizeSettings(settings);
-	setCache(next);
+	applyExternalSettings(next);
 	if (!isTauri()) return loadSettings();
 	return persistToHost(next);
 }
@@ -254,7 +257,8 @@ async function persistToHost(settings: AppSettings): Promise<AppSettings> {
 	const res = await callApi(() => commands.settingsSet(settings), {
 		fallback: "settings_set failed",
 	});
-	return setCache(normalizeSettings(fromSettingsWire(res)));
+	setCache(normalizeSettings(fromSettingsWire(res)));
+	return loadSettings();
 }
 
 function readLegacyLocalStorage(): AppSettings | null {
@@ -312,6 +316,9 @@ function normalizePartial(
 		...rest
 	} = parsed;
 	const merged = { ...DEFAULT_SETTINGS, ...rest };
+	merged.shortcutOverrides = normalizeShortcutOverrides(
+		parsed.shortcutOverrides,
+	);
 	if (
 		parsed.agentYolo !== undefined &&
 		rest.agentPermissionMode === undefined

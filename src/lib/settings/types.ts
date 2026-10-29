@@ -3,6 +3,7 @@ import type {
 	PaperTreeSortMode,
 } from "@/lib/paper/tree-modes";
 import type { LayoutSettings } from "@/lib/pdf/layout/settings";
+import type { ShortcutOverrides } from "@/lib/settings/shortcut-bindings";
 import type {
 	CommercialTranslateProviderId,
 	TranslateProviderConfig,
@@ -149,6 +150,8 @@ export function isPaperNoteMode(v: unknown): v is PaperNoteMode {
 }
 
 export type AppSettings = {
+	/** Null disables a command; absent ids use their default shortcut. */
+	shortcutOverrides: ShortcutOverrides;
 	// General
 	/**
 	 * Translator Runtime base URL for magic-wand / identifier import.
