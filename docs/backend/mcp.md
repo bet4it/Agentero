@@ -80,6 +80,7 @@ Codex / Inspector 也可直接打 loopback URL。stdio 子进程不是这条通�
 | `paper_get` | 单篇 metadata（含 abstract） |
 | `paper_paths` | 相关路径：论文目录、`NOTES.md`、`PAPER.md`、`marks/`、本地 PDF、TeX 存在时的 `source/`；不读正文 |
 | `paper_set_read` | 设置 catalog `isRead`（默认 true） |
+| `paper_set_meta` | 更新论文元数据（`publication`、`title`、`date`、`doi`、`arxivId`、`authors`），同步更新 `catalog.sqlite` 与 `metadata.json` |
 | `import_id` | 魔棒入库（arxiv / DOI / URL）。`parent?` 默认当前 Library 作用域或 `papers` |
 | `discover_arxiv` | 查询式发现：`keywords[]?` / `categories[]?` / `since?` / `until?` / `top?` / `maxCandidates?`，确定性词法排序，返回短名单（含 arXiv id，供后续 `import_id`）。`dedup?`（默认 true）剔除已在库的论文；无 Vault 时也可用（跳过去重）。不写 Vault |
 | `paper_notes_get` | 读 `{paper}/NOTES.md`（文件不存在则空字符串） |

@@ -63,6 +63,11 @@ const TABLE: &[OpClassification] = &[
         OpPermission::CatalogWrite,
     ),
     spec(
+        "paper.set_meta",
+        OpStability::Stable,
+        OpPermission::CatalogWrite,
+    ),
+    spec(
         "paper.tag.add",
         OpStability::Stable,
         OpPermission::CatalogWrite,

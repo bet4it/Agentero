@@ -79,6 +79,31 @@ pub enum PaperCmd {
         #[arg(long = "false")]
         set_false: bool,
     },
+    /// Update catalog metadata fields (e.g. publication/venue, title, date, doi, arxiv_id, authors).
+    #[command(alias = "update")]
+    SetMeta {
+        /// Vault-relative path or paper id.
+        #[arg(value_hint = ValueHint::DirPath)]
+        r#ref: String,
+        /// Set publication / venue name.
+        #[arg(long = "publication", value_name = "VENUE")]
+        publication: Option<String>,
+        /// Set paper title.
+        #[arg(long = "title", value_name = "TITLE")]
+        title: Option<String>,
+        /// Set publication date (YYYY, YYYY-MM, or YYYY-MM-DD).
+        #[arg(long = "date", value_name = "DATE")]
+        date: Option<String>,
+        /// Set DOI.
+        #[arg(long = "doi", value_name = "DOI")]
+        doi: Option<String>,
+        /// Set arXiv ID.
+        #[arg(long = "arxiv-id", value_name = "ARXIV_ID")]
+        arxiv_id: Option<String>,
+        /// Set authors (comma-separated or repeatable).
+        #[arg(long = "authors", value_name = "AUTHORS", value_delimiter = ',')]
+        authors: Option<Vec<String>>,
+    },
     /// Download PDF / arXiv TeX for an existing paper.
     Download {
         #[arg(value_hint = ValueHint::DirPath)]
@@ -224,6 +249,37 @@ pub async fn run(cmd: PaperCmd, globals: &GlobalOpts) -> Result<Value, CliError>
         PaperCmd::Paths { r#ref } => paths(globals, &r#ref),
         PaperCmd::Delete { path, files } => delete(globals, &path, files),
         PaperCmd::SetRead { r#ref, set_false } => set_read(globals, &r#ref, !set_false),
+        PaperCmd::SetMeta {
+            r#ref,
+            publication,
+            title,
+            date,
+            doi,
+            arxiv_id,
+            authors,
+        } => {
+            if publication.is_none()
+                && title.is_none()
+                && date.is_none()
+                && doi.is_none()
+                && arxiv_id.is_none()
+                && authors.is_none()
+            {
+                return Err(CliError::message(
+                    "at least one metadata field (--publication, --title, --date, --doi, --arxiv-id, --authors) must be specified",
+                ));
+            }
+            let patch = papers::PaperMetaPatch {
+                title,
+                authors,
+                date,
+                doi,
+                arxiv_id,
+                publication,
+                ..Default::default()
+            };
+            set_meta(globals, &r#ref, patch)
+        }
         PaperCmd::Download { r#ref } => download(globals, &r#ref).await,
         PaperCmd::Parse { r#ref, force } => parse(globals, &r#ref, force).await,
         PaperCmd::Move { from, dest_parent } => move_paper(globals, &from, &dest_parent),
@@ -679,6 +735,27 @@ fn set_read(globals: &GlobalOpts, ref_: &str, is_read: bool) -> Result<Value, Cl
                 style.path(&row.path)
             )]),
         );
+    }
+    Ok(v)
+}
+
+fn set_meta(
+    globals: &GlobalOpts,
+    ref_: &str,
+    patch: papers::PaperMetaPatch,
+) -> Result<Value, CliError> {
+    let vault = resolve_vault(globals)?;
+    let paper = resolve_paper(&vault, ref_, globals)?;
+    let row = papers::update_meta(&vault, &paper.path, &patch)?;
+    let style = globals.style;
+    let mut v = to_value(&row)?;
+    if let Some(obj) = v.as_object_mut() {
+        let mut lines = Vec::new();
+        if let Some(pub_str) = &row.publication {
+            lines.push(format!("{} {}", style.key("publication"), pub_str));
+        }
+        lines.push(format!("{} {}", style.key("path"), style.path(&row.path)));
+        obj.insert("lines".into(), json!(lines));
     }
     Ok(v)
 }

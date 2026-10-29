@@ -253,6 +253,17 @@ pub fn set_read(vault: &Path, ref_: &str, is_read: bool) -> Result<PaperGetOut, 
     Ok(PaperGetOut::from_record(&row))
 }
 
+pub fn update_meta(
+    vault: &Path,
+    ref_: &str,
+    patch: &papers::PaperMetaPatch,
+) -> Result<PaperGetOut, AppError> {
+    let paper = resolve_paper(vault, ref_)?;
+    let mut row = papers::update_meta(vault, &paper.path, patch)?;
+    strip_internal_tags(&mut row);
+    Ok(PaperGetOut::from_record(&row))
+}
+
 /// One page's text for `paper_text_get`.
 #[derive(Debug, Serialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]

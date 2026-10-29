@@ -181,6 +181,30 @@ pub fn build() -> Vec<OpSpec> {
             ],
         ),
         op(
+            "paper.set_meta",
+            Some("agentero paper set-meta"),
+            Some("paper_set_meta"),
+            "Update catalog metadata fields (publication, title, date, doi, arxiv_id, authors).",
+            OpSideEffect::Write,
+            both,
+            false,
+            json!({
+                "ref": "paper id or path",
+                "publication?": "string (venue/journal/conference)",
+                "title?": "string",
+                "date?": "string (YYYY, YYYY-MM, YYYY-MM-DD)",
+                "doi?": "string",
+                "arxivId?": "string",
+                "authors?": ["string"]
+            }),
+            json!({"id": "string", "path": "string", "title": "string", "publication?": "string"}),
+            &["paper_not_found", "message"],
+            &[
+                "agentero paper set-meta papers/demo --publication \"NeurIPS 2024\" --json",
+                "MCP paper_set_meta { \"ref\": \"papers/demo\", \"publication\": \"NeurIPS 2024\" }",
+            ],
+        ),
+        op(
             "paper.tag.add",
             Some("agentero paper tag add"),
             Some("paper_tag_add"),

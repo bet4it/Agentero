@@ -2080,3 +2080,72 @@ fn import_pdf_single_and_batch() {
     assert_eq!(v["ok"], false);
     assert_eq!(v["error"]["code"], "import_failed");
 }
+
+#[test]
+fn paper_set_meta_updates_catalog_and_metadata_json() {
+    let tmp = tempdir().unwrap();
+    let vault = tmp.path().join("v");
+    create_vault(&vault);
+
+    let paper = vault.join("papers").join("demo");
+    fs::create_dir_all(&paper).unwrap();
+    fs::write(paper.join("NOTES.md"), "# Demo\n").unwrap();
+    seed_paper(&vault, "papers/demo", "demo", "Demo Paper");
+
+    // 1. Update metadata fields via set-meta
+    let out = agentero()
+        .args([
+            "--vault",
+            vault.to_str().unwrap(),
+            "paper",
+            "set-meta",
+            "papers/demo",
+            "--publication",
+            "NeurIPS 2024",
+            "--date",
+            "2024-08-14",
+            "--doi",
+            "10.1234/demo.2024",
+            "--authors",
+            "Alice, Bob",
+            "--json",
+        ])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let v: Value = serde_json::from_slice(&out).unwrap();
+    assert_eq!(v["ok"], true);
+    assert_eq!(v["data"]["publication"], "NeurIPS 2024");
+    assert_eq!(v["data"]["date"], "2024-08-14");
+    assert_eq!(v["data"]["doi"], "10.1234/demo.2024");
+    assert_eq!(v["data"]["meta_source"], "manual");
+
+    // Verify sidecar metadata.json written
+    let meta_json_path = paper.join("metadata.json");
+    assert!(meta_json_path.is_file());
+    let meta_file: Value =
+        serde_json::from_str(&fs::read_to_string(&meta_json_path).unwrap()).unwrap();
+    assert_eq!(meta_file["publication"], "NeurIPS 2024");
+    assert_eq!(meta_file["doi"], "10.1234/demo.2024");
+
+    // 2. Error case: no fields specified
+    let out = agentero()
+        .args([
+            "--vault",
+            vault.to_str().unwrap(),
+            "paper",
+            "set-meta",
+            "papers/demo",
+            "--json",
+        ])
+        .assert()
+        .failure()
+        .get_output()
+        .stdout
+        .clone();
+    let v: Value = serde_json::from_slice(&out).unwrap();
+    assert_eq!(v["ok"], false);
+    assert_eq!(v["error"]["code"], "message");
+}
