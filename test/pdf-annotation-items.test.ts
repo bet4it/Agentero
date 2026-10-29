@@ -1,7 +1,22 @@
-import { PdfAnnotationSubtype, type PdfLinkAnnoObject } from "@embedpdf/models";
+import { PluginRegistry, startLoadingDocument } from "@embedpdf/core";
+import {
+	PdfAnnotationSubtype,
+	type PdfEngine,
+	type PdfHighlightAnnoObject,
+	type PdfLinkAnnoObject,
+} from "@embedpdf/models";
 import type { AnnotationTransferItem } from "@embedpdf/plugin-annotation";
+import {
+	AnnotationPlugin,
+	AnnotationPluginPackage,
+} from "@embedpdf/plugin-annotation";
+import { InteractionManagerPluginPackage } from "@embedpdf/plugin-interaction-manager";
+import { SelectionPluginPackage } from "@embedpdf/plugin-selection";
 import { describe, expect, it } from "vitest";
-import { dedupeAnnotationItems } from "@/lib/pdf/highlight/annotation-items";
+import {
+	dedupeAnnotationItems,
+	planAnnotationItemImport,
+} from "@/lib/pdf/highlight/annotation-items";
 
 function link(id: string, pageIndex = 0): AnnotationTransferItem {
 	return {
@@ -13,6 +28,25 @@ function link(id: string, pageIndex = 0): AnnotationTransferItem {
 			target: { type: "destination", destination: { pageIndex: 2, view: [] } },
 			contents: "",
 		} as PdfLinkAnnoObject,
+	};
+}
+
+function highlight(
+	id: string,
+	overrides: Partial<PdfHighlightAnnoObject> = {},
+): AnnotationTransferItem {
+	return {
+		annotation: {
+			id,
+			pageIndex: 0,
+			type: PdfAnnotationSubtype.HIGHLIGHT,
+			rect: { origin: { x: 10, y: 20 }, size: { width: 30, height: 10 } },
+			strokeColor: "#fcd34d",
+			color: "#fcd34d",
+			opacity: 0.4,
+			contents: "",
+			...overrides,
+		} as PdfHighlightAnnoObject,
 	};
 }
 
@@ -78,6 +112,110 @@ describe("annotation transfer deduplication", () => {
 			expect(incoming).toHaveLength(0);
 			saved = dedupeAnnotationItems([native, ...saved]);
 			expect(saved).toHaveLength(1);
+		}
+	});
+
+	it("restores saved highlight overrides instead of re-importing the same native id", () => {
+		const native = highlight("stable-highlight", {
+			contents: "",
+			strokeColor: "#ffff00",
+			color: "#ffff00",
+			custom: { paletteKey: "yellow", quote: "selection" },
+		}).annotation;
+		const saved = highlight("stable-highlight", {
+			contents: "saved note",
+			strokeColor: "#ef4444",
+			color: "#ef4444",
+			custom: { paletteKey: "red", quote: "selection" },
+		});
+
+		const plan = planAnnotationItemImport([saved], [native]);
+
+		expect(plan.imports).toEqual([]);
+		expect(plan.highlightOverrides).toHaveLength(1);
+		expect(plan.highlightOverrides[0]).toMatchObject({
+			pageIndex: 0,
+			id: "stable-highlight",
+			patch: {
+				contents: "saved note",
+				strokeColor: "#ef4444",
+				color: "#ef4444",
+				custom: { paletteKey: "red", quote: "selection" },
+			},
+		});
+	});
+
+	it("does not update an identical native highlight or append a second page id", () => {
+		const native = highlight("stable-highlight", {
+			custom: { paletteKey: "yellow", quote: "selection" },
+		}).annotation;
+		const saved = highlight("stable-highlight", {
+			custom: { quote: "selection", paletteKey: "yellow" },
+		});
+
+		const plan = planAnnotationItemImport([saved], [native]);
+
+		expect(plan.imports).toEqual([]);
+		expect(plan.highlightOverrides).toEqual([]);
+	});
+
+	it("still imports a new highlight while suppressing redundant native links", () => {
+		const native = link("native-link").annotation;
+		const savedLink = link("saved-link");
+		const savedHighlight = highlight("new-highlight");
+
+		const plan = planAnnotationItemImport(
+			[savedLink, savedHighlight],
+			[native],
+		);
+
+		expect(plan.imports).toEqual([savedHighlight]);
+		expect(plan.highlightOverrides).toEqual([]);
+	});
+
+	it("updates the real plugin store without appending a duplicate page id", async () => {
+		const registry = new PluginRegistry({} as PdfEngine);
+		registry.registerPlugin(InteractionManagerPluginPackage);
+		registry.registerPlugin(SelectionPluginPackage);
+		registry.registerPlugin(AnnotationPluginPackage, { autoCommit: false });
+		try {
+			await registry.initialize();
+			const docId = "stable-highlight";
+			registry.getStore().dispatchToCore(startLoadingDocument(docId));
+			registry.getStore().dispatchToPlugin(AnnotationPlugin.id, {
+				type: "ANNOTATION/SET_ANNOTATIONS",
+				payload: {
+					documentId: docId,
+					annotations: {
+						0: [highlight("native-highlight").annotation],
+					},
+				},
+			});
+
+			const plugin = registry.getPlugin<AnnotationPlugin>(AnnotationPlugin.id);
+			if (!plugin) throw new Error("Annotation plugin did not initialize");
+			const scope = plugin.provides().forDocument(docId);
+			const saved = highlight("native-highlight", {
+				contents: "saved note",
+				strokeColor: "#ef4444",
+				color: "#ef4444",
+			});
+			const plan = planAnnotationItemImport(
+				[saved],
+				scope.getAnnotations().map(({ object }) => object),
+			);
+
+			scope.updateAnnotations(plan.highlightOverrides);
+
+			const annotations = scope.getAnnotations();
+			expect(annotations).toHaveLength(1);
+			expect(annotations[0]?.object).toMatchObject({
+				id: "native-highlight",
+				contents: "saved note",
+				strokeColor: "#ef4444",
+			});
+		} finally {
+			await registry.destroy();
 		}
 	});
 });

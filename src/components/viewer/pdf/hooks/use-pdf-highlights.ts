@@ -43,7 +43,7 @@ import type { PdfViewerProps } from "@/components/viewer/pdf/types";
 import i18n from "@/i18n";
 import { errorText } from "@/lib/core/error";
 import { notifyError } from "@/lib/core/notify";
-import { dedupeAnnotationItems } from "@/lib/pdf/highlight/annotation-items";
+import { planAnnotationItemImport } from "@/lib/pdf/highlight/annotation-items";
 import {
 	ANNOTATIONS_FILE,
 	type HighlightCustom,
@@ -310,15 +310,17 @@ export function usePdfHighlights({
 			}
 			if (items.length) {
 				importingRef.current = true;
-				scope.importAnnotations(
-					dedupeAnnotationItems(
-						items,
-						scope
-							.getAnnotations()
-							.filter(isLiveAnnotation)
-							.map((item) => item.object),
-					),
+				const plan = planAnnotationItemImport(
+					items,
+					scope
+						.getAnnotations()
+						.filter(isLiveAnnotation)
+						.map((item) => item.object),
 				);
+				if (plan.imports.length) scope.importAnnotations(plan.imports);
+				if (plan.highlightOverrides.length) {
+					scope.updateAnnotations(plan.highlightOverrides);
+				}
 				setTimeout(() => {
 					importingRef.current = false;
 					rebuildHighlights();
@@ -368,10 +370,13 @@ export function usePdfHighlights({
 				.map((a) => a.object);
 			const items = await loadAnnotationItems(paperAbsPath);
 			if (cancelled) return;
-			const fresh = dedupeAnnotationItems(items, existing);
-			if (!fresh.length) return;
+			const plan = planAnnotationItemImport(items, existing);
+			if (!plan.imports.length && !plan.highlightOverrides.length) return;
 			importingRef.current = true;
-			scope.importAnnotations(fresh);
+			if (plan.imports.length) scope.importAnnotations(plan.imports);
+			if (plan.highlightOverrides.length) {
+				scope.updateAnnotations(plan.highlightOverrides);
+			}
 			setTimeout(() => {
 				importingRef.current = false;
 				rebuildHighlights();
