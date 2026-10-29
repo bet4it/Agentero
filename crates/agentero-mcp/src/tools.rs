@@ -1992,4 +1992,69 @@ mod schema_tests {
         assert!(icons[0].src.starts_with("data:image/png;base64,"));
         assert_eq!(info.server_info.title.as_deref(), Some("Agentero"));
     }
+
+    #[tokio::test]
+    async fn paper_set_meta_protocol_updates_catalog_and_metadata_json() {
+        use agentero_core::features::paper::catalog::papers::{self, PaperRecord};
+        use rmcp::{model::CallToolRequestParams, ServiceExt};
+        use serde_json::json;
+        let vault = tempfile::tempdir().unwrap();
+        let root = vault.path();
+        agentero_core::features::vault::create_vault(root, "en").unwrap();
+        let paper_dir = root.join("papers/alpha");
+        std::fs::create_dir_all(&paper_dir).unwrap();
+        papers::upsert_paper(
+            root,
+            &PaperRecord::local_pdf("alpha".into(), "Alpha Title".into()).at_path("papers/alpha"),
+        )
+        .unwrap();
+
+        let ctrl = std::sync::Arc::new(McpController::new());
+        ctrl.set_vault(Some(root.to_string_lossy().into_owned()));
+        let (server_io, client_io) = tokio::io::duplex(65536);
+        let server =
+            tokio::spawn(async move { AgenteroMcp::new(ctrl).serve(server_io).await.unwrap() });
+        let mut client = ().serve(client_io).await.unwrap();
+        let mut server = server.await.unwrap();
+
+        let res = client
+            .call_tool(
+                CallToolRequestParams::new("paper_set_meta").with_arguments(
+                    json!({
+                        "ref": "papers/alpha",
+                        "publication": "NeurIPS 2024",
+                        "title": "Updated Title",
+                        "date": "2024-12",
+                        "doi": "10.1234/demo.2024",
+                        "authors": ["Alice", "Bob"]
+                    })
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+                ),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(res.is_error, Some(false));
+        let out = res.structured_content.unwrap();
+        assert_eq!(out["id"], "alpha");
+        assert_eq!(out["title"], "Updated Title");
+        assert_eq!(out["publication"], "NeurIPS 2024");
+        assert_eq!(out["date"], "2024-12");
+        assert_eq!(out["doi"], "10.1234/demo.2024");
+        assert_eq!(out["authors"], json!(["Alice", "Bob"]));
+
+        // Verify metadata.json was written to disk
+        let sidecar: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(paper_dir.join("metadata.json")).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(sidecar["publication"], "NeurIPS 2024");
+        assert_eq!(sidecar["title"], "Updated Title");
+        assert_eq!(sidecar["doi"], "10.1234/demo.2024");
+
+        client.close().await.unwrap();
+        server.close().await.unwrap();
+    }
 }

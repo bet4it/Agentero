@@ -244,6 +244,25 @@ agentero paper tag list --all
 
 `paper delete` 默认移入可恢复回收站（由桌面端管理恢复与清空）；明确传 `--files` 才会物理删除。
 
+### 更新论文元数据（`paper set-meta` / `paper update`）
+
+`paper set-meta`（别名 `update`）用于更新 catalog 中的论文元数据，并同步落盘到该论文目录下的 `metadata.json`。支持修改出版物/期刊会议（`--publication`）、标题（`--title`）、发表日期（`--date`）、DOI（`--doi`）、arXiv ID（`--arxiv-id`）以及作者列表（`--authors`）：
+
+```bash
+# 修改论文所属会议/期刊
+agentero paper set-meta papers/demo --publication "NeurIPS 2024" --json
+
+# 同时更新出版物、发表日期与 DOI
+agentero paper set-meta papers/demo --publication "NeurIPS 2024" --date 2024-12 --doi "10.1234/demo.2024" --json
+
+# 修改标题与作者列表（逗号分隔）
+agentero paper set-meta papers/demo --title "New Title" --authors "Alice, Bob, Carol" --json
+```
+
+- **持久化机制**：更新操作会实时写入 `catalog.sqlite` 并将 `meta_source` 标记为 `"manual"`，同时原子刷新论文目录下的 `metadata.json`。
+- **失效标签清理**：修改 `publication` 时，底层会自动清理历史残留且已不再匹配的 `#easyscholar:` 级别标签。
+- 至少需指定一个元数据参数；可通过 `agentero describe paper.set_meta --json` 查看完整契约。
+
 同 Vault 论文移动与桌面、本地 Connector 共用 core 用例：更新文件夹、Catalog/页数路径与已解析的 Wiki 链接；Catalog 提交失败时补偿文件和链接。CLI 为本次操作构建 Wiki 索引，无本进程未保存编辑状态；不能替另一个桌面进程保护未保存内容。移动到当前父目录为成功 no-op。目标父目录不存在时会自动创建；目标已存在或路径逃出 `papers/` 时失败且不改 Catalog：
 
 ```bash

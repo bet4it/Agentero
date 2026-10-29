@@ -140,6 +140,7 @@ tunnel-client run --profile agentero
 
 - `paper_list` / `paper_get` — 论文 metadata（list 默认瘦字段；`fields` / `full` 按需）
 - `paper_set_read` — 标记已读/未读
+- `paper_set_meta` — 更新论文元数据（所属会议/期刊、标题、日期、DOI 等）
 - `import_id` — arXiv / DOI / URL 入库
 - `paper_notes_get` / `paper_notes_write` — 读写该篇 `NOTES.md`
 - `paper_tag_add` / `paper_tag_rm` — 标签
