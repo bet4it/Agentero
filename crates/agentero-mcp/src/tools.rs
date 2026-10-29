@@ -100,6 +100,34 @@ struct PaperSetReadArgs {
     vault: Option<String>,
 }
 
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct PaperSetMetaArgs {
+    /// Paper id or vault-relative folder path (`papers/…`).
+    r#ref: String,
+    /// Authoritative publication / venue name (e.g. "NeurIPS 2024").
+    #[serde(default)]
+    publication: Option<String>,
+    /// Paper title.
+    #[serde(default)]
+    title: Option<String>,
+    /// Publication date (YYYY, YYYY-MM, or YYYY-MM-DD).
+    #[serde(default)]
+    date: Option<String>,
+    /// DOI string.
+    #[serde(default)]
+    doi: Option<String>,
+    /// arXiv ID.
+    #[serde(default)]
+    arxiv_id: Option<String>,
+    /// Author names.
+    #[serde(default)]
+    authors: Option<Vec<String>>,
+    /// Optional absolute local vault path from `vault_list`; defaults to the open vault.
+    #[serde(default)]
+    vault: Option<String>,
+}
+
 fn default_true() -> bool {
     true
 }
@@ -891,6 +919,32 @@ impl AgenteroMcp {
     }
 
     #[tool(
+        description = "Update catalog metadata fields for a paper (e.g. publication/venue, title, date, doi, arxiv_id, authors)."
+    )]
+    async fn paper_set_meta(
+        &self,
+        Parameters(args): Parameters<PaperSetMetaArgs>,
+    ) -> Result<Json<paper::PaperGetOut>, CallToolResult> {
+        let vault = match self.ctrl.resolve_vault(args.vault.as_deref()) {
+            Ok(v) => v,
+            Err(e) => return Err(tool_err(e)),
+        };
+        let patch = agentero_core::features::paper::catalog::papers::PaperMetaPatch {
+            title: args.title,
+            authors: args.authors,
+            date: args.date,
+            doi: args.doi,
+            arxiv_id: args.arxiv_id,
+            publication: args.publication,
+            ..Default::default()
+        };
+        match paper::update_meta(&vault, &args.r#ref, &patch) {
+            Ok(row) => Ok(Json(row)),
+            Err(e) => Err(tool_err(e)),
+        }
+    }
+
+    #[tool(
         description = "Move a paper or papers organization folder under a new parent under papers/. Preserves the basename, updates wiki links and catalog paths, and optionally migrates to another vault via to_vault (paper id must be unique there). Use file_move for renaming a file or moving non-paper paths."
     )]
     async fn paper_move(
@@ -1396,7 +1450,7 @@ mod schema_tests {
         use serde_json::json;
         let vault = tempfile::tempdir().unwrap();
         let fixture =
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../test/fixtures/mcp-search");
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../test/fixtures/mcp-search");
         let mut before = Vec::new();
         for rel in [
             "papers/alpha/PAPER.md",
@@ -1689,7 +1743,7 @@ mod schema_tests {
 
     fn serve_fixture_vault(root: &std::path::Path, rels: &[&str]) {
         let fixture =
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../test/fixtures/mcp-search");
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../test/fixtures/mcp-search");
         for rel in rels {
             let bytes = std::fs::read(fixture.join(rel)).unwrap();
             let target = root.join(rel);

@@ -282,6 +282,7 @@ mod tests {
             "page.read",
         ];
         const CATALOG_WRITE: &[&str] = &[
+            "paper.set_meta",
             "paper.set_read",
             "paper.tag.add",
             "paper.tag.rm",
