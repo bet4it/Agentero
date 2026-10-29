@@ -13,6 +13,7 @@ import {
 	requestAuth,
 	signOut,
 } from "tauri-plugin-better-auth/client";
+import { CloudUsageLine } from "@/components/settings/cloud-usage";
 import { Button } from "@/components/ui/button";
 import { accountWebOrigin } from "@/features/account/client";
 import {
@@ -70,6 +71,10 @@ function SignedInAccount() {
 				>
 					{t("editProfile")}
 				</Button>
+			</div>
+			<div className="space-y-2">
+				<p className="text-sm font-medium">{t("cloudSync.title")}</p>
+				<CloudUsageLine subject="user" namespace="account" />
 			</div>
 			<div className="space-y-2">
 				<div className="flex items-center justify-between gap-3">

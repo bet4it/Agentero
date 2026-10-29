@@ -9,10 +9,12 @@
 //! conditional-write probe exist for `sync_configure`'s connection test.
 
 use crate::error::AppError;
+use crate::features::sync::agentero::AgenteroClient;
 use crate::features::sync::config::{SyncBackendConfig, SyncBackendKind};
 use crate::features::sync::s3::S3Client;
 use crate::features::sync::webdav::WebdavClient;
 use std::future::Future;
+use std::path::Path;
 
 pub enum PutCondition {
     /// Create-only (`If-None-Match: *`).
@@ -53,13 +55,15 @@ pub trait RemoteStore: Send + Sync {
 pub enum SyncStore {
     S3(S3Client),
     Webdav(WebdavClient),
+    Agentero(AgenteroClient),
 }
 
 impl SyncStore {
-    pub fn new(cfg: &SyncBackendConfig) -> Result<Self, AppError> {
+    pub fn new(cfg: &SyncBackendConfig, vault: &Path) -> Result<Self, AppError> {
         match cfg.backend {
             SyncBackendKind::S3 => Ok(Self::S3(S3Client::new(cfg)?)),
             SyncBackendKind::Webdav => Ok(Self::Webdav(WebdavClient::new(cfg)?)),
+            SyncBackendKind::Agentero => Ok(Self::Agentero(AgenteroClient::new(cfg, vault)?)),
             SyncBackendKind::Git => Err(AppError::message(
                 "git sync does not use the blob/manifest store",
             )),
@@ -72,6 +76,7 @@ impl RemoteStore for SyncStore {
         match self {
             Self::S3(c) => c.ensure_root().await,
             Self::Webdav(c) => c.ensure_root().await,
+            Self::Agentero(c) => c.ensure_root().await,
         }
     }
 
@@ -79,6 +84,7 @@ impl RemoteStore for SyncStore {
         match self {
             Self::S3(c) => c.get(key).await,
             Self::Webdav(c) => c.get(key).await,
+            Self::Agentero(c) => c.get(key).await,
         }
     }
 
@@ -91,6 +97,7 @@ impl RemoteStore for SyncStore {
         match self {
             Self::S3(c) => c.put(key, body, condition).await,
             Self::Webdav(c) => c.put(key, body, condition).await,
+            Self::Agentero(c) => c.put(key, body, condition).await,
         }
     }
 
@@ -98,6 +105,7 @@ impl RemoteStore for SyncStore {
         match self {
             Self::S3(c) => c.probe_conditional_writes().await,
             Self::Webdav(c) => c.probe_conditional_writes().await,
+            Self::Agentero(c) => c.probe_conditional_writes().await,
         }
     }
 }

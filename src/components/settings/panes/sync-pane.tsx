@@ -14,6 +14,10 @@ import {
 } from "react-icons/si";
 import { JianguoyunIcon } from "@/components/icons/jianguoyun-icon";
 import {
+	CloudUsageLine,
+	useCloudUsage,
+} from "@/components/settings/cloud-usage";
+import {
 	HelpLabel,
 	PageTitle,
 	SettingsGroup,
@@ -40,6 +44,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { authClient } from "@/features/account/client";
 import { formatLocaleTimestamp } from "@/i18n";
 import { formatBytes } from "@/lib/core/background-tasks";
 import { events } from "@/lib/core/bindings";
@@ -151,6 +156,7 @@ const GIT_PROVIDER_LINKS: SyncProviderLink[] = [
 ];
 
 const BACKEND_OPTIONS = [
+	{ value: "agentero", labelKey: "sync.backendAgentero" },
 	{ value: "s3", labelKey: "sync.backendS3" },
 	{ value: "webdav", labelKey: "sync.backendWebdav" },
 	{ value: "git", labelKey: "sync.backendGit" },
@@ -171,6 +177,24 @@ export function SyncPane({ vaultPath }: { vaultPath: string | null }) {
 	const [syncError, setSyncError] = useState<string | null>(null);
 	const [advancedOpen, setAdvancedOpen] = useState(false);
 	const [scopeSizes, setScopeSizes] = useState<SyncScopeSizes | null>(null);
+	const [activeOrgId, setActiveOrgId] = useState("");
+	const cloudSubject =
+		form.agenteroSubject === "organization" ? "organization" : "user";
+	const cloudUsage = useCloudUsage(
+		cloudSubject,
+		cloudSubject === "organization" ? activeOrgId || undefined : undefined,
+	);
+
+	useEffect(() => {
+		let cancelled = false;
+		void authClient.getSession().then((result) => {
+			const id = result.data?.session.activeOrganizationId ?? "";
+			if (!cancelled) setActiveOrgId(id);
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	const refresh = useCallback(async () => {
 		if (!localVault) return;
@@ -259,14 +283,22 @@ export function SyncPane({ vaultPath }: { vaultPath: string | null }) {
 	const patchScope = (key: keyof SyncBackendConfig["scope"], value: boolean) =>
 		patch({ scope: { ...scope, [key]: value } });
 
+	const isAgentero = form.backend === "agentero";
 	const isWebdav = form.backend === "webdav";
 	const isGit = form.backend === "git";
 	const backendLocked = status?.configured === true;
-	const providerLinks = isGit
-		? GIT_PROVIDER_LINKS
-		: isWebdav
-			? WEBDAV_PROVIDER_LINKS
-			: SYNC_PROVIDER_LINKS;
+	const providerLinks = isAgentero
+		? []
+		: isGit
+			? GIT_PROVIDER_LINKS
+			: isWebdav
+				? WEBDAV_PROVIDER_LINKS
+				: SYNC_PROVIDER_LINKS;
+	const cloudBlocked =
+		isAgentero &&
+		(!cloudUsage?.signedIn ||
+			cloudUsage.limit === 0 ||
+			(cloudSubject === "organization" && !activeOrgId));
 
 	const save = async () => {
 		setSaving(true);
@@ -376,12 +408,16 @@ export function SyncPane({ vaultPath }: { vaultPath: string | null }) {
 				type="button"
 				size="sm"
 				onClick={() => void save()}
-				disabled={saving || syncing}
+				disabled={saving || syncing || cloudBlocked}
 			>
 				{saving ? (
 					<LoaderCircle data-icon="inline-start" className="animate-spin" />
 				) : null}
-				{status?.configured ? t("sync.save") : t("sync.connect")}
+				{isAgentero && !status?.configured
+					? t("sync.useAccount")
+					: status?.configured
+						? t("sync.save")
+						: t("sync.connect")}
 			</Button>
 		) : (
 			<Button
@@ -439,7 +475,12 @@ export function SyncPane({ vaultPath }: { vaultPath: string | null }) {
 							<Select
 								value={form.backend}
 								onValueChange={(value) => {
-									if (value === "s3" || value === "webdav" || value === "git") {
+									if (
+										value === "agentero" ||
+										value === "s3" ||
+										value === "webdav" ||
+										value === "git"
+									) {
 										patch({ backend: value });
 									}
 								}}
@@ -448,7 +489,7 @@ export function SyncPane({ vaultPath }: { vaultPath: string | null }) {
 								<SelectTrigger
 									id="sync-backend"
 									size="sm"
-									className="w-36"
+									className="w-44"
 									aria-labelledby="sync-backend-label"
 								>
 									<SelectValue />
@@ -498,7 +539,48 @@ export function SyncPane({ vaultPath }: { vaultPath: string | null }) {
 				</div>
 			</div>
 
-			{isGit ? (
+			{isAgentero ? (
+				<SettingsGroup>
+					<SettingsRow label={t("sync.space")} htmlFor="sync-space">
+						<Select
+							value={form.agenteroSubject}
+							onValueChange={(value) => {
+								if (value !== "user" && value !== "organization") return;
+								patch({
+									agenteroSubject: value,
+									agenteroOrgId: value === "organization" ? activeOrgId : "",
+								});
+							}}
+							disabled={backendLocked}
+						>
+							<SelectTrigger id="sync-space" size="sm" className="w-44">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="user">{t("sync.spacePersonal")}</SelectItem>
+								<SelectItem value="organization" disabled={!activeOrgId}>
+									{t("sync.spaceTeam")}
+								</SelectItem>
+							</SelectContent>
+						</Select>
+					</SettingsRow>
+					<div className="px-3 py-2">
+						<CloudUsageLine
+							subject={cloudSubject}
+							orgId={
+								cloudSubject === "organization"
+									? activeOrgId || undefined
+									: undefined
+							}
+						/>
+						{cloudSubject === "organization" && !activeOrgId ? (
+							<p className="text-muted-foreground text-xs">
+								{t("sync.noTeam")}
+							</p>
+						) : null}
+					</div>
+				</SettingsGroup>
+			) : isGit ? (
 				<SettingsGroup>
 					<SettingsRow label={t("sync.gitRemote")} htmlFor="sync-gitRemote">
 						{field("gitRemote", {
@@ -625,7 +707,7 @@ export function SyncPane({ vaultPath }: { vaultPath: string | null }) {
 				</SettingsRow>
 			</SettingsGroup>
 
-			{!isWebdav && !isGit ? (
+			{form.backend === "s3" ? (
 				<Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
 					<CollapsibleTrigger asChild>
 						<button

@@ -150,6 +150,9 @@ fn status(vault: &Path, globals: &GlobalOpts) -> Result<Value, CliError> {
                 SyncBackendKind::Git => {
                     format!("git {} ({})", cfg.git_remote, cfg.git_branch)
                 }
+                SyncBackendKind::Agentero => {
+                    format!("agentero {} ({})", cfg.agentero_subject, cfg.agentero_api)
+                }
             };
             lines.push(format!("{} {target}", style.key("backend")));
             if !cfg.prefix.trim().is_empty() {
@@ -197,6 +200,7 @@ async fn configure(
     // stdin JSON) restores the stored value instead of overwriting it.
     cfg.merge_mask(existing.as_ref());
     cfg = cfg.normalized();
+    sync_config::hydrate_agentero(&mut cfg);
     cfg.validate().map_err(|e| {
         // Non-interactive callers cannot fill a missing secret via prompt;
         // point them at the secret channels explicitly.
@@ -228,6 +232,7 @@ async fn configure(
             SyncBackendKind::Git => {
                 format!("{} ({})", cfg.git_remote, cfg.git_branch)
             }
+            SyncBackendKind::Agentero => format!("{} ({})", cfg.agentero_subject, cfg.agentero_api),
         };
         let mut lines = vec![format!("{} {target}", style.key("configured"))];
         lines.push(format!(
@@ -323,6 +328,8 @@ fn assemble_config(
             // System credential helper / SSH agent only; the app never asks
             // for or stores a Git secret.
             SyncBackendKind::Git => {}
+            // Official cloud uses AGENTERO_SYNC_TOKEN, never a prompt.
+            SyncBackendKind::Agentero => {}
         }
     }
     Ok(cfg)

@@ -10,6 +10,13 @@
 	"waiting": "Waiting for browser sign-in…",
 	"signOut": "Sign out",
 	"administration": "Platform administration",
+	"cloudSync": {
+		"title": "Cloud sync",
+		"usedOf": "{{used}} used / {{limit}}",
+		"unlimited": "Unlimited",
+		"signInRequired": "Sign in to see your cloud sync capacity.",
+		"notIncluded": "The current plan does not include cloud sync."
+	},
 	"common": { "cancel": "Cancel" },
 	"org": {
 		"transferOwnership": "Transfer ownership",

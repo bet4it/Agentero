@@ -88,8 +88,9 @@ pub async fn test_connection(vault: &Path, cfg: &SyncBackendConfig) -> Result<bo
     // behavior changed) must re-evaluate conditional-write support instead
     // of preserving a stale `conditional_writes = false`.
     let mut probe = cfg.clone();
+    crate::features::sync::config::hydrate_agentero(&mut probe);
     probe.conditional_writes = true;
-    let client = SyncStore::new(&probe)?;
+    let client = SyncStore::new(&probe, vault)?;
     client.ensure_root().await?;
     client.probe_conditional_writes().await
 }
@@ -102,8 +103,10 @@ pub async fn sync_vault(
     if cfg.backend == SyncBackendKind::Git {
         return crate::features::sync::git::sync_vault(vault, cfg, progress).await;
     }
-    let client = SyncStore::new(cfg)?;
-    run_sync(vault, cfg, &client, progress).await
+    let mut cfg = cfg.clone();
+    crate::features::sync::config::hydrate_agentero(&mut cfg);
+    let client = SyncStore::new(&cfg, vault)?;
+    run_sync(vault, &cfg, &client, progress).await
 }
 
 /// One sync pass under the cross-process vault lock: the desktop Host, the

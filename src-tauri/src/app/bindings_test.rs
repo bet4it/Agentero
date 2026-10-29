@@ -229,6 +229,7 @@ pub(crate) fn export_typescript_bindings() {
             crate::integration::sync::commands::sync_disconnect,
             crate::integration::sync::commands::sync_now,
             crate::integration::sync::commands::sync_scope_sizes,
+            crate::integration::sync::commands::sync_cloud_usage,
             crate::features::vault::watcher::commands::fs_watch_start,
             crate::features::vault::watcher::commands::fs_watch_stop,
             crate::integration::word::word_get_status,

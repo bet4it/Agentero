@@ -935,6 +935,7 @@
 		"advanced": "高级",
 		"localVaultOnly": "云同步仅支持本地 Vault。",
 		"backend": "同步方式",
+		"backendAgentero": "当前账号",
 		"backendS3": "对象存储",
 		"backendWebdav": "WebDAV",
 		"backendGit": "Git",
@@ -974,6 +975,11 @@
 			"finalize": "正在收尾…"
 		},
 		"connect": "连接",
+		"useAccount": "使用当前账号同步",
+		"space": "同步到",
+		"spacePersonal": "个人空间",
+		"spaceTeam": "当前团队",
+		"noTeam": "先在账号里进入一个团队，才能同步到团队空间。",
 		"save": "保存",
 		"autoSync": "自动同步",
 		"interval": "同步间隔",
@@ -984,6 +990,13 @@
 		"scopePdf": "PDF 文件",
 		"scopeSource": "LaTeX 源码",
 		"scopeAttachments": "支撑材料"
+	},
+	"cloudSync": {
+		"title": "云同步",
+		"usedOf": "已用 {{used}} / {{limit}}",
+		"unlimited": "不限",
+		"signInRequired": "登录后可查看云同步容量。",
+		"notIncluded": "当前套餐不包含云同步。"
 	},
 	"plugins": {
 		"install": "从文件夹安装…",

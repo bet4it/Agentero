@@ -609,7 +609,7 @@ pub fn run() {
             // Best-effort final push (bounded); only on Exit so it runs once.
             if matches!(event, tauri::RunEvent::Exit) {
                 app.state::<crate::integration::sync::SyncService>()
-                    .flush_on_exit();
+                    .flush_on_exit(app);
             }
         });
 }

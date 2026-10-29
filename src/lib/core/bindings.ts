@@ -610,6 +610,11 @@ export const commands = {
 	syncNow: (args: SyncVaultArgs) => typedError<ApiResult<SyncOutcome>, string>(__TAURI_INVOKE("sync_now", { args })),
 	syncScopeSizes: (args: SyncVaultArgs) => typedError<ApiResult<SyncScopeSizes>, string>(__TAURI_INVOKE("sync_scope_sizes", { args })),
 	/**
+	 *  Used and included bytes for the signed-in personal or team space.
+	 *  The bearer stays in the keychain; the webview only sees the numbers.
+	 */
+	syncCloudUsage: (args: SyncCloudUsageArgs) => typedError<ApiResult<SyncCloudUsage>, string>(__TAURI_INVOKE("sync_cloud_usage", { args })),
+	/**
 	 *  Start (or restart) watching `vault_path` for this window. Emits
 	 *  `vault:file-changed` to this window when files change on disk.
 	 */
@@ -5253,6 +5258,12 @@ export type SyncBackendConfig = {
 	 *  already match when it is an existing repository.
 	 */
 	gitBranch?: string,
+	/**  `user` or `organization`. Official cloud only. */
+	agenteroSubject?: string,
+	/**  Organization id when [`Self::agentero_subject`] is `organization`. */
+	agenteroOrgId?: string,
+	/**  API origin, for example `https://api.agentero.app`. No trailing slash. */
+	agenteroApi?: string,
 	/**
 	 *  Automatic background sync: once on scheduler start (vault open), after
 	 *  30s of vault quiet, and every `interval_minutes`.
@@ -5276,7 +5287,26 @@ export type SyncBackendConfig = {
  *  Which remote storage backend a vault syncs through. Legacy `sync.json`
  *  entries without the field deserialize as [`SyncBackendKind::S3`].
  */
-export type SyncBackendKind = "s3" | "webdav" | "git";
+export type SyncBackendKind = "s3" | "webdav" | "git" | 
+/**
+ *  Official Agentero cloud. The login token is attached at sync time and
+ *  is never written to `sync.json`.
+ */
+"agentero";
+
+export type SyncCloudUsage = {
+	signedIn: boolean,
+	used: number,
+	limit: number,
+	tier: string,
+	planKey: string,
+};
+
+export type SyncCloudUsageArgs = {
+	/**  `user` or `organization`. */
+	subject: string,
+	orgId: string | null,
+};
 
 export type SyncConfigureArgs = {
 	vaultPath: string,

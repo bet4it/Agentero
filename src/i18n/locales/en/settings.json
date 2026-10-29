@@ -935,6 +935,7 @@
 		"advanced": "Advanced",
 		"localVaultOnly": "Cloud sync is available for local vaults only.",
 		"backend": "Sync method",
+		"backendAgentero": "This account",
 		"backendS3": "Object storage",
 		"backendWebdav": "WebDAV",
 		"backendGit": "Git",
@@ -974,6 +975,11 @@
 			"finalize": "Finalizing…"
 		},
 		"connect": "Connect",
+		"useAccount": "Sync with this account",
+		"space": "Sync to",
+		"spacePersonal": "Personal space",
+		"spaceTeam": "Current team",
+		"noTeam": "Open a team from your account before syncing to a team space.",
 		"save": "Save",
 		"autoSync": "Auto sync",
 		"interval": "Sync interval",
@@ -984,6 +990,13 @@
 		"scopePdf": "PDFs",
 		"scopeSource": "LaTeX sources",
 		"scopeAttachments": "Attachments"
+	},
+	"cloudSync": {
+		"title": "Cloud sync",
+		"usedOf": "{{used}} used / {{limit}}",
+		"unlimited": "Unlimited",
+		"signInRequired": "Sign in to see your cloud sync capacity.",
+		"notIncluded": "The current plan does not include cloud sync."
 	},
 	"plugins": {
 		"install": "Install from folder…",

@@ -10,6 +10,13 @@
 	"waiting": "等待浏览器完成登录…",
 	"signOut": "退出登录",
 	"administration": "平台管理",
+	"cloudSync": {
+		"title": "云同步",
+		"usedOf": "已用 {{used}} / {{limit}}",
+		"unlimited": "不限",
+		"signInRequired": "登录后可查看云同步容量。",
+		"notIncluded": "当前套餐不包含云同步。"
+	},
 	"common": { "cancel": "取消" },
 	"org": {
 		"transferOwnership": "转让所有权",

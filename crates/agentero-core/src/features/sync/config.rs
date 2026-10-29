@@ -21,6 +21,9 @@ pub enum SyncBackendKind {
     S3,
     Webdav,
     Git,
+    /// Official Agentero cloud. The login token is attached at sync time and
+    /// is never written to `sync.json`.
+    Agentero,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default, specta::Type)]
@@ -63,6 +66,19 @@ pub struct SyncBackendConfig {
     /// already match when it is an existing repository.
     #[serde(default = "default_git_branch")]
     pub git_branch: String,
+    /// `user` or `organization`. Official cloud only.
+    #[serde(default = "default_agentero_subject")]
+    pub agentero_subject: String,
+    /// Organization id when [`Self::agentero_subject`] is `organization`.
+    #[serde(default)]
+    pub agentero_org_id: String,
+    /// API origin, for example `https://api.agentero.app`. No trailing slash.
+    #[serde(default)]
+    pub agentero_api: String,
+    /// Session bearer. Not serialized; the host fills it from the keychain.
+    #[serde(skip)]
+    #[specta(skip)]
+    pub agentero_token: String,
     /// Automatic background sync: once on scheduler start (vault open), after
     /// 30s of vault quiet, and every `interval_minutes`.
     #[serde(default = "default_true")]
@@ -94,6 +110,34 @@ fn default_interval_minutes() -> u32 {
 
 fn default_git_branch() -> String {
     "main".into()
+}
+
+fn default_agentero_subject() -> String {
+    "user".into()
+}
+
+/// Fill an official-cloud config from the environment when the host did not
+/// attach a session. Empty values are left alone.
+pub fn hydrate_agentero(cfg: &mut SyncBackendConfig) {
+    if cfg.backend != SyncBackendKind::Agentero {
+        return;
+    }
+    if cfg.agentero_token.trim().is_empty() {
+        if let Ok(token) = std::env::var("AGENTERO_SYNC_TOKEN") {
+            let token = token.trim().to_string();
+            if !token.is_empty() {
+                cfg.agentero_token = token;
+            }
+        }
+    }
+    if cfg.agentero_api.trim().is_empty() {
+        if let Ok(api) = std::env::var("AGENTERO_SYNC_API") {
+            let api = api.trim().trim_end_matches('/').to_string();
+            if !api.is_empty() {
+                cfg.agentero_api = api;
+            }
+        }
+    }
 }
 
 /// Interval choices offered by the settings UI; anything else snaps to 30.
@@ -146,6 +190,21 @@ impl SyncBackendConfig {
                 validate_git_remote(&self.git_remote)?;
                 validate_branch(&self.git_branch)
             }
+            SyncBackendKind::Agentero => {
+                if self.agentero_subject != "user" && self.agentero_subject != "organization" {
+                    return Err(AppError::message(
+                        "cloud sync target must be a personal or team space",
+                    ));
+                }
+                if self.agentero_subject == "organization" && self.agentero_org_id.trim().is_empty()
+                {
+                    return Err(AppError::message("choose a team to sync to"));
+                }
+                if self.agentero_token.trim().is_empty() {
+                    return Err(AppError::message("sign in to use Agentero cloud sync"));
+                }
+                require_https("api", &self.agentero_api)
+            }
         }
     }
 
@@ -167,6 +226,13 @@ impl SyncBackendConfig {
         if self.git_branch.is_empty() {
             self.git_branch = default_git_branch();
         }
+        self.agentero_api = self.agentero_api.trim().trim_end_matches('/').to_string();
+        self.agentero_subject = self.agentero_subject.trim().to_string();
+        if self.agentero_subject.is_empty() {
+            self.agentero_subject = default_agentero_subject();
+        }
+        self.agentero_org_id = self.agentero_org_id.trim().to_string();
+        self.agentero_token = self.agentero_token.trim().to_string();
         if self.backend == SyncBackendKind::Git {
             // Git is a full-vault mirror; the partial scope filter has no
             // meaning there (and is hidden in the settings UI).
@@ -183,6 +249,7 @@ impl SyncBackendConfig {
         let mut out = self.clone();
         out.secret_key = mask_secret(&out.secret_key);
         out.webdav_password = mask_secret(&out.webdav_password);
+        out.agentero_token.clear();
         out
     }
 
@@ -215,6 +282,10 @@ impl SyncBackendConfig {
             SyncBackendKind::Git => {
                 format!("git|{}|{}", self.git_remote.trim(), self.git_branch.trim())
             }
+            SyncBackendKind::Agentero => format!(
+                "agentero|{}|{}|{}",
+                self.agentero_api, self.agentero_subject, self.agentero_org_id
+            ),
         }
     }
 }
@@ -640,6 +711,28 @@ mod tests {
         assert_eq!(
             cfg.remote_identity(),
             "git|https://github.com/u/papers.git|main"
+        );
+    }
+
+    #[test]
+    fn agentero_token_is_not_persisted_and_requires_sign_in() {
+        let cfg = SyncBackendConfig {
+            backend: SyncBackendKind::Agentero,
+            agentero_api: "https://api.agentero.app".into(),
+            agentero_token: "secret-token".into(),
+            ..SyncBackendConfig::default()
+        }
+        .normalized();
+        let json = serde_json::to_string(&cfg).unwrap();
+        assert!(!json.contains("secret-token"));
+        assert!(json.contains("agentero"));
+        assert!(cfg.validate().is_ok());
+        let mut signed_out = cfg.clone();
+        signed_out.agentero_token.clear();
+        assert!(signed_out.validate().is_err());
+        assert_eq!(
+            cfg.remote_identity(),
+            "agentero|https://api.agentero.app|user|"
         );
     }
 
