@@ -367,8 +367,7 @@ pub fn run() {
         // Native menu is macOS-only; the renderer re-syncs the locale on mount.
         #[cfg(target_os = "macos")]
         {
-            let menu = menu::build_menu(app.handle(), "en")?;
-            app.set_menu(menu)?;
+            menu::setup(app.handle())?;
             if let Some(main_win) = app.get_webview_window("main") {
                 window::commands::enable_window_tiling(&main_win);
             }
@@ -517,6 +516,8 @@ pub fn run() {
     {
         builder = builder.on_window_event(|window, event| {
             if matches!(event, tauri::WindowEvent::Destroyed) {
+                #[cfg(target_os = "macos")]
+                menu::release_window(window.app_handle(), window.label());
                 window.state::<FsWatchController>().stop(window.label());
                 // The window is gone, so it must not keep pinning any vault's
                 // Host resources (see `VaultHolders`). The global release

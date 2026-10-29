@@ -167,6 +167,7 @@ pub(crate) fn export_typescript_bindings() {
             crate::features::paper::discovery::recommend::commands::recommend_arxiv_last,
             crate::features::paper::discovery::recommend::commands::probe_embedding,
             crate::app::menu::set_locale,
+            crate::app::menu::set_menu_shortcut_recording,
             crate::integration::plugins::plugin_editor_state,
             crate::integration::plugins::plugin_list,
             crate::integration::plugins::plugin_inspect,

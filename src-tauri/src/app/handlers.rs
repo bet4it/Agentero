@@ -152,6 +152,7 @@ macro_rules! common_commands {
             crate::features::paper::discovery::recommend::commands::recommend_arxiv_last,
             crate::features::paper::discovery::recommend::commands::probe_embedding,
             crate::app::menu::set_locale,
+            crate::app::menu::set_menu_shortcut_recording,
             $($extra)*
         ]
     };

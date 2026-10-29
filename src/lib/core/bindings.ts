@@ -442,12 +442,13 @@ export const commands = {
 	 *  the UI can route the user to the settings page.
 	 */
 	probeEmbedding: (args: ProbeEmbeddingArgs) => __TAURI_INVOKE<ApiResult<ProbeEmbeddingResult>>("probe_embedding", { args }),
-	/**
-	 *  Rebuild and install the native application menu for the given locale.
-	 *  macOS-only: other platforms have no native window menu (actions live in the
-	 *  React title bar + keyboard shortcuts), so this is a no-op there.
-	 */
+	/**  Rebuild the menu with the renderer-resolved locale, including system language. */
 	setLocale: (locale: string) => typedError<null, string>(__TAURI_INVOKE("set_locale", { locale })),
+	/**
+	 *  Suspend all native accelerators until the calling window finishes recording.
+	 *  Other platforms have no native menu and need only the renderer recording guard.
+	 */
+	setMenuShortcutRecording: (recording: boolean) => typedError<null, string>(__TAURI_INVOKE("set_menu_shortcut_recording", { recording })),
 	pluginEditorState: (vaultPath: string, paths: string[]) => typedError<null, string>(__TAURI_INVOKE("plugin_editor_state", { vaultPath, paths })),
 	pluginList: (vaultPath: string) => typedError<Json, string>(__TAURI_INVOKE("plugin_list", { vaultPath })),
 	pluginInspect: (directory: string) => typedError<Json, string>(__TAURI_INVOKE("plugin_inspect", { directory })),
@@ -1575,6 +1576,8 @@ export type ApiResult<T> = {
 export type AppSettings = AppSettings_Serialize | AppSettings_Deserialize;
 
 export type AppSettings_Deserialize = {
+	/**  Null disables a command; absent ids use their default shortcut. */
+	shortcutOverrides?: { [key in string]: ShortcutBinding_Deserialize | null },
 	translatorBaseUrl?: string,
 	/**  EasyScholar key for journal ranking and impact-factor lookups. */
 	easyScholarKey?: string,
@@ -1710,6 +1713,8 @@ export type AppSettings_Deserialize = {
 };
 
 export type AppSettings_Serialize = {
+	/**  Null disables a command; absent ids use their default shortcut. */
+	shortcutOverrides: { [key in string]: ShortcutBinding_Serialize | null },
 	translatorBaseUrl: string,
 	/**  EasyScholar key for journal ranking and impact-factor lookups. */
 	easyScholarKey: string,
@@ -5122,6 +5127,24 @@ export type SettingsGetResult_Serialize = {
 	path: string,
 	/**  Whether the file already existed before this read (false → first run / defaults). */
 	existed: boolean,
+};
+
+export type ShortcutBinding = ShortcutBinding_Serialize | ShortcutBinding_Deserialize;
+
+export type ShortcutBinding_Deserialize = {
+	key: string,
+	meta?: boolean | null,
+	ctrl?: boolean | null,
+	alt?: boolean | null,
+	shift?: boolean | null,
+};
+
+export type ShortcutBinding_Serialize = {
+	key: string,
+	meta?: boolean | null,
+	ctrl?: boolean | null,
+	alt?: boolean | null,
+	shift?: boolean | null,
 };
 
 export type SkillCandidate = {
