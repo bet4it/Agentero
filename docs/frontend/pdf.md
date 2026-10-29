@@ -11,7 +11,7 @@
 
 阅读器 PDFium engine 由窗口共享；后台版面分析与页数探测共用另一实例，两者统一通过 `src/lib/pdf/engine.ts` 创建。全文翻译的重排构建另有一个按需创建的专用实例（见下文双栏段落），构建结束后自动释放。默认优先 **worker 引擎**（PDFium WASM 跑在 Web Worker，降低主线程光栅开销；出图仍需位图转换与 WebView 合成）；启动时经 `whenReady()` 就绪握手 + 8s 超时探针验证（`@embedpdf/engines` patch 同时把 worker 侧 `wasmError` / `onerror` 暴露为就绪失败，不再静默挂起），失败则自动回退主线程 direct engine 并记住结论（旧版库的 worker 变体在 Tauri WebView 下就绪消息丢失，表现为文档永远“正在加载”）。wasm URL 传给 worker 前先解析为绝对地址（blob worker 不能按页面基址解析相对路径）。对未嵌入字体的 PDF，Host 按 macOS / Windows / Linux 的系统字体路径读取一个本机 CJK 字体，通过本地 `blob:` URL 提供给 PDFium；移动端和找不到可读字体时安全跳过，不产生外部字体请求。Engine 宿主位于 React StrictMode 外；失败或超时直接销毁未就绪的 worker，卸载以 AbortSignal 中断握手，迟到的 direct 初始化结果也会销毁。卸载中止不会被记成 worker 不兼容。direct factory 本身返回 Promise，直接 await；Task 使用上游 `toPromise()`，不再补 readiness 或另包回调。工作区只挂载当前可见与最近使用的至多两个 PDF viewer；恢复的隐藏 PDF 标签按需 hydrate，退出保留集合的本地 PDF 字节会释放并在再次激活时重新读取。
 
-阅读光栅采用 [EmbedPDF 官方推荐的低清底图 + 高清瓦片](https://www.embedpdf.com/docs/react/headless/plugins/plugin-tiling)。整页底图固定 `scale: 1`、`dpr: 1`，不随缩放重渲染；保留最近 24 页的 pinned 底图缓存，遮住缩放与回滚时的瓦片空档。高清 `TilingLayer` 按 `min(devicePixelRatio, 2)`（`pdfTileDpr`）出图，使用 `tileSize: 512`、上游默认 `extraRings: 0`，只请求当前视口的瓦片，减少单 PDFium worker 上的预渲染竞争。512px 将 DPR=2 的单块位图边长限制为 1024px，缩短重页面上不可抢占的同步光栅任务；像素密度、底图与上游瓦片生命周期不变。实测与复现见 [瓦片性能对照](../test/pdf-tiling-performance.md)。
+阅读光栅采用 [EmbedPDF 官方推荐的低清底图 + 高清瓦片](https://www.embedpdf.com/docs/react/headless/plugins/plugin-tiling)。整页底图固定 `scale: 1`、`dpr: 1`，不随缩放重渲染；保留最近 24 页的 pinned 底图缓存，遮住缩放与回滚时的瓦片空档。高清 `TilingLayer` 按 `min(devicePixelRatio, 2)`（`pdfTileDpr`）出图，使用 `tileSize: 512`、上游默认 `extraRings: 0`，只请求当前视口的瓦片，减少单 PDFium worker 上的预渲染竞争。512px 将 DPR=2 的单块位图边长限制为 1024px，缩短重页面上不可抢占的同步光栅任务；像素密度、底图与上游瓦片生命周期不变。实测与复现见 [瓦片性能对照](../test/pdf-tiling-performance.md)。整页底图仅在页面进入视口时请求，离开时取消未完成请求，避免 Scroller 缓冲区的屏外重页以 CRITICAL 优先级排在可见瓦片和框选裁剪之前；已有 pinned 底图照常复用。取舍与浏览器 A/B 见 [可见页面优先性能对照](../test/pdf-visible-rendering-performance.md)。
 
 viewport 始终上报滚动容器的真实尺寸，使放大或与笔记分屏时，右侧可见区域也有高清瓦片（#827）。评论列的 `rightGutter` 只通过 zoom 补丁的 `viewportPaddingRight` 从缩放计算中扣除，保留适应宽度与缩放锚点所需的页外留白；手势预览使用同一阅读宽度。纯 PDF 与译文栏传 0，不预留评论空间。滚动容器固定预留滚动条槽（`scrollbar-gutter: stable`）：适应宽度按 `clientWidth` 反推 zoom，若滚动条在首屏排版后才出现，宽度会少约 12px 并触发第二次 fit，写作模式打开时表现为百分比来回跳一档。
 
@@ -218,6 +218,7 @@ Host 下载/解析：[../backend/paper-import.md](../backend/paper-import.md)。
 ## 限制与后续
 
 - #798：低清底图、BMP 编码及移除重复瓦片缓存 / 占位能减少已确认的出图与生命周期开销；Linux / WebKitGTK 的实际帧率与合成耗时仍需在报告者环境复测，不能仅凭 worker 排队判定滚动线程阻塞。
+- 可见页面底图调度已取得 Chromium 收益；完整原生交互与 Windows / Linux A/B 仍需补齐，见 [验收范围](../test/pdf-visible-rendering-performance.md)。合法的大量不同批注不应按内容删除，仍可能有逐项导入成本。
 - 选区几何目前按可见时间 / 指针意图加载，附近文字矩形按页码延迟；如性能记录显示仍与滚动争用 worker，再单独评估真实 scroll-idle 调度，不追加引擎补丁。
 
 - EmbedPDF 升级时继续核对 engines 原生内存 / 坐标 / refcount、tiling 旋转与 DPR、AI 按 backend 选择 ORT 入口的补丁；2.15.1 对应实现仍与 2.14.4 相同，不能仅凭升版删掉。zoom 评论列留白补丁也需核对上游是否已有等价配置。待上游修复 annotation 同 uid 在途变更被旧 commit 清 pending 的问题后，移除删除协调器。
