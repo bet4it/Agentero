@@ -68,7 +68,7 @@ impl ProcessTree {
         {
             self.job.take();
             let _ = self.child.start_kill();
-            return Ok(());
+            Ok(())
         }
         #[cfg(not(windows))]
         self.child.start_kill()
@@ -106,11 +106,11 @@ impl ProcessTree {
             };
             let (status, stdout, stderr) =
                 tokio::try_join!(wait, read_pipe(stdout), read_pipe(stderr))?;
-            return Ok(std::process::Output {
+            Ok(std::process::Output {
                 status,
                 stdout,
                 stderr,
-            });
+            })
         }
         #[cfg(not(windows))]
         self.child.wait_with_output().await
@@ -163,7 +163,7 @@ impl BlockingProcessTree {
         {
             self.job.take();
             let _ = self.child.kill();
-            return Ok(());
+            Ok(())
         }
         #[cfg(not(windows))]
         self.child.kill()
