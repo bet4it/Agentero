@@ -17,7 +17,6 @@ import {
 	SettingsGroup,
 	SettingsRow,
 } from "@/components/settings/settings-layout";
-import { useBuiltinProviderAvailable } from "@/components/settings/use-builtin-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -64,7 +63,10 @@ import {
 	translateSystemTemplateIssue,
 	translateUserTemplateIssue,
 } from "@/lib/translate";
-import { EMPTY_TRANSLATE_PROVIDER_CONFIG } from "@/lib/translate/defaults";
+import {
+	DEFAULT_TRANSLATE_SETTINGS,
+	EMPTY_TRANSLATE_PROVIDER_CONFIG,
+} from "@/lib/translate/defaults";
 import type { ProbeStatus } from "@/lib/ui/probe-status";
 
 /** Resolve API key for save/probe: draft wins; otherwise keep stored (may be mask). */
@@ -114,7 +116,6 @@ export function TranslatePane({
 }) {
 	const { t } = useTranslation("settings");
 	const tr = settings.translate;
-	const builtinAvailable = useBuiltinProviderAvailable();
 	const storedSystem = tr.customSystem || tr.customPrompt;
 	const [systemDraft, setSystemDraft] = useState(storedSystem);
 	const [userDraft, setUserDraft] = useState(tr.customUser);
@@ -133,6 +134,12 @@ export function TranslatePane({
 			patch({ translate: { ...tr, ...partial } }),
 		[patch, tr],
 	);
+	// The built-in channel stays implemented, but it is no longer offered here.
+	// A stored selection is moved to the free default so the picker is not blank.
+	useEffect(() => {
+		if (tr.provider !== BUILTIN_PROVIDER_ID) return;
+		patchTranslate({ provider: DEFAULT_TRANSLATE_SETTINGS.provider });
+	}, [tr.provider, patchTranslate]);
 	const showAgent = tr.provider === "agent";
 	const getProviderConfig = useCallback(
 		(id: CommercialTranslateProviderId): TranslateProviderConfig =>
@@ -141,20 +148,17 @@ export function TranslatePane({
 	);
 	/**
 	 * Free MT + Agent always; commercial only when configured (or currently
-	 * selected). The built-in shows only when its key is compiled in, or when it
-	 * is the stored selection (so a carried-over setting stays visible/disable-able).
+	 * selected). The built-in channel is omitted from this picker.
 	 */
 	const providers = useMemo(
 		() =>
 			listSelectableProviders().filter((s) => {
-				if (s.id === BUILTIN_PROVIDER_ID) {
-					return builtinAvailable || tr.provider === s.id;
-				}
+				if (s.id === BUILTIN_PROVIDER_ID) return false;
 				if (!isCommercialTranslateProvider(s.id)) return true;
 				if (tr.provider === s.id) return true;
 				return isCommercialProviderConfigured(s.id, getProviderConfig(s.id));
 			}),
-		[builtinAvailable, getProviderConfig, tr.provider],
+		[getProviderConfig, tr.provider],
 	);
 	/** Free-MT probe status (Agent never probed here). */
 	const [probeMap, setProbeMap] = useState<FreeMtProbeMap>({});
@@ -210,9 +214,7 @@ export function TranslatePane({
 
 		const initial: FreeMtProbeMap = {};
 		for (const id of FREE_MT_PROVIDER_IDS) {
-			// Skip the built-in when its key is not compiled in: the probe
-			// would only re-report the deterministic no-key failure.
-			if (id === BUILTIN_PROVIDER_ID && !builtinAvailable) continue;
+			if (id === BUILTIN_PROVIDER_ID) continue;
 			initial[id] = "probing";
 		}
 		setProbeMap(initial);
@@ -231,7 +233,7 @@ export function TranslatePane({
 				probingRef.current = false;
 			}
 		});
-	}, [builtinAvailable]);
+	}, []);
 
 	const runCommercialProbe = useCallback(
 		(
@@ -383,25 +385,17 @@ export function TranslatePane({
 						</SelectTrigger>
 						<SelectContent className="max-h-72">
 							{providers.map((s) => {
-								const isBuiltin = s.id === BUILTIN_PROVIDER_ID;
-								// Unavailable built-in stays dotless (disabled item);
-								// an available one probes live like every free engine.
-								const status: FreeMtProbeStatus | undefined =
-									isBuiltin && !builtinAvailable
-										? undefined
-										: isFreeMtProvider(s.id)
-											? (probeMap[s.id] ?? "idle")
-											: isCommercialTranslateProvider(s.id)
-												? (commercialProbeMap[s.id] ?? "idle")
-												: undefined;
+								const status: FreeMtProbeStatus | undefined = isFreeMtProvider(
+									s.id,
+								)
+									? (probeMap[s.id] ?? "idle")
+									: isCommercialTranslateProvider(s.id)
+										? (commercialProbeMap[s.id] ?? "idle")
+										: undefined;
 								const statusLabel =
 									status != null ? t(PROBE_LABEL_KEYS[status]) : null;
 								return (
-									<SelectItem
-										key={s.id}
-										value={s.id}
-										disabled={isBuiltin && !builtinAvailable}
-									>
+									<SelectItem key={s.id} value={s.id}>
 										<span className="flex min-w-0 items-center gap-1.5">
 											{status != null && statusLabel != null ? (
 												<ProviderStatusDot kind={status} label={statusLabel} />

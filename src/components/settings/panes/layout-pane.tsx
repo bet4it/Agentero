@@ -15,7 +15,6 @@ import {
 	SettingsRow,
 } from "@/components/settings/settings-layout";
 import type { SettingsHostContext } from "@/components/settings/types";
-import { useBuiltinProviderAvailable } from "@/components/settings/use-builtin-provider";
 import { Button } from "@/components/ui/button";
 import {
 	Collapsible,
@@ -113,7 +112,6 @@ export function LayoutPane({
 }) {
 	const { t } = useTranslation(["settings", "common"]);
 	const layout = settings.layout;
-	const builtinAvailable = useBuiltinProviderAvailable();
 	const isLocalVault = hostContext.kind === "local";
 	const canManageResults = Boolean(vaultPath) && isLocalVault && isTauri();
 	const [dialogOpen, setDialogOpen] = useState(false);
@@ -140,15 +138,15 @@ export function LayoutPane({
 		},
 	);
 	const parserBackendOptions = PARSER_BACKENDS.filter((backend) => {
+		if (backend === BUILTIN_PROVIDER_ID) return false;
 		if (backend === "local") return true;
-		// The built-in parser has no apiKey, so it is exempt from the configured
-		// check like `local`; gate it on Host availability, keeping a carried-over
-		// selection visible so it renders disabled rather than vanishing.
-		if (backend === BUILTIN_PROVIDER_ID) {
-			return builtinAvailable || backend === layout.parserBackend;
-		}
 		return backend === layout.parserBackend || isProviderConfigured(backend);
 	});
+	// The built-in parser stays implemented, but it is no longer offered here.
+	useEffect(() => {
+		if (layout.parserBackend !== BUILTIN_PROVIDER_ID) return;
+		patch({ layout: { ...layout, parserBackend: "local" } });
+	}, [layout, patch]);
 	// OpenAI-compatible is a catch-all: keep it collapsed under "Other" so the
 	// recommended Paddle / MinerU path stays uncluttered (issue #656).
 	const primaryCards = cards.filter((card) => card.id !== "openaiCompatible");
@@ -259,13 +257,7 @@ export function LayoutPane({
 						</SelectTrigger>
 						<SelectContent className="max-h-72">
 							{parserBackendOptions.map((backend) => (
-								<SelectItem
-									key={backend}
-									value={backend}
-									disabled={
-										backend === BUILTIN_PROVIDER_ID && !builtinAvailable
-									}
-								>
+								<SelectItem key={backend} value={backend}>
 									{t(
 										`layout.parserBackend.${backend}` as "layout.parserBackend.local",
 									)}

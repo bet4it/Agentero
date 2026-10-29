@@ -25,10 +25,6 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-	BUILTIN_PROVIDER_ID,
-	loadBuiltinProviderStatus,
-} from "@/lib/core/builtin";
 import { openExternalUrl } from "@/lib/core/open-external";
 import { isSecretMask, maskSecret } from "@/lib/core/secret-mask";
 import type {
@@ -99,17 +95,11 @@ export function TranslateStep({
 		}
 	};
 
-	const chooseSystemDefault = async () => {
-		// Awaited at click time, not read from render state: the status starts
-		// unresolved, and guessing would clobber a compiled-in built-in provider
-		// with the static TS default.
-		const status = await loadBuiltinProviderStatus();
+	const chooseSystemDefault = () => {
 		patch({
 			translate: {
 				...tr,
-				provider: status?.available
-					? BUILTIN_PROVIDER_ID
-					: DEFAULT_TRANSLATE_SETTINGS.provider,
+				provider: DEFAULT_TRANSLATE_SETTINGS.provider,
 			},
 		});
 		onUseDefault();
@@ -171,7 +161,7 @@ export function TranslateStep({
 					description={t("translate.useDefaultDesc")}
 					recommended
 					recommendedLabel={t("recommended")}
-					onClick={() => void chooseSystemDefault()}
+					onClick={chooseSystemDefault}
 				/>
 				<ChoiceCard
 					icon={<KeyRound className="size-5 text-muted-foreground" />}
