@@ -67,7 +67,7 @@ struct Inner {
     pid: Option<u32>,
     mcp_url: Option<String>,
     last_error: Option<String>,
-    child: Option<Arc<tokio::sync::Mutex<tokio::process::Child>>>,
+    child: Option<Arc<tokio::sync::Mutex<crate::core::process::ProcessTree>>>,
     /// Bumped on every start so poller/waiter tasks from a superseded run
     /// (e.g. an MCP port change) can retire instead of resurrecting the old one.
     generation: u64,
@@ -379,14 +379,13 @@ impl McpTunnelController {
             .env("CONTROL_PLANE_API_KEY", &api_key)
             .env("NO_PROXY", "127.0.0.1,localhost")
             .env_remove("HTTP_PROXY")
-            .env_remove("HTTPS_PROXY")
-            .kill_on_drop(true);
+            .env_remove("HTTPS_PROXY");
         if let Some(url) = proxy.as_deref() {
             cmd.env("AGENTERO_TUNNEL_PROXY", url);
         }
         crate::core::process::hide_console_window_tokio(&mut cmd);
 
-        let child = match cmd.spawn() {
+        let child = match crate::core::process::ProcessTree::spawn(&mut cmd) {
             Ok(child) => child,
             Err(e) => {
                 log::warn!(
@@ -663,7 +662,12 @@ async fn probe_ready(binary: &Path, url_file: &Path, pid: u32) -> (bool, Option<
     // `tunnel-client` is a console binary on Windows; without this flag every
     // keepalive probe flashes a console window on the GUI host.
     crate::core::process::hide_console_window_tokio(&mut cmd);
-    let out = match tokio::time::timeout(PROBE_TIMEOUT, cmd.output()).await {
+    let out = match tokio::time::timeout(
+        PROBE_TIMEOUT,
+        crate::core::process::command_output(&mut cmd),
+    )
+    .await
+    {
         Ok(Ok(out)) => out,
         Ok(Err(e)) => return (false, Some(format!("health probe failed: {e}"))),
         Err(_) => return (false, Some("health probe timed out".to_string())),
@@ -709,10 +713,13 @@ async fn list_tunnel_processes() -> Option<String> {
         .stdin(Stdio::null())
         .stderr(Stdio::null());
     crate::core::process::hide_console_window_tokio(&mut cmd);
-    let out = tokio::time::timeout(Duration::from_secs(15), cmd.output())
-        .await
-        .ok()?
-        .ok()?;
+    let out = tokio::time::timeout(
+        Duration::from_secs(15),
+        crate::core::process::command_output(&mut cmd),
+    )
+    .await
+    .ok()?
+    .ok()?;
     String::from_utf8(out.stdout).ok()
 }
 
@@ -723,7 +730,7 @@ fn kill_by_pid(pid: u32) {
     #[cfg(windows)]
     let mut cmd = {
         let mut cmd = std::process::Command::new("taskkill");
-        cmd.args(["/F", "/PID", &pid.to_string()]);
+        cmd.args(["/F", "/T", "/PID", &pid.to_string()]);
         cmd
     };
     #[cfg(not(windows))]
