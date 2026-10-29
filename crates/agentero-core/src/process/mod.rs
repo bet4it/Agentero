@@ -170,6 +170,10 @@ impl BlockingProcessTree {
     }
 }
 
+/// Only the Windows `wait_with_output` path reads pipes itself. Unix uses
+/// `Child::wait_with_output`, so this helper must stay out of non-Windows
+/// builds or `-D warnings` rejects it as dead code.
+#[cfg(windows)]
 async fn read_pipe(pipe: Option<impl tokio::io::AsyncRead + Unpin>) -> std::io::Result<Vec<u8>> {
     use tokio::io::AsyncReadExt;
     let mut bytes = Vec::new();
