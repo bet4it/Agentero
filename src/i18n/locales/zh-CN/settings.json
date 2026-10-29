@@ -1004,7 +1004,7 @@
 	},
 	"word": {
 		"damagedField": "引文字段结果为空或已损坏。请恢复文档，或在副本中重新插入引文。",
-		"label": "Zotero Word 插件（macOS 原型）",
+		"label": "Zotero Word 插件",
 		"search": "搜索论文",
 		"pages": "页码（应用于所选文献）",
 		"style": "引用样式",
@@ -1033,7 +1033,7 @@
 		"invalidPath": "Word 驱动路径无效。",
 		"driverFailed": "Word 自动化失败。",
 		"timeout": "Word 响应超时，请检查文档后重试。",
-		"platformUnsupported": "此原型目前仅支持 macOS。",
+		"platformUnsupported": "此原型目前仅支持 macOS 与 Windows。",
 		"foreignFields": "文档包含 Zotero 或不支持的引文字段，请使用新文档测试此原型。",
 		"unknownStyle": "不支持此引用样式。",
 		"connectorRequired": "请先开启 Zotero Connector，再开启 Word 集成。",

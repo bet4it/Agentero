@@ -146,4 +146,4 @@ ACP / SSH 子进程由 Rust 与 ACP SDK 启动，不注册 Tauri shell 插件。
 
 [本地插件系统](plugins.md)：安装、按 Vault 授权、进程隔离、受控数据 API、命令/菜单/事件、设置及私有存储。
 
-Word 官方插件兼容原型见 [word.md](word.md)：当前为 macOS 正文引文，Windows 尚未实现。
+Word 官方插件兼容原型见 [word.md](word.md)：macOS 与 Windows 均为正文引文；Windows 尚未做真实 Word 验收。

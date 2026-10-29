@@ -6,15 +6,16 @@ import { useTauriEvent } from "@/hooks/use-tauri-event";
 import { commands, events, type WordStatus } from "@/lib/core/bindings";
 import { callResult } from "@/lib/core/ipc";
 import { notifyError } from "@/lib/core/notify";
-import { isMacOS, isTauri } from "@/lib/core/tauri";
+import { isMacOS, isTauri, isWindows } from "@/lib/core/tauri";
 import { wordError } from "@/lib/word/errors";
 
 export function WordSettings() {
 	const { t } = useTranslation("settings");
 	const [status, setStatus] = useState<WordStatus | null>(null);
 	const [busy, setBusy] = useState(false);
+	const supported = isMacOS() || isWindows();
 	const refresh = useCallback(async () => {
-		if (!isTauri() || !isMacOS()) return;
+		if (!isTauri() || !(isMacOS() || isWindows())) return;
 		try {
 			setStatus(await commands.wordGetStatus());
 		} catch (error) {
@@ -27,7 +28,7 @@ export function WordSettings() {
 	useTauriEvent(events.wordChanged, () => {
 		void refresh();
 	});
-	if (!isMacOS()) return null;
+	if (!supported) return null;
 	return (
 		<SettingsRow label={t("word.label")} htmlFor="word-enabled">
 			<Switch

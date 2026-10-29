@@ -2,7 +2,7 @@
 
 关联 Issue：[\#167](https://github.com/poco-ai/Agentero/issues/167)（“支持一下 Zotero Word 插件”）。
 
-> 状态：未实现。本文先固定产品边界和技术路线；落地后应将已实现部分移至前端/后端功能文档，并从本目录移除。
+> 状态：macOS 与 Windows 正文原型已写入 [Word 集成](../backend/word.md)。本文保留路线、许可证和未验收项；富文本、脚注、迁移和真实 Windows Word 验收仍未完成。
 
 ## 结论与产品决策
 
@@ -332,7 +332,9 @@ Agentero 当前为 MIT。两个 integration 仓库的 `COPYING` 均标注 AGPLv3
 
 ## 2026-10-26 macOS 原型实施与实测
 
-实现说明见 [后端 Word 集成](../backend/word.md)。本次完成的是正文引用原型，不等同于上面的全部 M1 功能；未完成 Issue #167，Windows 尚未实现。用户要求先提交并清理测试产物，Windows 留待后续继续。
+实现说明见 [后端 Word 集成](../backend/word.md)。本次完成的是正文引用原型，不等同于上面的全部 M1 功能；未完成 Issue #167，当时 Windows 尚未实现。用户要求先提交并清理测试产物，Windows 留待后续继续。
+
+2026-10-29 补上 Windows 隐藏消息窗口和正文 COM 驱动，行为对齐这份 macOS 原型。真实 Windows Word 的插入、保存重开和刷新尚未验收，Issue #167 仍未完成。
 
 ### 实测环境与结果
 

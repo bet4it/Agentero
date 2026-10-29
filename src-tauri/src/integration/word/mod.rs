@@ -1,6 +1,8 @@
 //! Opt-in, session-only provider for the unmodified Zotero Word template.
 mod citation;
 mod driver;
+#[cfg(windows)]
+mod windows;
 
 use crate::integration::connector::ConnectorController;
 use citation::{Citation, Item, Metadata};
@@ -63,7 +65,7 @@ pub struct WordStatus {
 impl WordController {
     fn status(&self) -> WordStatus {
         WordStatus {
-            supported: cfg!(target_os = "macos"),
+            supported: cfg!(any(target_os = "macos", target_os = "windows")),
             enabled: self.enabled.load(Ordering::SeqCst),
             busy: self.busy.load(Ordering::SeqCst),
             pending: self
@@ -109,7 +111,32 @@ async fn check_zotero() -> Result<(), String> {
             return Err("word.zoteroRunning".into());
         }
     }
+    #[cfg(windows)]
+    {
+        let mut command = std::process::Command::new("tasklist");
+        command.args(["/NH", "/FI", "IMAGENAME eq zotero.exe"]);
+        crate::core::process::hide_console_window(&mut command);
+        let output = command.output().map_err(|e| e.to_string())?;
+        if String::from_utf8_lossy(&output.stdout)
+            .to_ascii_lowercase()
+            .contains("zotero.exe")
+        {
+            return Err("word.zoteroRunning".into());
+        }
+    }
     Ok(())
+}
+
+/// Surface a command the window procedure cannot answer with HTTP status.
+/// A busy rejection must not clear the in-flight request.
+#[cfg(windows)]
+pub(super) fn note_rejection(app: &AppHandle, error: String) {
+    if error == "word.busy" {
+        return;
+    }
+    let ctrl = app.state::<WordController>();
+    *ctrl.error.lock().unwrap() = Some(error);
+    ctrl.changed(app);
 }
 
 #[tauri::command]
@@ -130,11 +157,16 @@ pub async fn word_set_enabled(
         return Err("word.busy".into());
     }
     if enabled {
-        if !cfg!(target_os = "macos") {
+        if !(cfg!(target_os = "macos") || cfg!(target_os = "windows")) {
             return Err("word.platformUnsupported".into());
         }
         local_vault(&connector)?;
         check_zotero().await?;
+        #[cfg(windows)]
+        windows::start(&app)?;
+    } else {
+        #[cfg(windows)]
+        windows::stop();
     }
     ctrl.enabled.store(enabled, Ordering::SeqCst);
     *ctrl.error.lock().unwrap() = None;

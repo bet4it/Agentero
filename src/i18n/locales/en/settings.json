@@ -1004,7 +1004,7 @@
 	},
 	"word": {
 		"damagedField": "This citation has an empty or damaged field result. Restore the document or reinsert the citation in a copy.",
-		"label": "Zotero Word plugin (macOS prototype)",
+		"label": "Zotero Word plugin",
 		"search": "Search papers",
 		"pages": "Pages (for selected references)",
 		"style": "Citation style",
@@ -1033,7 +1033,7 @@
 		"invalidPath": "Invalid Word driver path.",
 		"driverFailed": "Word automation failed.",
 		"timeout": "Word did not respond in time. Check the document before retrying.",
-		"platformUnsupported": "This prototype currently supports macOS only.",
+		"platformUnsupported": "This prototype currently supports macOS and Windows.",
 		"foreignFields": "This document contains Zotero or unsupported citation fields. Use a new document for this prototype.",
 		"unknownStyle": "Unsupported citation style.",
 		"connectorRequired": "Enable Zotero Connector before enabling the Word integration.",

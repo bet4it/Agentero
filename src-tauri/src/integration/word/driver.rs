@@ -58,7 +58,70 @@ pub async fn execute(input: serde_json::Value) -> Result<serde_json::Value, Stri
     serde_json::from_slice(&output.stdout).map_err(|e| e.to_string())
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(windows)]
+pub async fn execute(input: serde_json::Value) -> Result<serde_json::Value, String> {
+    use std::io::Write;
+    let mut json_file = tempfile::NamedTempFile::new().map_err(|e| e.to_string())?;
+    json_file
+        .write_all(&serde_json::to_vec(&input).map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())?;
+    let script_path = std::env::temp_dir().join(format!(
+        "agentero-word-{}.ps1",
+        uuid::Uuid::new_v4().simple()
+    ));
+    std::fs::write(&script_path, include_str!("win-word.ps1")).map_err(|e| e.to_string())?;
+    let _script = ScriptFile(script_path.clone());
+    let mut command = tokio::process::Command::new(powershell_exe());
+    command.args([
+        "-NoProfile",
+        "-NonInteractive",
+        "-STA",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+    ]);
+    command.arg(&script_path).arg(json_file.path());
+    let output = tokio::time::timeout(
+        std::time::Duration::from_secs(45),
+        crate::core::process::command_output(&mut command),
+    )
+    .await
+    .map_err(|_| "word.timeout".to_string())?
+    .map_err(|e| e.to_string())?;
+    if !output.status.success() {
+        let err = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        return Err(if err.is_empty() {
+            "word.driverFailed".into()
+        } else {
+            err
+        });
+    }
+    let stdout = strip_bom(&output.stdout);
+    serde_json::from_slice(stdout.trim_ascii()).map_err(|e| e.to_string())
+}
+
+#[cfg(windows)]
+struct ScriptFile(std::path::PathBuf);
+
+#[cfg(windows)]
+impl Drop for ScriptFile {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.0);
+    }
+}
+
+#[cfg(windows)]
+fn powershell_exe() -> std::path::PathBuf {
+    let root = std::env::var("SystemRoot").unwrap_or_else(|_| r"C:\Windows".into());
+    std::path::PathBuf::from(root).join(r"System32\WindowsPowerShell\v1.0\powershell.exe")
+}
+
+#[cfg(windows)]
+fn strip_bom(bytes: &[u8]) -> &[u8] {
+    bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]).unwrap_or(bytes)
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
 pub async fn execute(_: serde_json::Value) -> Result<serde_json::Value, String> {
     Err("word.platformUnsupported".into())
 }
