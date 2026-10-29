@@ -6,6 +6,7 @@ import { PdfAnnotationSubtype } from "@embedpdf/models";
 import type { TrackedAnnotation } from "@embedpdf/plugin-annotation";
 import type { AnnotationTransferItem } from "@embedpdf/plugin-annotation/react";
 import { isTauri } from "@/lib/core/tauri";
+import { dedupeAnnotationItems } from "@/lib/pdf/highlight/annotation-items";
 import {
 	type HighlightColor,
 	highlightColorFromHex,
@@ -30,24 +31,6 @@ export const ANNOTATIONS_FILE = ANNOTATIONS_JSON;
 
 /** In-memory fallback when not running under Tauri (browser dev). */
 const memoryStore = new Map<string, AnnotationTransferItem[]>();
-
-function dedupeAnnotationItems(
-	items: AnnotationTransferItem[],
-): AnnotationTransferItem[] {
-	const seen = new Set<string>();
-	const out: AnnotationTransferItem[] = [];
-	for (const item of items) {
-		const id = item.annotation?.id;
-		if (!id) {
-			out.push(item);
-			continue;
-		}
-		if (seen.has(id)) continue;
-		seen.add(id);
-		out.push(item);
-	}
-	return out;
-}
 
 /** Canonical path: `papers/<id>/marks/annotations.json`. */
 function annotationsPath(paperAbsPath: string): string {

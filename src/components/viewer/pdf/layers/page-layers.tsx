@@ -300,6 +300,7 @@ function TranslationSelectionVeil({
 type PageRegion = { page: number; region: PdfAskNormalizedRect } | null;
 
 type AgenteroRenderLayerProps = {
+	pageRef: RefObject<HTMLDivElement | null>;
 	documentId: string;
 	pageIndex: number;
 	scale?: number;
@@ -321,6 +322,7 @@ function pdfPageRenderRotation(
 }
 
 function AgenteroRenderLayer({
+	pageRef,
 	documentId,
 	pageIndex,
 	scale: scaleOverride,
@@ -375,10 +377,27 @@ function AgenteroRenderLayer({
 		}
 	}, [imageUrl]);
 
+	// Scroller mounts buffer pages too. Their CRITICAL full-page renders would
+	// queue ahead of visible HIGH-priority tiles and user-requested crops.
+	const [visible, setVisible] = useState(false);
+	useEffect(() => {
+		const page = pageRef.current;
+		if (!page) return;
+		if (typeof IntersectionObserver === "undefined") {
+			setVisible(true);
+			return;
+		}
+		const observer = new IntersectionObserver((entries) => {
+			setVisible(entries.some((entry) => entry.isIntersecting));
+		});
+		observer.observe(page);
+		return () => observer.disconnect();
+	}, [pageRef]);
+
 	const renderKey = `${actualScale}|${actualDpr}|${rotation}|${refreshVersion}`;
 
 	useEffect(() => {
-		if (!renderProvides) return;
+		if (!renderProvides || !visible) return;
 		const id = `${documentId}:${pageIndex}`;
 		if (pageBitmapCache.matches(id, renderKey)) return;
 		let settled = false;
@@ -418,6 +437,7 @@ function AgenteroRenderLayer({
 		rotation,
 		renderProvides,
 		renderKey,
+		visible,
 	]);
 
 	if (!imageUrl) return null;
@@ -1130,6 +1150,7 @@ export const PdfPageLayers = memo(function PdfPageLayers({
 			 */}
 			{mode.translationOnly ? null : (
 				<AgenteroRenderLayer
+					pageRef={pageShellRef}
 					documentId={docId}
 					pageIndex={pageIndex}
 					scale={1}

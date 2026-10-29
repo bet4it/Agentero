@@ -296,8 +296,9 @@ export const PdfViewer = memo(function PdfViewer(props: PdfViewerProps) {
 				// Skip PNG encoding for opaque page rasters; crops explicitly use PNG.
 				defaultImageType: "image/bmp",
 			}),
-			// Keep the upstream 768px tiles and viewport-only rendering defaults.
-			createPluginRegistration(TilingPluginPackage),
+			// Bound each non-preemptible PDFium render without lowering pixel density.
+			// Measured tradeoff: docs/test/pdf-tiling-performance.md.
+			createPluginRegistration(TilingPluginPackage, { tileSize: 512 }),
 			createPluginRegistration(ZoomPluginPackage, {
 				defaultZoomLevel: ZoomMode.FitWidth,
 				viewportPaddingRight: rightGutter,

@@ -49,6 +49,8 @@ patchedDependencies:
   # Bind the failure callback so rejected deletes settle their Task instead
   # of leaving the annotation commit permanently pending (ESM and CJS).
   '@embedpdf/plugin-annotation@2.14.4': patches/@embedpdf__plugin-annotation@2.14.4.patch
+  # Release late worker opens when their registry is destroyed while loading.
+  '@embedpdf/plugin-document-manager@2.14.4': patches/@embedpdf__plugin-document-manager@2.14.4.patch
   '@embedpdf/plugin-scroll@2.14.4': patches/@embedpdf__plugin-scroll@2.14.4.patch
   '@embedpdf/plugin-tiling@2.14.4': patches/@embedpdf__plugin-tiling@2.14.4.patch
   '@embedpdf/plugin-zoom@2.14.4': patches/@embedpdf__plugin-zoom@2.14.4.patch
