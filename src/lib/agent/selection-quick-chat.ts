@@ -35,7 +35,7 @@ export function registerSelectionAddToChat(next: QuickChatHandler): () => void {
 	};
 }
 
-/** Offer the chord to an armed iframe selection before the global rail toggle. */
+/** Offer the chord to an armed iframe selection before the global selection action. */
 export function runSelectionAddToChat(): boolean {
 	for (const handler of [...addToChatHandlers].reverse()) {
 		if (handler()) return true;

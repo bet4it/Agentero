@@ -9,11 +9,16 @@ vi.mock("@/lib/core/tauri", async (importOriginal) => {
 });
 
 import { getPlatformOS } from "@/lib/core/tauri";
+import { loadSettings, saveSettings } from "@/lib/settings";
 import {
+	findShortcutConflict,
 	formatShortcut,
+	getShortcut,
 	isFindShortcut,
 	resolveShortcutId,
 	shortcutBelongsToTextField,
+	shortcutFromEvent,
+	validateShortcutBinding,
 } from "@/lib/shell/shortcuts";
 
 function keyEvent(init: {
@@ -34,6 +39,7 @@ function keyEvent(init: {
 
 describe("shell shortcuts", () => {
 	afterEach(() => {
+		saveSettings({ ...loadSettings(), shortcutOverrides: {} });
 		vi.mocked(getPlatformOS).mockReturnValue("macos");
 	});
 
@@ -87,14 +93,14 @@ describe("shell shortcuts", () => {
 		).toBe("openInTerminal");
 	});
 
-	it("binds ⌘K to quick chat and ⇧⌘A to add-to-chat", () => {
+	it("binds ⌘K to quick chat and ⇧⌘L to add-to-chat", () => {
 		expect(
 			resolveShortcutId(keyEvent({ key: "k", metaKey: true }), {
 				settingsOpen: false,
 			}),
 		).toBe("quickChat");
 		expect(
-			resolveShortcutId(keyEvent({ key: "a", metaKey: true, shiftKey: true }), {
+			resolveShortcutId(keyEvent({ key: "l", metaKey: true, shiftKey: true }), {
 				settingsOpen: false,
 			}),
 		).toBe("addSelectionToChat");
@@ -113,7 +119,7 @@ describe("shell shortcuts", () => {
 		).toBe("quickOpen");
 	});
 
-	it("binds ⌘L to toggleChat (add selection when any)", () => {
+	it("binds ⌘L to toggleChat independently of selection", () => {
 		expect(
 			resolveShortcutId(keyEvent({ key: "l", metaKey: true }), {
 				settingsOpen: false,
@@ -193,5 +199,172 @@ describe("shell shortcuts", () => {
 		expect(
 			isFindShortcut(keyEvent({ key: "f", ctrlKey: true, altKey: true })),
 		).toBe(false);
+	});
+
+	it("uses custom bindings immediately and removes primary and alias keys", () => {
+		saveSettings({
+			...loadSettings(),
+			shortcutOverrides: {
+				toggleSidebar: { key: "j", meta: true, shift: true },
+				toggleChat: null,
+			},
+		});
+		expect(
+			resolveShortcutId(keyEvent({ key: "b", metaKey: true }), {
+				settingsOpen: false,
+			}),
+		).toBeNull();
+		expect(
+			resolveShortcutId(keyEvent({ key: "s", metaKey: true, altKey: true }), {
+				settingsOpen: false,
+			}),
+		).toBeNull();
+		expect(
+			resolveShortcutId(keyEvent({ key: "l", metaKey: true }), {
+				settingsOpen: false,
+			}),
+		).toBeNull();
+		expect(
+			resolveShortcutId(keyEvent({ key: "j", metaKey: true, shiftKey: true }), {
+				settingsOpen: false,
+			}),
+		).toBe("toggleSidebar");
+		expect(getShortcut("toggleChat")).toBeNull();
+	});
+
+	it("finds collisions with defaults, aliases and platform primary modifiers", () => {
+		expect(
+			findShortcutConflict("toggleChat", { key: "b", meta: true }, {}),
+		).toBe("toggleSidebar");
+		expect(
+			findShortcutConflict(
+				"toggleChat",
+				{ key: "l", meta: true, shift: true },
+				{},
+			),
+		).toBe("addSelectionToChat");
+		expect(
+			findShortcutConflict(
+				"toggleChat",
+				{ key: "l", meta: true, shift: true },
+				{ addSelectionToChat: null },
+			),
+		).toBeNull();
+		vi.mocked(getPlatformOS).mockReturnValue("windows");
+		expect(
+			findShortcutConflict("toggleChat", { key: "p", ctrl: true }, {}),
+		).toBe("quickOpen");
+	});
+
+	it("allows mutually exclusive dialog scopes and detects overlay-wide conflicts", () => {
+		expect(
+			findShortcutConflict("closeSheet", { key: "l", meta: true }, {}),
+		).toBe("toggleChat");
+		vi.mocked(getPlatformOS).mockReturnValue("windows");
+		expect(
+			findShortcutConflict("closeSheet", { key: "l", meta: true }, {}),
+		).toBeNull();
+		expect(
+			findShortcutConflict("closeSheet", { key: "w", meta: true }, {}),
+		).toBe("closeTab");
+	});
+
+	it("records platform-aware chords while ignoring composition and modifier keys", () => {
+		expect(
+			shortcutFromEvent({
+				...keyEvent({ key: "Shift", shiftKey: true }),
+				code: "ShiftLeft",
+			}),
+		).toBeNull();
+		expect(
+			shortcutFromEvent({
+				...keyEvent({ key: "k", metaKey: true }),
+				code: "KeyK",
+				isComposing: true,
+			}),
+		).toBeNull();
+		expect(
+			shortcutFromEvent({
+				...keyEvent({ key: "å", altKey: true }),
+				code: "KeyA",
+			}),
+		).toMatchObject({ key: "a", alt: true });
+		vi.mocked(getPlatformOS).mockReturnValue("windows");
+		expect(
+			shortcutFromEvent({
+				...keyEvent({ key: "L", ctrlKey: true, shiftKey: true }),
+				code: "KeyL",
+			}),
+		).toMatchObject({ key: "l", meta: true, ctrl: false, shift: true });
+	});
+
+	it("preserves native editing and rejects bare typing while allowing modified app keys", () => {
+		expect(validateShortcutBinding({ key: "l" })).toBe(false);
+		expect(validateShortcutBinding({ key: "l", shift: true })).toBe(false);
+		expect(validateShortcutBinding({ key: "c", meta: true })).toBe(false);
+		expect(validateShortcutBinding({ key: "f", meta: true, ctrl: true })).toBe(
+			false,
+		);
+		expect(validateShortcutBinding({ key: "l", meta: true, shift: true })).toBe(
+			true,
+		);
+		expect(validateShortcutBinding({ key: "F8" })).toBe(true);
+		expect(validateShortcutBinding({ key: "Dead", meta: true })).toBe(false);
+	});
+
+	it("retains IME composition events", () => {
+		expect(
+			resolveShortcutId(
+				{
+					...keyEvent({ key: "l", metaKey: true }),
+					isComposing: true,
+				} as KeyboardEvent,
+				{ settingsOpen: false },
+			),
+		).toBeNull();
+	});
+
+	it("matches composed Option+Command keys using the same normalization as recording", () => {
+		const event = {
+			...keyEvent({ key: "∆", altKey: true, metaKey: true }),
+			code: "KeyJ",
+		};
+		const binding = shortcutFromEvent(event);
+		if (!binding) throw new Error("Expected a recorded chord");
+		saveSettings({
+			...loadSettings(),
+			shortcutOverrides: { toggleChat: binding },
+		});
+		expect(resolveShortcutId(event, { settingsOpen: false })).toBe(
+			"toggleChat",
+		);
+	});
+	it("rejects OS-owned chords and disables semantically invalid stored bindings", () => {
+		for (const binding of [
+			{ key: "Tab", meta: true },
+			{ key: " ", meta: true },
+			{ key: "Escape", meta: true, alt: true },
+		]) {
+			expect(validateShortcutBinding(binding)).toBe(false);
+		}
+		saveSettings({
+			...loadSettings(),
+			shortcutOverrides: { settings: { key: "q", meta: true } },
+		});
+		expect(getShortcut("settings")).toBeNull();
+	});
+
+	it("preserves Option typing for native menu actions", () => {
+		expect(validateShortcutBinding({ key: "j", alt: true }, "newWindow")).toBe(
+			false,
+		);
+		expect(validateShortcutBinding({ key: "j", alt: true }, "quickChat")).toBe(
+			true,
+		);
+	});
+
+	it("shows modifiers for customized Escape bindings", () => {
+		expect(formatShortcut({ key: "Escape", meta: true })).toContain("Esc");
+		expect(formatShortcut({ key: "Escape", meta: true })).not.toBe("Esc");
 	});
 });

@@ -5,8 +5,8 @@
  */
 
 import { useTranslation } from "react-i18next";
+import { useShortcutLabel } from "@/hooks/use-shortcut-label";
 import { cn } from "@/lib/core/utils";
-import { formatModShortcut } from "@/lib/shell/shortcuts";
 
 export type PlazaSelectionScreen = { x: number; y: number };
 
@@ -24,8 +24,8 @@ export function PlazaSelectionMenu({
 	onAddToChat,
 }: PlazaSelectionMenuProps) {
 	const { t } = useTranslation("viewer");
-	const quickChatShortcut = formatModShortcut("k");
-	const addToChatShortcut = formatModShortcut("l");
+	const quickChatShortcut = useShortcutLabel("quickChat");
+	const addToChatShortcut = useShortcutLabel("addSelectionToChat");
 
 	const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
 	const vh = typeof window !== "undefined" ? window.innerHeight : 800;

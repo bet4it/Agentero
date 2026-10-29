@@ -1,8 +1,8 @@
 /**
  * Editor/PDF text-selection → Agent context (zustand vanilla).
- * `active` mirrors the latest live selection so ⌘L / ⌘K can freeze it; it is
+ * `active` mirrors the latest live selection so ⇧⌘L / ⌘K can freeze it; it is
  * never shown in the composer or included in a turn until pinned. `pinned`
- * holds selections the user froze via ⌘L / ⌘K / Add to chat. Never persisted —
+ * holds selections the user froze via ⇧⌘L / ⌘K / Add to chat. Never persisted —
  * selections are ephemeral and consumed by the next submitted turn.
  *
  * PDF selections may carry page geometry (`rects` + `paperAbsPath`) so a

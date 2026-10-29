@@ -252,7 +252,7 @@ export function useAgentComposer({
 	// Ref exposed to AgentComposer so it can be wired to ComposerInlineInput.
 	const composerInputRef = useRef<ComposerInlineInputHandle>(null);
 
-	// Only explicitly pinned selections (Add to chat / ⌘L / ⇧⌘A) enter the draft.
+	// Only explicitly pinned selections (Add to chat / ⇧⌘L) enter the draft.
 	// Live drag-selection stays in the store until pinActiveSelection freezes it.
 	const pinnedSelections = useSelectionStore((s) => s.pinned);
 

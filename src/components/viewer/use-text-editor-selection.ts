@@ -8,7 +8,7 @@
  * silently replacing the clipboard mid-edit in a code buffer would destroy
  * the paste the selection is usually a prelude to). ⌘K opens the in-page
  * Ask popover; Add to chat opens an optional inline comment before pinning
- * the quote as an Agent composer chip. ⌘L still pins directly. Drag selections arm on mouse release (same as the PDF viewer);
+ * the quote as an Agent composer chip. ⇧⌘L pins directly. Drag selections arm on mouse release (same as the PDF viewer);
  * keyboard selections arm immediately, and the toolbar re-anchors while
  * the editor scrolls.
  */
@@ -175,7 +175,7 @@ export function useTextEditorSelection({
 		const { text, screen } = current;
 		setMenu(null);
 		// Keep the editor selection + live chip armed while asking, mirroring
-		// the PDF surface (⌘L still pins the quote mid-ask).
+		// the PDF surface (⇧⌘L pins the quote mid-ask).
 		setAsk({
 			thread: createSelectionAskThread(pathRef.current, text),
 			screen,

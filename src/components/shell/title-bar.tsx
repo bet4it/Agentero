@@ -25,20 +25,13 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useShortcutLabel } from "@/hooks/use-shortcut-label";
 import { useAgentChromeStore } from "@/lib/agent/agent-chrome-store";
 import { cn } from "@/lib/core/utils";
 import { moveFeatureToWindow } from "@/lib/shell/leaf";
 import { openSettingsWindow } from "@/lib/shell/settings-window";
-import { formatShortcutById } from "@/lib/shell/shortcuts";
 import type { LayoutMode } from "@/lib/shell/ui-store";
 import { openPalette } from "@/lib/shell/ui-store";
-
-/** Platform-formatted shortcut chips for title bar tooltips (⌥⌘… on macOS, Ctrl+… elsewhere). */
-const SIDEBAR_SHORTCUT = formatShortcutById("toggleSidebar");
-const CHAT_SHORTCUT = formatShortcutById("toggleChat");
-const SETTINGS_SHORTCUT = formatShortcutById("settings");
-const QUICK_OPEN_SHORTCUT = formatShortcutById("quickOpen");
-const COMMAND_PALETTE_SHORTCUT = formatShortcutById("commandPalette");
 
 type TitleBarProps = {
 	isMacDesktop: boolean;
@@ -68,6 +61,11 @@ export const TitleBar = memo(function TitleBar({
 	onOpenSettings,
 }: TitleBarProps) {
 	const { t } = useTranslation(["app"]);
+	const SIDEBAR_SHORTCUT = useShortcutLabel("toggleSidebar");
+	const CHAT_SHORTCUT = useShortcutLabel("toggleChat");
+	const SETTINGS_SHORTCUT = useShortcutLabel("settings");
+	const QUICK_OPEN_SHORTCUT = useShortcutLabel("quickOpen");
+	const COMMAND_PALETTE_SHORTCUT = useShortcutLabel("commandPalette");
 	const agentTemplate = useAgentChromeStore((s) => s.template);
 
 	return (

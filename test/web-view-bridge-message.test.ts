@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -69,12 +71,30 @@ describe("parseWebBridgeMessage", () => {
 			type: "scroll",
 		});
 		expect(
+			parseWebBridgeMessage({ source: "agentero-web", type: "ready" }),
+		).toEqual({ type: "ready" });
+		const event = {
+			key: "L",
+			code: "KeyL",
+			metaKey: true,
+			ctrlKey: false,
+			altKey: false,
+			shiftKey: true,
+		};
+		expect(
 			parseWebBridgeMessage({
 				source: "agentero-web",
 				type: "shortcut",
-				id: "quickChat",
+				event,
 			}),
-		).toEqual({ type: "shortcut", id: "quickChat" });
+		).toEqual({ type: "shortcut", event });
+		expect(
+			parseWebBridgeMessage({
+				source: "agentero-web",
+				type: "shortcut",
+				event: { key: "l" },
+			}),
+		).toBeNull();
 		expect(
 			parseWebBridgeMessage({
 				source: "agentero-web",
@@ -132,5 +152,157 @@ describe("bridgeSelectionBottomRight", () => {
 				{ x: 40, y: 12 },
 			),
 		).toEqual({ x: 200, y: 220 });
+	});
+});
+
+// Execute the shipped script rather than a second implementation of its matcher.
+const proxySource = readFileSync(
+	new URL("../src-tauri/src/features/web/proxy.rs", import.meta.url),
+	"utf8",
+);
+const bridgeScript = proxySource.match(
+	/const WEB_BRIDGE: &str = r##"<script>([\s\S]*?)<\/script>"##;/,
+)?.[1];
+
+function frameBridge() {
+	const messages: Record<string, unknown>[] = [];
+	const listeners: Record<string, (event: Record<string, unknown>) => void> =
+		{};
+	const parent = {
+		get location(): never {
+			throw new Error("cross origin");
+		},
+		postMessage: (message: Record<string, unknown>) => messages.push(message),
+	};
+	let selected = true;
+	const window = {
+		addEventListener: (type: string, listener: (typeof listeners)[string]) => {
+			listeners[type] = listener;
+		},
+		getSelection: () => ({
+			isCollapsed: !selected,
+			toString: () => (selected ? "quote" : ""),
+		}),
+	};
+	const document = {
+		addEventListener: (type: string, listener: (typeof listeners)[string]) => {
+			listeners[type] = listener;
+		},
+	};
+	if (!bridgeScript) throw new Error("Missing injected bridge script");
+	runInNewContext(bridgeScript, {
+		parent,
+		window,
+		document,
+		history: {},
+		location: { pathname: "/example.com/paper" },
+	});
+	const configure = (
+		bindings: object[],
+		isMac = true,
+		source: unknown = parent,
+	) => {
+		listeners.message({
+			source,
+			data: { source: "agentero-web-host", type: "shortcuts", bindings, isMac },
+		});
+	};
+	const keydown = (key: string, overrides: Record<string, unknown> = {}) => {
+		let prevented = false;
+		listeners.keydown({
+			key,
+			code: `Key${key.toUpperCase()}`,
+			metaKey: true,
+			ctrlKey: false,
+			altKey: false,
+			shiftKey: false,
+			target: { nodeName: "DIV" },
+			preventDefault: () => {
+				prevented = true;
+			},
+			...overrides,
+		});
+		return prevented;
+	};
+	return {
+		messages,
+		configure,
+		keydown,
+		select: (value: boolean) => {
+			selected = value;
+		},
+	};
+}
+
+const selectionBindings = [
+	{ id: "toggleChat", key: "l", meta: true },
+	{ id: "addSelectionToChat", key: "l", meta: true, shift: true },
+	{ id: "quickChat", key: "k", meta: true },
+];
+
+describe("injected selection shortcut routing", () => {
+	it("requests configuration and separates toggle, pin, and quick chat with exact modifiers", () => {
+		const frame = frameBridge();
+		expect(frame.messages).toEqual([{ source: "agentero-web", type: "ready" }]);
+		expect(frame.keydown("l")).toBe(false);
+		frame.configure(selectionBindings);
+		expect(frame.keydown("l")).toBe(true);
+		expect(frame.messages.at(-1)).toMatchObject({
+			type: "shortcut",
+			event: { key: "l", shiftKey: false },
+		});
+		expect(frame.keydown("L", { shiftKey: true })).toBe(true);
+		expect(frame.messages.at(-1)).toMatchObject({
+			event: { key: "L", shiftKey: true },
+		});
+		expect(frame.keydown("k")).toBe(true);
+		expect(frame.keydown("k", { shiftKey: true })).toBe(false);
+		expect(frame.keydown("l", { altKey: true })).toBe(false);
+		expect(frame.keydown("l", { ctrlKey: true })).toBe(false);
+	});
+
+	it("toggles without selection, but selection actions require a live selection", () => {
+		const frame = frameBridge();
+		frame.configure(selectionBindings);
+		frame.select(false);
+		expect(frame.keydown("l")).toBe(true);
+		expect(frame.keydown("L", { shiftKey: true })).toBe(false);
+		expect(frame.keydown("k")).toBe(false);
+	});
+
+	it("replaces bindings live, including disabled shortcuts and Windows Ctrl mapping", () => {
+		const frame = frameBridge();
+		frame.configure(selectionBindings);
+		frame.configure([{ id: "toggleChat", key: "j", meta: true }], false);
+		expect(frame.keydown("l")).toBe(false);
+		expect(frame.keydown("j", { metaKey: false, ctrlKey: true })).toBe(true);
+		frame.configure([], false);
+		expect(frame.keydown("j", { metaKey: false, ctrlKey: true })).toBe(false);
+		frame.configure(selectionBindings, true, {});
+		expect(frame.keydown("l")).toBe(false);
+	});
+
+	it("preserves editable targets, plain typing, IME, and already-handled keys", () => {
+		const frame = frameBridge();
+		frame.configure(selectionBindings);
+		for (const target of [
+			{ nodeName: "INPUT" },
+			{ nodeName: "TEXTAREA" },
+			{ nodeName: "SELECT" },
+			{ nodeName: "SPAN", isContentEditable: true },
+		])
+			expect(frame.keydown("l", { target })).toBe(false);
+		expect(frame.keydown("l", { metaKey: false })).toBe(false);
+		expect(frame.keydown("l", { isComposing: true })).toBe(false);
+		expect(frame.keydown("l", { defaultPrevented: true })).toBe(false);
+	});
+
+	it("matches custom Alt-only physical keys without stealing unmodified typing", () => {
+		const frame = frameBridge();
+		frame.configure([{ id: "addSelectionToChat", key: "a", alt: true }]);
+		expect(
+			frame.keydown("å", { code: "KeyA", metaKey: false, altKey: true }),
+		).toBe(true);
+		expect(frame.keydown("a", { metaKey: false })).toBe(false);
 	});
 });

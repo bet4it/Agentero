@@ -101,8 +101,10 @@ const WEB_BRIDGE: &str = r##"<script>
     }, true);
 
     // ---- shortcuts → app handlers -----------------------------------------
-    // Keyboard events land in this frame, never in the app window; ⌘K / ⌘L
-    // must be carried over explicitly.
+    // Keyboard events never bubble out of the frame. The app supplies effective
+    // bindings and re-resolves forwarded keys against its live registry.
+    var bindings = [];
+    var isMac = false;
     var isEditable = function (el) {
       if (!el || !el.nodeName) return false;
       var name = el.nodeName.toLowerCase();
@@ -113,13 +115,40 @@ const WEB_BRIDGE: &str = r##"<script>
         el.isContentEditable === true
       );
     };
+    var matches = function (event, def) {
+      var key = event.key || "";
+      var defKey = def.key;
+      if (key.length === 1) key = key.toLowerCase();
+      if (defKey.length === 1) defKey = defKey.toLowerCase();
+      var physicalKey = /^Key[A-Z]$/.test(event.code || "")
+        ? event.code.slice(3).toLowerCase() : null;
+      if (key !== defKey && event.key !== def.key &&
+          !(def.alt && physicalKey === defKey)) return false;
+      if (!!def.alt !== event.altKey || !!def.shift !== event.shiftKey) return false;
+      if (isMac) {
+        return !!def.meta === event.metaKey && !!def.ctrl === event.ctrlKey;
+      }
+      if (def.meta) return event.metaKey || event.ctrlKey;
+      if (event.metaKey) return false;
+      return !!def.ctrl === event.ctrlKey;
+    };
     document.addEventListener("keydown", function (event) {
-      if (event.altKey || !(event.metaKey || event.ctrlKey)) return;
-      if (isEditable(event.target)) return;
-      var key = (event.key || "").toLowerCase();
-      if (key !== "k" && key !== "l") return;
-      event.preventDefault();
-      post({ type: "shortcut", id: key === "k" ? "quickChat" : "addToChat" });
+      if (event.defaultPrevented || event.isComposing || isEditable(event.target)) return;
+      for (var i = 0; i < bindings.length; i++) {
+        var def = bindings[i];
+        if (!matches(event, def)) continue;
+        if (def.id !== "toggleChat") {
+          var selection = window.getSelection();
+          if (!selection || selection.isCollapsed || !selection.toString().trim()) return;
+        }
+        event.preventDefault();
+        post({ type: "shortcut", event: {
+          key: event.key, code: event.code || "",
+          metaKey: event.metaKey, ctrlKey: event.ctrlKey,
+          altKey: event.altKey, shiftKey: event.shiftKey
+        } });
+        return;
+      }
     }, true);
 
     // ---- navigation policy --------------------------------------------------
@@ -176,14 +205,21 @@ const WEB_BRIDGE: &str = r##"<script>
     // ---- app → frame --------------------------------------------------------
     window.addEventListener("message", function (event) {
       var data = event.data;
-      if (!data || data.source !== "agentero-web-host") return;
-      if (data.type === "clearSelection") {
+      if (event.source !== parent || !data || data.source !== "agentero-web-host") return;
+      if (data.type === "shortcuts") {
+        bindings = Array.isArray(data.bindings) ? data.bindings.filter(function (def) {
+          return def && typeof def.key === "string" &&
+            (def.id === "toggleChat" || def.id === "quickChat" || def.id === "addSelectionToChat");
+        }) : [];
+        isMac = data.isMac === true;
+      } else if (data.type === "clearSelection") {
         var sel = window.getSelection();
         if (sel) sel.removeAllRanges();
       } else if (data.type === "copySelection") {
         try { document.execCommand("copy"); } catch (e) {}
       }
     });
+    post({ type: "ready" });
   } catch (e) {}
 })();
 </script>"##;
@@ -604,11 +640,13 @@ mod tests {
         assert!(WEB_BRIDGE.contains("MAX_SELECTION_CHARS = 4000"));
     }
 
-    /// Focus sits in the frame, so ⌘K / ⌘L must be forwarded to the app.
+    /// Frame bindings come from the app; forwarded keys are resolved there.
     #[test]
     fn bridge_forwards_shortcuts() {
         assert!(WEB_BRIDGE.contains("\"quickChat\""));
-        assert!(WEB_BRIDGE.contains("\"addToChat\""));
+        assert!(WEB_BRIDGE.contains("\"addSelectionToChat\""));
+        assert!(WEB_BRIDGE.contains("\"toggleChat\""));
+        assert!(WEB_BRIDGE.contains("data.type === \"shortcuts\""));
         // Editable targets keep their keystrokes (site search boxes, comment
         // forms).
         assert!(WEB_BRIDGE.contains("isEditable"));

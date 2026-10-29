@@ -24,8 +24,8 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { PDF_CHROME_CHIP } from "@/components/viewer/pdf/chrome/pdf-chrome-surface";
+import { useShortcutLabel } from "@/hooks/use-shortcut-label";
 import { cn } from "@/lib/core/utils";
-import { formatShortcutById } from "@/lib/shell/shortcuts";
 
 type PdfToolbarProps = {
 	onExportTranslatedPdf?: (dual?: boolean) => void;
@@ -73,6 +73,8 @@ export const PdfToolbar = memo(function PdfToolbar({
 	importBusy = false,
 }: PdfToolbarProps) {
 	const { t } = useTranslation("viewer");
+	const visualShortcut = useShortcutLabel("visualAnnotation");
+	const translateShortcut = useShortcutLabel("layoutTranslate");
 
 	const LONG_PRESS_MS = 300;
 	const longPressTimerRef = useRef<number | null>(null);
@@ -242,7 +244,7 @@ export const PdfToolbar = memo(function PdfToolbar({
 									: t("pdfExplain.selectRegion")}
 								{/* Inverted tooltip: mute via text-background, not muted-foreground. */}
 								<span className="ml-2 text-background/70">
-									{formatShortcutById("visualAnnotation")}
+									{visualShortcut}
 								</span>
 							</TooltipContent>
 						</Tooltip>
@@ -285,7 +287,7 @@ export const PdfToolbar = memo(function PdfToolbar({
 								{layoutTranslateLabel}
 								{/* Inverted tooltip: mute via text-background, not muted-foreground. */}
 								<span className="ml-2 text-background/70">
-									{formatShortcutById("layoutTranslate")}
+									{translateShortcut}
 								</span>
 							</TooltipContent>
 						</Tooltip>

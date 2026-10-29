@@ -7,6 +7,12 @@
  * Parsing lives here so both the listener hook and tests share one guard.
  */
 
+/** Keyboard state forwarded for authoritative matching against live settings. */
+export type WebBridgeKeyEvent = Pick<
+	KeyboardEvent,
+	"key" | "code" | "metaKey" | "ctrlKey" | "altKey" | "shiftKey"
+>;
+
 /** Selection rect in the frame's viewport (CSS px). */
 export type WebBridgeRect = {
 	x: number;
@@ -23,7 +29,8 @@ export type WebBridgeMessage =
 			url: string;
 	  }
 	| { type: "scroll" }
-	| { type: "shortcut"; id: "quickChat" | "addToChat" }
+	| { type: "ready" }
+	| { type: "shortcut"; event: WebBridgeKeyEvent }
 	| { type: "external"; url: string };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -52,12 +59,28 @@ export function parseWebBridgeMessage(data: unknown): WebBridgeMessage | null {
 			}
 			return { type: "selection", text: data.text, rect, url: data.url };
 		}
+		case "ready":
+			return { type: "ready" };
 		case "scroll":
 			return { type: "scroll" };
-		case "shortcut":
-			return data.id === "quickChat" || data.id === "addToChat"
-				? { type: "shortcut", id: data.id }
-				: null;
+		case "shortcut": {
+			const event = data.event;
+			if (
+				!isRecord(event) ||
+				typeof event.key !== "string" ||
+				typeof event.code !== "string" ||
+				typeof event.metaKey !== "boolean" ||
+				typeof event.ctrlKey !== "boolean" ||
+				typeof event.altKey !== "boolean" ||
+				typeof event.shiftKey !== "boolean"
+			)
+				return null;
+			const { key, code, metaKey, ctrlKey, altKey, shiftKey } = event;
+			return {
+				type: "shortcut",
+				event: { key, code, metaKey, ctrlKey, altKey, shiftKey },
+			};
+		}
 		case "external":
 			return typeof data.url === "string"
 				? { type: "external", url: data.url }

@@ -3,13 +3,17 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { PlazaSelectionMenu } from "@/components/plaza/plaza-selection-menu";
 import {
 	HIGHLIGHT_COLOR_STACK_COLLAPSED_W,
 	HIGHLIGHT_COLOR_STACK_EXPANDED_W,
 } from "@/components/viewer/pdf/cards/highlight-color-stack";
 import { SelectionMenu } from "@/components/viewer/pdf/cards/selection-menu";
+import { settingsStore } from "@/lib/settings/react-store";
 import type { MenuContribution } from "@/lib/shell/commands/menu-contributions";
+import { formatShortcut } from "@/lib/shell/shortcuts";
 
+const originalOverrides = settingsStore.getState().shortcutOverrides;
 let english = false;
 let contributions: MenuContribution[] = [];
 
@@ -100,6 +104,7 @@ function dividerCenter(menu: HTMLElement): number {
 }
 
 beforeEach(() => {
+	settingsStore.setState({ shortcutOverrides: originalOverrides });
 	english = false;
 	contributions = [];
 	colorWidth = HIGHLIGHT_COLOR_STACK_COLLAPSED_W;
@@ -128,6 +133,7 @@ beforeEach(() => {
 
 afterEach(async () => {
 	await act(() => root.unmount());
+	settingsStore.setState({ shortcutOverrides: originalOverrides });
 	container.remove();
 	vi.restoreAllMocks();
 	vi.unstubAllGlobals();
@@ -244,4 +250,67 @@ it("keeps note clicks explicit and opens the secondary chat action through its a
 	expect(onAddToChat).not.toHaveBeenCalled();
 	await act(() => item?.click());
 	expect(onAddToChat).toHaveBeenCalledOnce();
+});
+
+const customBindings = {
+	quickChat: { key: "j", meta: true },
+	addSelectionToChat: { key: "u", meta: true, shift: true },
+};
+
+it("updates PDF quick-chat and add-to-chat hints while its menu is mounted", async () => {
+	const menu = await render();
+	await act(() =>
+		settingsStore.setState({ shortcutOverrides: customBindings }),
+	);
+	expect(menu.textContent).toContain(formatShortcut(customBindings.quickChat));
+	const trigger = menu.querySelector<HTMLButtonElement>(
+		'[aria-haspopup="menu"]',
+	);
+	if (!trigger) throw new Error("Missing chat menu trigger");
+	await act(() =>
+		trigger.dispatchEvent(
+			new PointerEvent("pointerdown", {
+				bubbles: true,
+				button: 0,
+				pointerType: "mouse",
+			}),
+		),
+	);
+	expect(document.querySelector('[role="menuitem"]')?.textContent).toContain(
+		formatShortcut(customBindings.addSelectionToChat),
+	);
+	await act(() =>
+		settingsStore.setState({
+			shortcutOverrides: { quickChat: null, addSelectionToChat: null },
+		}),
+	);
+	expect(menu.querySelector("kbd")?.textContent).toBe("");
+	expect(document.querySelector('[role="menuitem"] kbd')?.textContent).toBe("");
+});
+
+it("updates Plaza hints and removes disabled bindings without remounting", async () => {
+	await act(() =>
+		root.render(
+			createElement(PlazaSelectionMenu, {
+				screen: props.screen,
+				onAsk: vi.fn(),
+				onAddToChat: vi.fn(),
+			}),
+		),
+	);
+	await act(() =>
+		settingsStore.setState({ shortcutOverrides: customBindings }),
+	);
+	const labels = () =>
+		Array.from(container.querySelectorAll("kbd"), (kbd) => kbd.textContent);
+	expect(labels()).toEqual([
+		formatShortcut(customBindings.quickChat),
+		formatShortcut(customBindings.addSelectionToChat),
+	]);
+	await act(() =>
+		settingsStore.setState({
+			shortcutOverrides: { quickChat: null, addSelectionToChat: null },
+		}),
+	);
+	expect(labels()).toEqual(["", ""]);
 });

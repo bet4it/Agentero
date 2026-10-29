@@ -1,4 +1,9 @@
 {
+	"preparing": "Preparing…",
+	"recording": "Press shortcut…",
+	"unbound": "Unbound",
+	"invalid": "Use a modifier with a key, or a function key (F1–F24).",
+	"conflict": "Already used by {{command}}.",
 	"groups": {
 		"app": "App",
 		"vault": "Vault",
@@ -25,7 +30,7 @@
 		"quickOpen": "Quick open (papers / contents)",
 		"commandPalette": "Command palette",
 		"toggleSidebar": "Show / hide sidebar",
-		"toggleChat": "Add selection to chat / toggle chat",
+		"toggleChat": "Show / hide chat sidebar",
 		"quickChat": "Quick chat from selection",
 		"addSelectionToChat": "Add selection to chat and focus",
 		"focusSidebar": "Focus sidebar",

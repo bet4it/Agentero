@@ -22,6 +22,7 @@ import { applyDocumentChrome, resolveFontFamilyCss } from "@/lib/settings";
 import { closeCurrentWindow } from "@/lib/shell/close-window";
 import { readDocWindowParams } from "@/lib/shell/doc-window";
 import { openSettingsWindow } from "@/lib/shell/settings-window";
+import { resolveShortcutId } from "@/lib/shell/shortcuts";
 import { openRecentVault } from "@/lib/vault/actions";
 import { refreshTree, vaultStore } from "@/lib/vault/store";
 import { shouldIgnoreInternalRenameEvent } from "@/lib/wiki/store";
@@ -154,11 +155,13 @@ export function DocWindowRoot() {
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
-			const isEsc = event.key === "Escape";
-			const isCloseWindow =
-				(event.key === "w" || event.code === "KeyW") &&
-				(event.metaKey || event.ctrlKey);
-			if (isEsc || (isCloseWindow && !event.altKey && !event.shiftKey)) {
+			if (
+				event.defaultPrevented ||
+				document.querySelector("[data-shortcut-recording]")
+			)
+				return;
+			const id = resolveShortcutId(event, { settingsOpen: true });
+			if (id === "closeSheet" || id === "closeTab") {
 				event.preventDefault();
 				closeCurrentWindow();
 			}

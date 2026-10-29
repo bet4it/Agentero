@@ -69,6 +69,13 @@ export function useAppShortcuts(
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
+			if (document.querySelector("[data-shortcut-recording]")) return;
+			if (
+				event.target instanceof Element &&
+				event.target.closest("[data-shortcut-search]")
+			) {
+				return;
+			}
 			const id = resolveShortcutId(event, {
 				settingsOpen: modalOverlayOpenRef.current,
 			});

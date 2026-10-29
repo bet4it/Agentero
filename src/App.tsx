@@ -381,18 +381,14 @@ export default function App() {
 		quickOpen: () => openPalette("go"),
 		commandPalette: () => openPalette("commands"),
 		toggleSidebar,
-		// ⌘L: Add to chat when a selection is staged; otherwise toggle the rail.
-		toggleChat: () => {
-			if (runSelectionAddToChat() || pinActiveSelection()) {
-				openRightTab("agent");
-			} else toggleChat();
-		},
+		toggleChat,
 		// ⌘K: in-page Quick chat (Ask) from the armed PDF / Plaza selection.
 		quickChat: () => {
 			runSelectionQuickChat();
 		},
-		// ⇧⌘A: pin the selection, open Agent, and focus the composer.
+		// Pin a staged selection, open Agent, and focus the composer.
 		addSelectionToChat: () => {
+			if (runSelectionAddToChat()) return;
 			pinActiveSelection();
 			openRightTab("agent");
 			focusAgentComposer();

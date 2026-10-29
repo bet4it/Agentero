@@ -49,13 +49,13 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useImeGuard } from "@/hooks/use-ime-guard";
+import { useShortcutLabel } from "@/hooks/use-shortcut-label";
 import { type ChatImportExtractResult, commands } from "@/lib/core/bindings";
 import { errorText } from "@/lib/core/error";
 import { callApiResult } from "@/lib/core/ipc";
 import { displayPath } from "@/lib/core/path";
 import { isTauri } from "@/lib/core/tauri";
 import { inferLookupSource } from "@/lib/paper/import-actions";
-import { formatShortcutById } from "@/lib/shell/shortcuts";
 import { vaultDisplayName } from "@/lib/vault";
 import {
 	getRecentRemoteVaults,
@@ -169,7 +169,7 @@ export const VaultSidebarHeader = memo(function VaultSidebarHeader({
 	const actionsDisabled =
 		busy || isDemo || Boolean(importBusy) || Boolean(importPdfBusy);
 	const lookupDisabled = busy || isDemo;
-	const magicWandShortcut = formatShortcutById("magicWand");
+	const magicWandShortcut = useShortcutLabel("magicWand");
 	const selectionActive = Boolean(selection && selection.count > 0);
 
 	useEffect(() => {

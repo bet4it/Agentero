@@ -21,10 +21,6 @@ import { formatShortcutById } from "@/lib/shell/shortcuts";
 import { layout } from "@/lib/shell/ui-store";
 import { openRightTab } from "@/lib/shell/ui-window-actions";
 
-const MAGIC_WAND_SHORTCUT = formatShortcutById("magicWand");
-const SETTINGS_SHORTCUT = formatShortcutById("settings");
-const QUICK_OPEN_SHORTCUT = formatShortcutById("quickOpen");
-
 /** Poll for a lazily-mounted target; resolves false when it never appears. */
 function waitForElement(selector: string, timeoutMs = 2500): Promise<boolean> {
 	return new Promise((resolve) => {
@@ -91,9 +87,9 @@ async function startTour(t: TFunction<"onboarding">): Promise<void> {
 			popover: {
 				title: t(`tour.${c.key}.title`),
 				description: t(`tour.${c.key}.desc`, {
-					magicWandShortcut: MAGIC_WAND_SHORTCUT,
-					settingsShortcut: SETTINGS_SHORTCUT,
-					quickOpenShortcut: QUICK_OPEN_SHORTCUT,
+					magicWandShortcut: formatShortcutById("magicWand"),
+					settingsShortcut: formatShortcutById("settings"),
+					quickOpenShortcut: formatShortcutById("quickOpen"),
 				}),
 				side: c.side,
 				align: "start" as const,

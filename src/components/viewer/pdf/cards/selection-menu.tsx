@@ -32,6 +32,7 @@ import {
 	HighlightColorStack,
 } from "@/components/viewer/pdf/cards/highlight-color-stack";
 import type { ScreenPoint } from "@/components/viewer/pdf/types";
+import { useShortcutLabel } from "@/hooks/use-shortcut-label";
 import { clamp } from "@/lib/core/math";
 import { cn } from "@/lib/core/utils";
 import type { HighlightColor } from "@/lib/pdf/highlight/palette";
@@ -157,9 +158,8 @@ export function SelectionMenu({
 	// Suspend dockview drag-and-drop while this toolbar floats over the tab
 	// strip so a stray drag cannot split the layout (#608).
 	useSelectionOverlayGuard();
-	// ⌘K = in-page Quick chat (Ask); ⌘L = Add to chat (pin + open Agent).
-	const quickChatShortcut = formatModShortcut("k");
-	const addToChatShortcut = formatModShortcut("l");
+	const quickChatShortcut = useShortcutLabel("quickChat");
+	const addToChatShortcut = useShortcutLabel("addSelectionToChat");
 	const copyShortcut = formatModShortcut("c");
 	const contributions = contributionContext
 		? visibleMenuContributions("pdf.selection", contributionContext)

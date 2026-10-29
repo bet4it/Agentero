@@ -45,6 +45,7 @@ import {
 	readFeatureWindowView,
 } from "@/lib/shell/feature-window";
 import { openSettingsWindow } from "@/lib/shell/settings-window";
+import { resolveShortcutId } from "@/lib/shell/shortcuts";
 import { setAgentPanelMounted } from "@/lib/shell/ui-store";
 import {
 	listenAgentSessionHandoff,
@@ -297,11 +298,13 @@ export function FeatureWindowRoot() {
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
-			const isEsc = event.key === "Escape";
-			const isCloseWindow =
-				(event.key === "w" || event.code === "KeyW") &&
-				(event.metaKey || event.ctrlKey);
-			if (isEsc || (isCloseWindow && !event.altKey && !event.shiftKey)) {
+			if (
+				event.defaultPrevented ||
+				document.querySelector("[data-shortcut-recording]")
+			)
+				return;
+			const id = resolveShortcutId(event, { settingsOpen: true });
+			if (id === "closeSheet" || id === "closeTab") {
 				event.preventDefault();
 				closeCurrentWindow();
 			}

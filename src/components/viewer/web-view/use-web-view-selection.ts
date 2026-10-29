@@ -6,7 +6,7 @@
  * links over postMessage, and this hook turns them into the same floating
  * chrome the PDF and plaza surfaces have: auto-copy + toolbar, ephemeral
  * streaming translate card (run by the shared engine
- * `lib/pdf/translate/run-selection.ts`), ⌘K quick chat, ⌘L add-to-chat.
+ * `lib/pdf/translate/run-selection.ts`), ⌘K quick chat, ⇧⌘L add-to-chat.
  * Nothing persists — web papers have no marks/ sidecar (known limitation,
  * docs/frontend/web-view).
  */
@@ -37,13 +37,17 @@ import { cancelAgentRun, disposeAgentRun } from "@/lib/agent";
 import { registerSelectionAddToChat } from "@/lib/agent/selection-quick-chat";
 import { copyTextToClipboard } from "@/lib/core/clipboard";
 import { openExternalUrl } from "@/lib/core/open-external";
+import { getPlatformOS } from "@/lib/core/tauri";
 import {
 	createTranslateRecord,
 	runSelectionTranslate,
 } from "@/lib/pdf/translate";
 import type { PdfTranslateRecord } from "@/lib/pdf/translate/types";
 import { buildPlazaAskPrompt } from "@/lib/plaza/ask-prompt";
+import { settingsStore } from "@/lib/settings/react-store";
 import { openSettingsWindow } from "@/lib/shell/settings-window";
+import { getShortcut, resolveShortcutId } from "@/lib/shell/shortcuts";
+import { toggleChat } from "@/lib/shell/ui-window-actions";
 import { getVaultPath } from "@/lib/vault/store";
 import { webViewProxyOrigins } from "@/lib/web-view/proxy-url";
 
@@ -284,15 +288,43 @@ export function useWebViewSelection({
 		[],
 	);
 
+	const syncShortcuts = useCallback(() => {
+		iframeRef.current?.contentWindow?.postMessage(
+			{
+				source: "agentero-web-host",
+				type: "shortcuts",
+				isMac: getPlatformOS() === "macos",
+				bindings: (["toggleChat", "quickChat", "addSelectionToChat"] as const)
+					.map((id) =>
+						getShortcut(id, settingsStore.getState().shortcutOverrides),
+					)
+					.filter(Boolean),
+			},
+			"*",
+		);
+	}, [iframeRef]);
+
+	useEffect(() => {
+		syncShortcuts();
+		return settingsStore.subscribe(syncShortcuts);
+	}, [syncShortcuts]);
+
 	// Bridge messages: selections position the toolbar, scroll hides it,
 	// shortcuts trigger the actions, external links go to the system browser.
 	useEffect(() => {
 		const origins = webViewProxyOrigins();
 		const onMessage = (event: MessageEvent) => {
-			if (!origins.includes(event.origin)) return;
+			if (
+				!origins.includes(event.origin) ||
+				event.source !== iframeRef.current?.contentWindow
+			)
+				return;
 			const msg = parseWebBridgeMessage(event.data);
 			if (!msg) return;
 			switch (msg.type) {
+				case "ready":
+					syncShortcuts();
+					return;
 				case "selection": {
 					const iframe = iframeRef.current;
 					if (!iframe) return;
@@ -317,10 +349,18 @@ export function useWebViewSelection({
 				case "scroll":
 					setMenu(null);
 					return;
-				case "shortcut":
-					if (msg.id === "quickChat") handleAskRef.current();
-					else handleAddToChatRef.current();
+				case "shortcut": {
+					const id = resolveShortcutId(
+						new KeyboardEvent("keydown", msg.event),
+						{
+							settingsOpen: false,
+						},
+					);
+					if (id === "toggleChat") toggleChat();
+					else if (id === "quickChat") handleAskRef.current();
+					else if (id === "addSelectionToChat") handleAddToChatRef.current();
 					return;
+				}
 				case "external":
 					openExternalUrl(msg.url);
 					return;
@@ -328,9 +368,10 @@ export function useWebViewSelection({
 		};
 		window.addEventListener("message", onMessage);
 		return () => window.removeEventListener("message", onMessage);
-	}, [iframeRef, showCopiedLabel]);
+	}, [iframeRef, showCopiedLabel, syncShortcuts]);
 
 	return {
+		onFrameLoad: syncShortcuts,
 		menu,
 		ask,
 		streaming,

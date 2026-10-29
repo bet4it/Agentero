@@ -125,6 +125,7 @@ export function HtmlViewer({ srcUrl, title, className }: HtmlViewerProps) {
 					sandbox={sandbox}
 					referrerPolicy="no-referrer-when-downgrade"
 					ref={iframeRef}
+					onLoad={selection.onFrameLoad}
 					className={cn(
 						"absolute inset-0 block h-full w-full border-0 bg-background",
 						dragShield && "pointer-events-none",
