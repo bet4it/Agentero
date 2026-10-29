@@ -67,3 +67,7 @@ Host 与界面会对同一个名字各写一行：`vault_tree_build`、`paper_li
 ## 限制与后续
 
 未做语料生成、CI 回归门槛，也没有滚动、打字、分隔条的帧测试。这些不放进 Roadmap 条目；需要时再单独做。`docs/development/` 没有另一份待办清单。
+
+## PDF 高清瓦片
+
+512px / 768px 同视口出图对照、样本哈希、浏览器与原生验收边界见 [pdf-tiling-performance.md](pdf-tiling-performance.md)。只读光栅探针为 `test/scripts/benchmark-pdf-tiles.mjs`，不写 Vault，也不将 raw 出图耗时换算成应用 FPS。
