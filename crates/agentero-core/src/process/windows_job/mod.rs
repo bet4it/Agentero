@@ -1,13 +1,13 @@
-//! Each Git invocation owns an unnamed, non-inheritable Job Object. Create the
-//! child suspended so even a fast Git-for-Windows launcher cannot spawn outside
-//! the job before assignment. Closing our sole job handle kills the whole tree.
+//! One unnamed, non-inheritable Job Object per spawned command. Create the
+//! child suspended so a launcher cannot spawn outside the job before
+//! assignment. Closing our sole job handle kills the whole tree.
 
 use std::io;
 use std::mem::size_of;
 use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
-use std::process::Output;
+use std::os::windows::process::CommandExt;
+use std::process::Command as StdCommand;
 use std::ptr;
-use tokio::io::{AsyncRead, AsyncReadExt};
 use tokio::process::{Child, Command};
 use windows_sys::Win32::Foundation::INVALID_HANDLE_VALUE;
 use windows_sys::Win32::System::Diagnostics::ToolHelp::{
@@ -22,45 +22,42 @@ use windows_sys::Win32::System::Threading::{
     OpenThread, ResumeThread, CREATE_SUSPENDED, THREAD_SUSPEND_RESUME,
 };
 
-pub(super) async fn output(command: &mut Command) -> io::Result<Output> {
+pub(super) fn spawn(command: &mut Command) -> io::Result<(Child, Job)> {
     let job = Job::new()?;
     command
         .creation_flags(super::CREATE_NO_WINDOW | CREATE_SUSPENDED)
         .kill_on_drop(true);
     let mut child = command.spawn()?;
-    if let Err(error) = job.assign_and_resume(&child) {
-        // Assignment can fail (e.g. restrictive enclosing jobs). Never leave a
-        // suspended, unowned process behind or resume it without containment.
-        let _ = child.kill().await;
+    if let Err(error) = contain(&job, &child) {
+        let _ = child.start_kill();
         return Err(error);
     }
-    let stdout = child.stdout.take();
-    let stderr = child.stderr.take();
-    let wait = async move {
-        let status = child.wait().await;
-        // A descendant can inherit the output pipes. Close the job as soon as
-        // the root exits, before waiting for pipe EOF, or output can hang even
-        // after a successful launcher exit. Abort/timeout drops this guard too.
-        drop(job);
-        status
-    };
-    let (status, stdout, stderr) = tokio::try_join!(wait, read_pipe(stdout), read_pipe(stderr))?;
-    Ok(Output {
-        status,
-        stdout,
-        stderr,
-    })
+    Ok((child, job))
 }
 
-async fn read_pipe(pipe: Option<impl AsyncRead + Unpin>) -> io::Result<Vec<u8>> {
-    let mut bytes = Vec::new();
-    if let Some(mut pipe) = pipe {
-        pipe.read_to_end(&mut bytes).await?;
+pub(super) fn spawn_std(command: &mut StdCommand) -> io::Result<(std::process::Child, Job)> {
+    let job = Job::new()?;
+    command.creation_flags(super::CREATE_NO_WINDOW | CREATE_SUSPENDED);
+    let mut child = command.spawn()?;
+    let pid = child.id();
+    if let Err(error) = job.contain(child.as_raw_handle(), pid) {
+        let _ = child.kill();
+        return Err(error);
     }
-    Ok(bytes)
+    Ok((child, job))
 }
 
-struct Job(OwnedHandle);
+fn contain(job: &Job, child: &Child) -> io::Result<()> {
+    let process = child
+        .raw_handle()
+        .ok_or_else(|| io::Error::other("child exited before job assignment"))?;
+    let pid = child
+        .id()
+        .ok_or_else(|| io::Error::other("child exited before job assignment"))?;
+    job.contain(process, pid)
+}
+
+pub(super) struct Job(OwnedHandle);
 
 impl Job {
     fn new() -> io::Result<Self> {
@@ -90,13 +87,7 @@ impl Job {
         Ok(job)
     }
 
-    fn assign_and_resume(&self, child: &Child) -> io::Result<()> {
-        let process = child
-            .raw_handle()
-            .ok_or_else(|| io::Error::other("child exited before job assignment"))?;
-        let pid = child
-            .id()
-            .ok_or_else(|| io::Error::other("child exited before job assignment"))?;
+    fn contain(&self, process: std::os::windows::io::RawHandle, pid: u32) -> io::Result<()> {
         // SAFETY: both handles are live and the child has not been resumed.
         if unsafe { AssignProcessToJobObject(self.0.as_raw_handle(), process) } == 0 {
             return Err(io::Error::last_os_error());

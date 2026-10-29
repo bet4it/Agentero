@@ -153,6 +153,26 @@ async fn assert_tree_exited(processes: &Processes) {
 }
 
 #[tokio::test]
+async fn drop_blocking_tree_kills_descendants() {
+    let dir = tempfile::Builder::new()
+        .prefix("agentero job blocking ")
+        .tempdir()
+        .unwrap();
+    let mut cmd = StdCommand::new(std::env::current_exe().unwrap());
+    cmd.args(fixture_args())
+        .env(DIR_ENV, dir.path())
+        .env(ROLE_ENV, "root")
+        .env_remove(EXIT_ENV)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    let tree = crate::process::BlockingProcessTree::spawn(&mut cmd).unwrap();
+    let processes = fixture_processes(dir.path()).await;
+    drop(tree);
+    assert_tree_exited(&processes).await;
+}
+
+#[tokio::test]
 async fn timeout_kills_child_and_grandchild() {
     let dir = tempfile::Builder::new()
         .prefix("agentero job timeout ")

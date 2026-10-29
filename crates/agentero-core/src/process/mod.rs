@@ -4,20 +4,179 @@ mod windows_job;
 
 pub use discover::{path_entries, probe_command, resolve_command, resolve_command_in_paths};
 
-/// Capture a prepared command's output, owning its Windows process tree until
-/// completion. Dropping the future (timeout or cancellation) kills descendants
-/// too; `kill_on_drop` alone only kills the directly spawned process.
-pub(crate) async fn command_output(
+/// Capture a prepared command's output and own its process tree until the
+/// future completes. Dropping it (timeout or cancellation) kills Windows
+/// descendants too; `kill_on_drop` alone only kills the directly spawned process.
+///
+/// Stdio matches `Command::output`: stdin is closed, both output pipes are captured.
+pub async fn command_output(
     command: &mut tokio::process::Command,
 ) -> std::io::Result<std::process::Output> {
+    command
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
+    ProcessTree::spawn(command)?.wait_with_output().await
+}
+
+/// A spawned process whose Windows descendants die with this guard.
+///
+/// Unix keeps `kill_on_drop` on the direct child. Callers that already put the
+/// child in its own process group still have to signal that group themselves.
+pub struct ProcessTree {
+    /// Dropped before `child` so a launcher's descendants cannot outlive the guard.
     #[cfg(windows)]
-    {
-        windows_job::output(command).await
+    job: Option<windows_job::Job>,
+    child: tokio::process::Child,
+}
+
+impl ProcessTree {
+    pub fn spawn(command: &mut tokio::process::Command) -> std::io::Result<Self> {
+        #[cfg(windows)]
+        {
+            let (child, job) = windows_job::spawn(command)?;
+            Ok(Self {
+                child,
+                job: Some(job),
+            })
+        }
+        #[cfg(not(windows))]
+        {
+            command.kill_on_drop(true);
+            Ok(Self {
+                child: command.spawn()?,
+            })
+        }
     }
-    #[cfg(not(windows))]
-    {
-        command.output().await
+
+    pub fn id(&self) -> Option<u32> {
+        self.child.id()
     }
+
+    pub fn try_wait(&mut self) -> std::io::Result<Option<std::process::ExitStatus>> {
+        self.child.try_wait()
+    }
+
+    pub async fn wait(&mut self) -> std::io::Result<std::process::ExitStatus> {
+        self.child.wait().await
+    }
+
+    /// Kill the direct child. On Windows the job is closed first, so descendants
+    /// die even when the root is only a `.cmd` / `perl` launcher.
+    pub fn start_kill(&mut self) -> std::io::Result<()> {
+        #[cfg(windows)]
+        {
+            self.job.take();
+            let _ = self.child.start_kill();
+            return Ok(());
+        }
+        #[cfg(not(windows))]
+        self.child.start_kill()
+    }
+
+    pub async fn kill(&mut self) -> std::io::Result<()> {
+        self.start_kill()
+    }
+
+    pub fn stdin(&mut self) -> &mut Option<tokio::process::ChildStdin> {
+        &mut self.child.stdin
+    }
+
+    pub fn stdout(&mut self) -> &mut Option<tokio::process::ChildStdout> {
+        &mut self.child.stdout
+    }
+
+    pub fn stderr(&mut self) -> &mut Option<tokio::process::ChildStderr> {
+        &mut self.child.stderr
+    }
+
+    pub async fn wait_with_output(self) -> std::io::Result<std::process::Output> {
+        #[cfg(windows)]
+        {
+            let Self { mut child, mut job } = self;
+            let stdout = child.stdout.take();
+            let stderr = child.stderr.take();
+            // A descendant can inherit the output pipes. Close the job as soon as
+            // the root exits, before waiting for pipe EOF, or output can hang even
+            // after a successful launcher exit. Abort/timeout drops this guard too.
+            let wait = async move {
+                let status = child.wait().await;
+                job.take();
+                status
+            };
+            let (status, stdout, stderr) =
+                tokio::try_join!(wait, read_pipe(stdout), read_pipe(stderr))?;
+            return Ok(std::process::Output {
+                status,
+                stdout,
+                stderr,
+            });
+        }
+        #[cfg(not(windows))]
+        self.child.wait_with_output().await
+    }
+}
+
+/// Synchronous counterpart of [`ProcessTree`] for installers that already run
+/// on a blocking thread.
+pub struct BlockingProcessTree {
+    /// Dropped before `child` so a launcher's descendants cannot outlive the guard.
+    #[cfg(windows)]
+    job: Option<windows_job::Job>,
+    child: std::process::Child,
+}
+
+impl BlockingProcessTree {
+    pub fn spawn(command: &mut std::process::Command) -> std::io::Result<Self> {
+        #[cfg(windows)]
+        {
+            let (child, job) = windows_job::spawn_std(command)?;
+            Ok(Self {
+                child,
+                job: Some(job),
+            })
+        }
+        #[cfg(not(windows))]
+        Ok(Self {
+            child: command.spawn()?,
+        })
+    }
+
+    pub fn take_stdout(&mut self) -> Option<std::process::ChildStdout> {
+        self.child.stdout.take()
+    }
+
+    pub fn take_stderr(&mut self) -> Option<std::process::ChildStderr> {
+        self.child.stderr.take()
+    }
+
+    pub fn try_wait(&mut self) -> std::io::Result<Option<std::process::ExitStatus>> {
+        self.child.try_wait()
+    }
+
+    pub fn wait(&mut self) -> std::io::Result<std::process::ExitStatus> {
+        self.child.wait()
+    }
+
+    pub fn kill(&mut self) -> std::io::Result<()> {
+        #[cfg(windows)]
+        {
+            self.job.take();
+            let _ = self.child.kill();
+            return Ok(());
+        }
+        #[cfg(not(windows))]
+        self.child.kill()
+    }
+}
+
+async fn read_pipe(pipe: Option<impl tokio::io::AsyncRead + Unpin>) -> std::io::Result<Vec<u8>> {
+    use tokio::io::AsyncReadExt;
+    let mut bytes = Vec::new();
+    if let Some(mut pipe) = pipe {
+        pipe.read_to_end(&mut bytes).await?;
+    }
+    Ok(bytes)
 }
 
 /// Win32 `CREATE_NO_WINDOW` process creation flag.
