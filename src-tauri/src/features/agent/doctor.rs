@@ -174,8 +174,8 @@ async fn run_command_with_timeout(
     timeout: Duration,
 ) -> Result<CommandOutput, String> {
     let mut command = diagnostic_command(path, args);
-    command.env_clear().envs(environment).kill_on_drop(true);
-    let output = tokio::time::timeout(timeout, command.output())
+    command.env_clear().envs(environment);
+    let output = tokio::time::timeout(timeout, crate::core::process::command_output(&mut command))
         .await
         .map_err(|_| format!("timed out after {}s", timeout.as_secs()))?
         .map_err(|error| format!("failed to start: {error}"))?;
@@ -196,8 +196,8 @@ enum CancellableOutcome {
 
 /// Run a package manager with progress events and cooperative cancellation.
 ///
-/// The child is owned by a spawned task with `kill_on_drop`, so aborting the
-/// task on cancel drops (and therefore kills) the installer process.
+/// The child is owned by a spawned task. Aborting that task drops the process
+/// tree, which on Windows also kills launcher descendants such as `node.exe`.
 async fn run_installer_cancellable(
     path: &Path,
     args: &[String],
@@ -208,8 +208,9 @@ async fn run_installer_cancellable(
 ) -> Result<CancellableOutcome, String> {
     let arg_refs = args.iter().map(String::as_str).collect::<Vec<_>>();
     let mut command = diagnostic_command(path, &arg_refs);
-    command.env_clear().envs(environment).kill_on_drop(true);
-    let mut joined = tokio::spawn(async move { command.output().await });
+    command.env_clear().envs(environment);
+    let mut joined =
+        tokio::spawn(async move { crate::core::process::command_output(&mut command).await });
     let started = Instant::now();
     let mut last_emit = Instant::now() - Duration::from_secs(1);
     loop {

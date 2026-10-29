@@ -231,11 +231,14 @@ where
     };
 
     let mut command = tokio::process::Command::new(gh);
-    command
-        .args(["api", "--hostname", "github.com", &endpoint])
-        .kill_on_drop(true);
+    command.args(["api", "--hostname", "github.com", &endpoint]);
     crate::process::hide_console_window_tokio(&mut command);
-    let output = match tokio::time::timeout(Duration::from_secs(20), command.output()).await {
+    let output = match tokio::time::timeout(
+        Duration::from_secs(20),
+        crate::process::command_output(&mut command),
+    )
+    .await
+    {
         Ok(Ok(output)) => output,
         Ok(Err(error)) => {
             log::debug!(target: "agentero::skill", "gh api failed to start: {error}");

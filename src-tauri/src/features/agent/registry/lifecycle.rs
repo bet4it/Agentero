@@ -1669,14 +1669,12 @@ fn run_command_with_cancellation(
     phase: &str,
 ) -> io::Result<Output> {
     command.stdout(Stdio::piped()).stderr(Stdio::piped());
-    let mut child = command.spawn()?;
+    let mut child = crate::core::process::BlockingProcessTree::spawn(&mut command)?;
     let mut stdout = child
-        .stdout
-        .take()
+        .take_stdout()
         .map(|mut pipe| thread::spawn(move || read_pipe_to_end(&mut pipe)));
     let mut stderr = child
-        .stderr
-        .take()
+        .take_stderr()
         .map(|mut pipe| thread::spawn(move || read_pipe_to_end(&mut pipe)));
     let started_at = Instant::now();
     let mut last_emit = Instant::now() - Duration::from_secs(1);
