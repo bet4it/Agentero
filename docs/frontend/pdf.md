@@ -218,7 +218,7 @@ Host 下载/解析：[../backend/paper-import.md](../backend/paper-import.md)。
 ## 限制与后续
 
 - #798：低清底图、BMP 编码及移除重复瓦片缓存 / 占位能减少已确认的出图与生命周期开销；Linux / WebKitGTK 的实际帧率与合成耗时仍需在报告者环境复测，不能仅凭 worker 排队判定滚动线程阻塞。
-- 可见页面底图调度已取得 Chromium 收益；完整原生交互与 Windows / Linux A/B 仍需补齐，见 [验收范围](../test/pdf-visible-rendering-performance.md)。合法的大量不同批注不应按内容删除，仍可能有逐项导入成本。
+- 可见页面底图调度已取得 Chromium 与 macOS 原生 WebKit 收益，后者完整 Vault 框选、保存和重开通过；Windows / Linux A/B 仍需补齐，见 [验收范围](../test/pdf-visible-rendering-performance.md)。合法的大量不同批注不应按内容删除，仍可能有逐项导入成本。
 - 选区几何目前按可见时间 / 指针意图加载，附近文字矩形按页码延迟；如性能记录显示仍与滚动争用 worker，再单独评估真实 scroll-idle 调度，不追加引擎补丁。
 
 - EmbedPDF 升级时继续核对 engines 原生内存 / 坐标 / refcount、tiling 旋转与 DPR、AI 按 backend 选择 ORT 入口的补丁；2.15.1 对应实现仍与 2.14.4 相同，不能仅凭升版删掉。zoom 评论列留白补丁也需核对上游是否已有等价配置。待上游修复 annotation 同 uid 在途变更被旧 commit 清 pending 的问题后，移除删除协调器。
