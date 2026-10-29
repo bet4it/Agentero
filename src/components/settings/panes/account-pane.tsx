@@ -100,14 +100,28 @@ function AccountContent() {
 			}),
 		);
 		register(
-			listen<{departing?: string}>(ORGANIZATIONS_CHANGED, event => {
+			listen<{ departing?: string }>(ORGANIZATIONS_CHANGED, (event) => {
 				if (event.payload.departing) {
 					const id = event.payload.departing;
-					setSelectedId(current => current === id ? null : current);
-					void accountQueryClient.cancelQueries({predicate:q => q.queryKey[3] === "organization"}).then(() => {
-						accountQueryClient.setQueriesData<Array<{id:string}>>({predicate:q=>q.queryKey[3] === "organization" && q.queryKey[4] === "list"}, old=>old?.filter(org=>org.id !== id));
-						void accountQueryClient.invalidateQueries({predicate:q=>q.queryKey[3] === "organization" && q.queryKey[4] === "list"});
-					});
+					setSelectedId((current) => (current === id ? null : current));
+					void accountQueryClient
+						.cancelQueries({
+							predicate: (q) => q.queryKey[3] === "organization",
+						})
+						.then(() => {
+							accountQueryClient.setQueriesData<Array<{ id: string }>>(
+								{
+									predicate: (q) =>
+										q.queryKey[3] === "organization" &&
+										q.queryKey[4] === "list",
+								},
+								(old) => old?.filter((org) => org.id !== id),
+							);
+							void accountQueryClient.invalidateQueries({
+								predicate: (q) =>
+									q.queryKey[3] === "organization" && q.queryKey[4] === "list",
+							});
+						});
 					return;
 				}
 				void accountQueryClient.invalidateQueries({
@@ -132,7 +146,12 @@ function AccountContent() {
 				});
 				// Other windows refresh their own membership view; this does not change
 				// their selected team or any other device's active organization.
-				void emit(ORGANIZATIONS_CHANGED, {departing: departing ? (event.mutation.state.variables as {organizationId?: string})?.organizationId : undefined});
+				void emit(ORGANIZATIONS_CHANGED, {
+					departing: departing
+						? (event.mutation.state.variables as { organizationId?: string })
+								?.organizationId
+						: undefined,
+				});
 			}),
 		);
 		return () => {

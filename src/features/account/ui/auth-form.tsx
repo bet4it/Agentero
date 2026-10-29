@@ -87,7 +87,9 @@ export function setAuthFormServerError(
 	form.setErrorMap({
 		onServer: {
 			fields: normalized.fields ?? {},
-			form: apiErrorMessage(i18n.t, { code: getAuthErrorCode(error) }),
+			form: apiErrorMessage(i18n.getFixedT(i18n.language, "account"), {
+				code: getAuthErrorCode(error),
+			}),
 		},
 	});
 }
