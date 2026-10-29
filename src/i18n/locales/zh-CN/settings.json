@@ -5,6 +5,7 @@
 		"remoteContextHint": "当前 Vault 在 {{host}}（{{path}}）。外观等仍为本机偏好；打开 Agent 分区时会对远端主机做探测。"
 	},
 	"nav": {
+		"account": "账号与团队",
 		"general": "通用",
 		"appearance": "外观",
 		"agent": "Agent",

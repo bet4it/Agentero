@@ -1,0 +1,25 @@
+{
+	"title": "Account and teams",
+	"profile": "Profile",
+	"teams": "Teams",
+	"refresh": "Refresh",
+	"localFirst": "Your local Vault remains available without signing in.",
+	"signIn": "Sign in with your browser",
+	"waiting": "Waiting for browser sign-in…",
+	"signOut": "Sign out",
+	"administration": "Platform administration",
+	"common": { "cancel": "Cancel" },
+	"org": {
+		"transferOwnership": "Transfer ownership",
+		"transferDescription": "Transfer team ownership to {{name}}? You will become a team administrator.",
+		"transferSuccess": "Ownership transferred."
+	},
+	"errors": {
+		"generic": "The operation failed. Check your connection and try again.",
+		"permission": "You do not have permission for this action. Refresh your account and retry.",
+		"limit": "Your plan limit has been reached.",
+		"frozen": "This team is frozen. Contact a platform administrator.",
+		"owner": "Transfer ownership before leaving the team.",
+		"storage": "The system credential store is unavailable. Unlock it or allow access, then retry."
+	}
+}

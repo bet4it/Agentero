@@ -128,6 +128,16 @@ fn emit_open_error<R: Runtime>(app: &AppHandle<R>, message: &str) {
 #[cfg(feature = "desktop")]
 pub fn handle_deep_link_urls<R: Runtime>(app: &AppHandle<R>, urls: &[String]) {
     for raw in urls {
+        // Auth callbacks belong to the identity plugin. Never log their one-use
+        // authorization code through the generic open/UI diagnostics.
+        if let Ok(url) = url::Url::parse(raw) {
+            if url.scheme() == "agentero"
+                && ((url.host_str() == Some("auth") && url.path() == "/callback")
+                    || (url.host_str().is_none() && url.path() == "/auth/callback"))
+            {
+                continue;
+            }
+        }
         if raw.contains("://pair") || raw.contains(":pair") {
             // Mobile pairing — leave to the mobile UI / other handlers.
             continue;

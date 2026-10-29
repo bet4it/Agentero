@@ -38,6 +38,7 @@ desktop = [
   "dep:tauri-plugin-process",
   "dep:tauri-plugin-single-instance",
   "dep:tauri-plugin-window-state",
+	"dep:tauri-plugin-better-auth",
   "dep:tauri-specta",
   "dep:specta-typescript",
   "dep:posthog-rs",
@@ -128,6 +129,7 @@ hayagriva = { version = "0.10.1", default-features = false, features = ["archive
 # Updates and process relaunch are desktop-only. Mobile distribution is owned by
 # its app stores, not the in-app updater.
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-better-auth = { version = "=0.1.2", optional = true }
 agentero-plugin-host = { path = "../crates/agentero-plugin-host", optional = true }
 # Real-time LuaLaTeX preview. In-process (no sidecar): the desktop host owns
 # one session per project root; mobile has no local lualatex and gates it off.

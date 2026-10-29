@@ -5,6 +5,7 @@
 		"remoteContextHint": "Vault is open on {{host}} ({{path}}). App appearance stays local; Agent catalog below probes that host when you open the Agent section."
 	},
 	"nav": {
+		"account": "Account and teams",
 		"general": "General",
 		"appearance": "Appearance",
 		"agent": "Agent",

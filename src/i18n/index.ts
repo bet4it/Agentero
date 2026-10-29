@@ -1,7 +1,7 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import type { LocalePreference } from "@/lib/settings";
-
+import enAccount from "./locales/en/account.json";
 import enAgent from "./locales/en/agent.json";
 import enAiElements from "./locales/en/aiElements.json";
 import enApp from "./locales/en/app.json";
@@ -16,6 +16,7 @@ import enSettings from "./locales/en/settings.json";
 import enShortcuts from "./locales/en/shortcuts.json";
 import enSidebar from "./locales/en/sidebar.json";
 import enViewer from "./locales/en/viewer.json";
+import zhAccount from "./locales/zh-CN/account.json";
 import zhAgent from "./locales/zh-CN/agent.json";
 import zhAiElements from "./locales/zh-CN/aiElements.json";
 import zhApp from "./locales/zh-CN/app.json";
@@ -38,6 +39,7 @@ export const DEFAULT_NS = "common";
 
 export const resources = {
 	en: {
+		account: enAccount,
 		common: enCommon,
 		app: enApp,
 		settings: enSettings,
@@ -54,6 +56,7 @@ export const resources = {
 		onboarding: enOnboarding,
 	},
 	"zh-CN": {
+		account: zhAccount,
 		common: zhCommon,
 		app: zhApp,
 		settings: zhSettings,

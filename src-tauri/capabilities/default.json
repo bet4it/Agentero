@@ -5,6 +5,7 @@
 	"windows": ["main", "agentero-*", "settings", "feature-*", "doc-*"],
 	"permissions": [
 		"core:default",
+		"better-auth:default",
 		"core:window:allow-start-dragging",
 		"core:window:allow-set-focus",
 		"core:window:allow-set-title",
