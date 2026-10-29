@@ -365,7 +365,7 @@ export function SettingsContent({
 			{/* Sidebar — macOS System Settings weight (heavier material). */}
 			<nav
 				data-settings-sidebar
-				className="flex w-[11.5rem] shrink-0 select-none flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
+				className="flex w-12 sm:w-[11.5rem] shrink-0 select-none flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
 				aria-label={t("title")}
 			>
 				{/* Modal fallback only: native window already shows the title in its title bar. */}
@@ -442,7 +442,9 @@ export function SettingsContent({
 											)}
 											aria-hidden
 										/>
-										<span className="truncate">{t(`nav.${item.id}`)}</span>
+										<span className="truncate max-sm:sr-only">
+											{t(`nav.${item.id}`)}
+										</span>
 									</button>
 								</li>
 							</Fragment>
@@ -463,7 +465,7 @@ export function SettingsContent({
 						}}
 					>
 						<Wand2 data-icon="inline-start" />
-						{t("nav.quickSetup")}
+						<span className="max-sm:sr-only">{t("nav.quickSetup")}</span>
 					</Button>
 					<Button
 						type="button"
@@ -476,7 +478,7 @@ export function SettingsContent({
 						}}
 					>
 						<Compass data-icon="inline-start" />
-						{t("nav.featureTour")}
+						<span className="max-sm:sr-only">{t("nav.featureTour")}</span>
 					</Button>
 				</div>
 			</nav>
@@ -487,7 +489,7 @@ export function SettingsContent({
 				data-settings-content
 				className="agentero-scroll min-w-0 flex-1 overscroll-y-contain bg-background"
 			>
-				<div className="px-6 py-5">
+				<div className="px-3 py-5 sm:px-6">
 					{/* One boundary per pane: a section still loading must not blank out
 					    the panes already visited and kept mounted next to it. */}
 					{visitedSections.includes("general") && (
@@ -596,14 +598,17 @@ export function SettingsContent({
 							</Suspense>
 						</div>
 					)}
-					{visitedSections.includes("keyboard") && (
+					{activeSection === "keyboard" && (
 						<div
 							data-settings-pane
 							data-active={activeSection === "keyboard" ? "true" : "false"}
 							hidden={activeSection !== "keyboard"}
 						>
 							<Suspense fallback={<PaneFallback />}>
-								<KeyboardPane />
+								<KeyboardPane
+									shortcutOverrides={settings.shortcutOverrides}
+									patch={patch}
+								/>
 							</Suspense>
 						</div>
 					)}

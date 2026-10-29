@@ -839,7 +839,15 @@
 		}
 	},
 	"keyboard": {
-		"title": "快捷键"
+		"title": "快捷键",
+		"edit": "修改「{{command}}」快捷键",
+		"clear": "取消「{{command}}」快捷键绑定",
+		"clearHint": "取消该快捷键绑定",
+		"restore": "恢复「{{command}}」默认快捷键",
+		"restoreHint": "恢复默认快捷键",
+		"restoreAll": "恢复全部默认快捷键",
+		"search": "搜索命令或快捷键",
+		"noResults": "没有匹配的快捷键"
 	},
 	"about": {
 		"title": "关于",

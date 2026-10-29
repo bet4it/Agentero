@@ -87,11 +87,15 @@
 | `⌘←` | 折叠当前选中文件夹 |
 | `⇧⌘←` | 折叠树到默认状态 |
 | `⌥⌘S` | 开关左侧边栏（`⌘B` 别名仅在非文字输入区生效） |
-| `⌘L` | 有选区时「加入对话」（固定选区并打开右侧 Agent）；无选区时开关右侧栏 |
+| `⌘L` | 开关右侧栏，保留当前选区 |
 | `⌘K` | 有划词工具栏时「快速对话」（页内 Ask） |
-| `⇧⌘A` | 固定当前选区为 Agent 上下文，打开 Agent 面板并聚焦输入框（无选区时只打开并聚焦） |
+| `⇧⌘L` | 固定当前选区为 Agent 上下文，打开 Agent 面板并聚焦输入框（无选区时只打开并聚焦） |
 | `F11` | **Windows only**：切换无边框（exclusive）全屏；再按一次退出。实现：`toggleBorderlessFullscreen`（`src/lib/shell/window-fullscreen.ts`） |
 | `⌃⌘F` | **macOS only**：通过「视图 → 切换全屏」原生菜单切换当前窗口的系统全屏；再按一次退出 |
+
+macOS 原生菜单在启动及设置保存后读取 `shortcutOverrides`，菜单 action id 映射到前端快捷键 id；缺省沿用默认绑定，`null` 移除加速键，自定义绑定同步显示菜单提示。刷新保留 renderer 已解析的系统语言。快捷键录制调用 `set_menu_shortcut_recording` 暂时安装空菜单，避免自定义及原生编辑 / 退出 / 全屏加速键抢先执行；按调用窗口跟踪，结束录制或窗口销毁后恢复最新设置与菜单提示。
+
+上表列出默认绑定；「设置 → 快捷键」支持修改、清除与恢复，工具栏提示及原生菜单随配置更新。
 
 前端快捷键绑定：`src/lib/shell/shortcuts.ts`；macOS 原生全屏由 `src-tauri/src/app/menu.rs` 的预定义菜单项处理。PDF、Markdown 编辑器及查找替换栏共用 `isFindShortcut`，macOS 仅 `⌘F`（不含 Ctrl / Shift / Alt）触发搜索，避免 `⌃⌘F` 误打开搜索或抢走搜索栏焦点；Windows/Linux 保留 `Ctrl+F`。文案 i18n 见 [settings.md](settings.md)。
 
@@ -105,7 +109,7 @@
 - **按压反馈**：`Button` 为 `active:scale-[0.97]`；文件树行 / Dock 页签 / 任务圆环共享同档微反馈（色阶或轻 scale/opacity）。Layout 菜单触发器保留 ghost hover fill。
 - 工具栏优先图标 + `aria-label` + Tooltip；避免常驻解释文案。
 - 操作型 Chrome（按钮、导航、标题栏、工具栏、Dock 标签、可点击卡片、Agent 空状态）默认禁用浏览器文字选择；正文、可复制 metadata、编辑器、PDF 译文层（`.select-text`）和输入控件必须保持可选。不要在应用根节点统一设置 `user-select: none`，避免误伤第三方内容层和移动端长按选择。
-- **⌘A / Ctrl+A**：仅在输入框、`contenteditable`、`[role=textbox]` 或带 `.select-text` / `.select-all` 的区域内走浏览器原生全选；点在页面空白或 chrome 上时由 `useNativeSelectAllGuard`（主窗经 `useAppShortcuts`，文档/功能弹窗各自挂载）吞掉，避免整页扫到侧栏/标签/空状态文案。笔记编辑器内由块选接管：先选中当前顶层块（含 Mermaid 预览），再按一次选中全部块。⇧⌘A 仍是「固定选区并聚焦 Agent」。判定见 `src/lib/shell/native-select-all.ts`。
+- **⌘A / Ctrl+A**：仅在输入框、`contenteditable`、`[role=textbox]` 或带 `.select-text` / `.select-all` 的区域内走浏览器原生全选；点在页面空白或 chrome 上时由 `useNativeSelectAllGuard`（主窗经 `useAppShortcuts`，文档/功能弹窗各自挂载）吞掉，避免整页扫到侧栏/标签/空状态文案。笔记编辑器内由块选接管：先选中当前顶层块（含 Mermaid 预览），再按一次选中全部块。⇧⌘L 是「固定选区并聚焦 Agent」。判定见 `src/lib/shell/native-select-all.ts`。
 - 基础组件 shadcn/ui；Chat/树 AI UI 用 AI Elements（[components.md](components.md)）。
 - **启动种子放 `boot()`**（`src/main.tsx`），不要在 render 期做副作用。`initSettingsStore` 紧接 `ensureSettingsLoaded`，在主窗口 / 设置 / 功能 / 文档窗口分流前统一初始化并订阅设置，避免子窗口用模块初始默认值覆盖已加载配置。`initVaultStore` / `initWorkspaceStore` 在需要工作区的窗口 `createRoot` 前调用；这些初始化不依赖 render 或 `useState` 初始化器（StrictMode 下可能跑两次）。
 - **订阅 Host 事件一律用类型化事件绑定（`src/lib/core/bindings.ts` 的 `events.*`）：组件内 `useTauriEvent(events.x, cb)`，非 UI 模块 `listenEventSafe(events.x, cb)`（`src/lib/core/tauri-events.ts`）**；字符串事件名仅限前端窗口间广播（`workspace:*`、`agent:attach-context` 等）与 iOS bridge client 事件，非 Tauri wire 的 promise 式订阅（bridge、workspace-broadcast）用 `toSafeDisposer()`。手写 `let off; void (async () => { off = await listen(...) })(); return () => off?.()` 会在 `listen` resolve 前 dispose 时泄漏监听器 —— StrictMode 每次开发挂载都会命中。

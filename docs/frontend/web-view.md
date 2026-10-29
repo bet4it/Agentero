@@ -40,7 +40,7 @@ Host `features/web/proxy.rs`(agentero-web scheme)
 
 ## 桥脚本(WEB_BRIDGE)
 
-NAV_BRIDGE 同款 vanilla ES5 IIFE,只装配顶层 frame。经 `parent.postMessage` 与应用通信;应用侧监听 `message` 并校验 `event.origin ∈ webViewProxyOrigins()` 且 `data.source === "agentero-web"`(防无关 frame 伪造)。
+NAV_BRIDGE 同款 vanilla ES5 IIFE,只装配顶层 frame。经 `parent.postMessage` 与应用通信;应用侧监听 `message` 并校验 `event.origin ∈ webViewProxyOrigins()` 、`event.source === iframe.contentWindow` 且 `data.source === "agentero-web"`(防无关 frame 伪造)。
 
 ### 消息协议
 
@@ -48,8 +48,10 @@ NAV_BRIDGE 同款 vanilla ES5 IIFE,只装配顶层 frame。经 `parent.postMessa
 |---|---|---|---|
 | frame → app | `selection` | `{text(≤4000), rect\|null, url}` | 选区(视口坐标矩形);空文本即清菜单。带 rect 时帧内已 `execCommand("copy")`(焦点在 frame,应用侧剪贴板写入可能被拒的降级) |
 | frame → app | `scroll` | — | 页内滚动,隐藏工具栏(plaza 同款语义) |
-| frame → app | `shortcut` | `{id: "quickChat" \| "addToChat"}` | ⌘K / ⌘L——iframe 聚焦时键盘事件进不了主 webview,必须显式转发;editable target 不转发 |
+| frame → app | `ready` | — | 桥完成监听后请求当前快捷键配置；每次文档导航重新握手 |
+| frame → app | `shortcut` | `{event: {key, code, metaKey, ctrlKey, altKey, shiftKey}}` | 仅转发匹配的配置；应用以 `resolveShortcutId` 再校验。可编辑元素、IME 与普通输入不转发 |
 | frame → app | `external` | `{url}` | 跨站链接交系统浏览器 |
+| app → frame | `shortcuts` | `{bindings: ShortcutDef[], isMac}` | 同步 toggleChat / quickChat / addSelectionToChat 的有效配置；禁用不传。桥 ready、iframe load 和设置变更均同步 |
 | app → frame | `clearSelection` | — | 加入对话后清除帧内选区 |
 | app → frame | `copySelection` | — | 应用侧复制失败时的兜底 |
 
@@ -62,7 +64,9 @@ NAV_BRIDGE 同款 vanilla ES5 IIFE,只装配顶层 frame。经 `parent.postMessa
 - **工具栏**:`SelectionMenu`(复用 `viewer/pdf/cards/`,`showHighlight={false}`——网页无 marks/,藏高亮留翻译)+ 选中即复制标签 `SelectionCopiedLabel`;
 - **翻译**:`TranslateCard` 流式卡,双 provider 执行在共享引擎 `lib/pdf/translate/run-selection.ts`(agent → `runOnce{workflow:"translate"}` 流式;免费 MT → `runTranslate`;与 PDF 划词复用),ephemeral 单卡不写 marks;
 - **Quick chat ⌘K**:`AskPopover` + 共享 `use-selection-ask.ts`(从 plaza 抽出的 ephemeral ask 生命周期:`PdfAskThread` + 共享引擎 `lib/pdf/ask/run-turn.ts` 的 `runOnce{workflow:"free"}` + `attachAgentRun` 流式,plaza 改为消费方);
-- **加入对话 ⌘L**:`addSelectionToChat`(= `publishSelection` + `pinActiveSelection` + `openRightTab("agent")`)。
+- **加入对话 ⇧⌘L**:`addSelectionToChat`(= `publishSelection` + `pinActiveSelection` + `presentAgentComposer({ preserveCaret: true })`)。
+
+默认 `⌘L` 仅切换 Agent 侧栏，即使有选区也不 pin；`⇧⌘L` 才加入选区并打开、聚焦 composer，`⌘K` 保留页内 Quick chat。网页 iframe 中后两者只在有选区时转发。PDF / Plaza / 网页工具栏提示通过 `useShortcutLabel` 跟随用户配置。
 
 四个划词表面(PDF / plaza / 网页论文 / 文本编辑器)共用 `src/components/selection/` 下的三件套:`use-copied-label.ts`(自动复制的 copied 确认标签,1000ms 自隐藏)、`use-selection-quick-chat.ts`(⌘K 注册,ref 守卫 mount 稳定 + armed 谓词)、`add-selection-to-chat.ts`(发布 + pin + 打开 Agent 侧栏);ask 生命周期在 `use-selection-ask.ts`。各表面只保留自己的来源 origin、几何信息与 dismissal 编排。
 

@@ -3,6 +3,7 @@ import type { SettingsSection } from "@/components/settings/types";
 import { TrafficLightSpacer } from "@/components/shell/traffic-light-spacer";
 import { applyLocale } from "@/i18n";
 import { commands } from "@/lib/core/bindings";
+import { errorMessage, notifyError } from "@/lib/core/notify";
 import { isMacOS, isTauri } from "@/lib/core/tauri";
 import {
 	applyDocumentChrome,
@@ -11,7 +12,9 @@ import {
 	saveSettingsAsync,
 	subscribeSettings,
 } from "@/lib/settings";
+import { applyExternalSettings } from "@/lib/settings/store";
 import { closeCurrentWindow } from "@/lib/shell/close-window";
+import { resolveShortcutId } from "@/lib/shell/shortcuts";
 import { SettingsContent } from "./settings-content";
 
 function readSearchParams() {
@@ -73,17 +76,13 @@ export function SettingsNativeRoot() {
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
-			const isComma = event.key === "," || event.code === "Comma";
-			const isEsc = event.key === "Escape";
-			const isCloseWindow =
-				(event.key === "w" || event.code === "KeyW") &&
-				(event.metaKey || event.ctrlKey);
-			const metaOrCtrl = event.metaKey || event.ctrlKey;
 			if (
-				isEsc ||
-				(isCloseWindow && !event.altKey && !event.shiftKey) ||
-				(isComma && metaOrCtrl && !event.altKey && !event.shiftKey)
-			) {
+				event.defaultPrevented ||
+				document.querySelector("[data-shortcut-recording]")
+			)
+				return;
+			const id = resolveShortcutId(event, { settingsOpen: true });
+			if (id === "closeSheet" || id === "closeTab" || id === "settings") {
 				event.preventDefault();
 				closeCurrentWindow();
 			}
@@ -100,11 +99,14 @@ export function SettingsNativeRoot() {
 	}, []);
 
 	const handleChange = useCallback(async (next: typeof settings) => {
+		const previous = loadSettings();
 		setSettings(next);
 		try {
 			await saveSettingsAsync(next);
 		} catch (e) {
-			console.warn("[settings-native-root] save failed", e);
+			applyExternalSettings(previous);
+			setSettings(previous);
+			notifyError(errorMessage(e));
 		}
 	}, []);
 

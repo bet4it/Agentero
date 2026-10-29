@@ -839,7 +839,15 @@
 		}
 	},
 	"keyboard": {
-		"title": "Keyboard"
+		"title": "Keyboard",
+		"edit": "Change shortcut for {{command}}",
+		"clear": "Unbind {{command}}",
+		"clearHint": "Unbind this shortcut",
+		"restore": "Restore default for {{command}}",
+		"restoreHint": "Restore the default shortcut",
+		"restoreAll": "Restore all defaults",
+		"search": "Search commands or shortcuts",
+		"noResults": "No matching shortcuts"
 	},
 	"about": {
 		"title": "About",

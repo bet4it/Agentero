@@ -11,6 +11,14 @@
 - 加载策略：设置 webview 不加载完整 `App`，也不加载 PDF 引擎与 KaTeX（二者随 `App` 动态 import）。各分区 pane 按 `lazy()` 分 chunk；**当前分区**的 pane 与外壳并行预热（`preloadSettingsPane`），避免窗口刚可交互时才去拉 pane 而卡一下；其余分区首次访问才加载，已访问的保持挂载。
 - 通用页的「网络代理」是 Host 级配置，启用后用于 Host 创建的 HTTP(S)/SOCKS 请求，并同步注入本地与远端 Agent 进程的 `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY`，同时合并注入 `NO_PROXY=127.0.0.1,localhost,::1` 回环豁免（用户已有的 `NO_PROXY` 条目保留在前）——OpenCode 的 ACP CLI 经 127.0.0.1 访问自身 serve 子进程，回环流量不能走代理（[#638](../bug_fix/opencode-proxy-loopback-models.md)）。旧版 Settings → Agent 的代理配置会在首次启动时迁移。
 
+### 快捷键
+
+「快捷键」按应用 / 知识库 / 导航分组显示当前组合，平时只显示组合按钮。页顶搜索栏可输入命令文字，或按下 / 输入组合（如 `⌘L`、`cmd+l`）只显示对应绑定。悬停该行时，在组合左侧出现清除；只有用户改过的行才同时出现恢复。点击组合后直接按新键录入；Esc 取消，Tab 或失焦结束录制。标题处可恢复全部。与已有命令（含默认别名）冲突时显示命令名并保留原绑定；普通字母、输入法组合和原生编辑 / 系统窗口控制组合保留给输入与系统操作。
+
+默认 `⌘L` 只切换右栏，`⇧⌘L` 把选区加入 Agent 并聚焦输入框；无选区时打开并聚焦 Agent。`⌘K` 继续打开页内快速对话。Windows / Linux 使用 Ctrl 对应主修饰键。修改后即时生效，PDF、网页 iframe、笔记、代码与广场共用配置；工具栏提示和 macOS 原生菜单同步。重绑定或清除某命令会同时移除其旧默认组合及别名，恢复默认时一并恢复别名。
+
+配置保存在 `settings.json` 的 `shortcutOverrides`：缺省命令沿用默认，`null` 表示禁用，组合对象包含 `key` 与 `meta` / `ctrl` / `alt` / `shift`。通过现有 `settings:changed` 同步窗口，重启后保留。
+
 ### UI 约定（System Settings 风格）
 
 共用件在 `src/components/settings/settings-layout.tsx`：
