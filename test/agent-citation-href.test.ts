@@ -149,3 +149,26 @@ describe("citationHrefFromWikiParts", () => {
 		).toBeNull();
 	});
 });
+
+describe("PDF document anchors", () => {
+	it("routes section and paragraph shorthand only for PDF targets", () => {
+		for (const fragment of ["2", "2.1", "2#p3", "2.1#p3"]) {
+			expect(isAgentCitationHref(`papers/a/a.pdf#${fragment}`)).toBe(true);
+			expect(isAgentCitationHref(`papers/a/NOTES.md#${fragment}`)).toBe(false);
+			expect(
+				citationHrefFromWikiParts("papers/a/a.pdf", {
+					kind: "heading",
+					path: fragment.split("#"),
+				}),
+			).toBe(`papers/a/a.pdf#${fragment}`);
+			expect(
+				citationHrefFromWikiParts("papers/a/NOTES.md", {
+					kind: "heading",
+					path: fragment.split("#"),
+				}),
+			).toBeNull();
+		}
+		expect(isAgentCitationHref("https://example.com/a.pdf#2#p3")).toBe(false);
+		expect(isAgentCitationHref("papers/a/a.pdf#2%23p3")).toBe(true);
+	});
+});

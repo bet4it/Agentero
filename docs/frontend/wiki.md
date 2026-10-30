@@ -32,3 +32,7 @@
 - 面板：`src/components/wiki/`
 - 逻辑：`src/lib/wiki/`、`wiki-completion.ts`、`wiki-embed.ts`、`wiki-navigation.ts`、`wiki-heading-rename.ts`
 - Host：[../backend/wiki.md](../backend/wiki.md)
+
+### PDF 段落导航
+
+PDF 双链可写为 `[[papers/demo/demo.pdf#2]]`、`[[papers/demo/demo.pdf#2.1]]` 或 `[[papers/demo/demo.pdf#2.1#p3]]`；普通 Markdown PDF 链接也支持这些 fragment。相对路径先按源笔记解析，再交给共享 PDF 定位器。章节和段落锚点从 `agentero layout list` 查询；目标缺失、解析缺失或歧义会提示失败，不跳到其他段落。相同锚点在聊天、链接和双链中使用相同的滚动位置与临时高亮范围。

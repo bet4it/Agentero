@@ -340,6 +340,7 @@ export function setFocusedLayoutRegion(
 export function layoutKindFromCitationFragment(
 	fragment: string,
 ): PdfLayoutKind {
+	if (/^\d+(?:\.\d+)*#p[1-9]\d*$/.test(fragment)) return "text";
 	const key = (fragment.split("=")[0] ?? "").toLowerCase();
 	switch (key) {
 		case "figure":

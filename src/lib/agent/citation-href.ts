@@ -77,6 +77,8 @@ export function isAgentCitationHref(href: string): boolean {
 	const { path, fragment } = splitCitationHref(cleanCitationHref(href));
 	if (!path || !fragment) return false;
 	if (/^https?:\/\//i.test(path)) return false;
+	if (/\.pdf$/i.test(path) && /^\d+(?:\.\d+)*(?:#p[1-9]\d*)?$/.test(fragment))
+		return true;
 	const key = fragment.split("=", 1)[0]?.trim().toLowerCase();
 	if (!key || !CITATION_FRAGMENT_KEYS.has(key)) return false;
 	return path.includes("/") || /\.(pdf|tex|ltx|md)$/i.test(path);
@@ -106,10 +108,9 @@ export function citationHrefFromWikiParts(
 	if (!path?.trim()) return null;
 	if (fragment?.kind !== "heading" || !fragment.path?.length) return null;
 	const frag = fragment.path.join("#");
-	const key = frag.split("=", 1)[0]?.trim().toLowerCase();
-	if (!key || !CITATION_FRAGMENT_KEYS.has(key)) return null;
 	const clean = path.replace(/\\/g, "/").replace(/^\/+/, "");
-	return `${clean}#${frag}`;
+	const href = `${clean}#${frag}`;
+	return isAgentCitationHref(href) ? href : null;
 }
 
 /**

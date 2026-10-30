@@ -71,3 +71,7 @@ Vault Markdown 变更
 - 解析时不把 annotation id 当 Markdown heading/block；**target 仍走普通文件 resolve**（路径 / 文件名），成功后再由前端按 id 打开 paper PDF 并滚动定位（`scrollToHighlight` / `scrollToVisualTrace`）。视觉批注只滚到区域并闪一下定位高亮，不打开浮动对话卡。
 - `![[…@id]]` 的 `contentKind` 为 `annotation`：Host 只确认 fragment 类型，**quote / 裁剪 / 对话** 由前端读 `marks/annotations.json` 或 `marks/<id>.json` 投影。
 - `doctor wiki` / 索引：对 annotation 报告 path 级 `resolved|missing|ambiguous` 与 id 形态 `invalidFragment`；**不**打开 marks 验证 id 存活。
+
+### PDF 章节与段落 fragment
+
+PDF 的 heading fragment 由 `agentero-core::features::pdf::citation` 解析，桌面导航与 Wiki 校验共用它。`[[papers/demo/demo.pdf#2.1#p3]]` 与普通 Markdown PDF 链接解析为同一版面区域。校验、单次解析和反链/出链读取会检查当前解析文件，避免 `layout.json` 更新或删除后保留旧的 resolved 状态；缓存恢复时也重新校验。缺失和歧义分别显示为 `invalidFragment` 与 `ambiguous`。批注 fragment 继续走既有规则，Markdown 文件依然按标题路径解析。

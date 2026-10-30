@@ -12,7 +12,9 @@ use crate::features::wiki::models::{
     WikiCheckResult, WikiDocument, WikiEmbedContentKind, WikiEmbedResponse, WikiLinkEdge,
     WikiResolveResponse, WikiSearchCandidate, WikiSearchCandidateKind,
 };
-use crate::features::wiki::resolve::{resolve_occurrence, resolve_occurrence_with, DocumentLookup};
+use crate::features::wiki::resolve::{
+    resolve_occurrence, resolve_occurrence_with, resolve_pdf_fragment, DocumentLookup,
+};
 use crate::features::wiki::util::{stem_of, without_markdown_extension};
 use crate::fs::normalize_rel_lexical;
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -618,6 +620,10 @@ impl WikiIndex {
         edges: Vec<ResolvedLink>,
         fingerprints: Vec<WikiFileFingerprint>,
     ) -> RebuildResult {
+        let edges: Vec<_> = edges
+            .into_iter()
+            .map(|edge| resolve_pdf_fragment(Path::new(vault_path), edge))
+            .collect();
         let mut reverse: HashMap<String, Vec<ResolvedLink>> = HashMap::new();
         let mut nodes = files.iter().cloned().collect::<HashSet<_>>();
         for edge in &edges {
@@ -1124,7 +1130,11 @@ impl WikiIndex {
         let mut backlinks = Vec::new();
         for (k, list) in &self.reverse {
             if keys.iter().any(|q| q == k || q.eq_ignore_ascii_case(k)) {
-                backlinks.extend(list.iter().cloned());
+                backlinks.extend(
+                    list.iter()
+                        .cloned()
+                        .map(|link| resolve_pdf_fragment(root, link)),
+                );
             }
         }
         // Preserve every occurrence: different fragments on one line are distinct.
@@ -1154,6 +1164,7 @@ impl WikiIndex {
             .iter()
             .filter(|edge| edge.occurrence.source == rel)
             .cloned()
+            .map(|link| resolve_pdf_fragment(Path::new(vault_root), link))
             .collect();
         OutgoingLinksResponse {
             path: rel,
@@ -1192,6 +1203,8 @@ impl WikiIndex {
             .edges
             .iter()
             .filter(|link| source_matches(&link.occurrence.source))
+            .cloned()
+            .map(|link| resolve_pdf_fragment(root, link))
         {
             use crate::features::wiki::models::LinkResolutionStatus;
 
@@ -1263,7 +1276,10 @@ impl WikiIndex {
             }
         });
         WikiResolveResponse {
-            link: resolve_occurrence(occurrence, &self.documents),
+            link: resolve_pdf_fragment(
+                Path::new(vault_root),
+                resolve_occurrence(occurrence, &self.documents),
+            ),
         }
     }
 
@@ -2598,5 +2614,64 @@ mod tests {
 
         let _ = fs::remove_dir_all(&real);
         let _ = fs::remove_dir_all(&link_parent);
+    }
+    #[test]
+    fn pdf_fragment_checks_share_citation_resolution_and_refresh_after_layout_changes() {
+        use crate::features::wiki::models::{InternalLinkSyntax, LinkResolutionStatus};
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        let paper = root.join("papers/p1");
+        fs::create_dir_all(paper.join("source")).unwrap();
+        fs::write(paper.join("p1.pdf"), b"%PDF fixture").unwrap();
+        fs::write(paper.join("NOTES.md"), "# 2\n\n## p2\n").unwrap();
+        let raw = paper.join("source/layout.json");
+        fs::write(
+            &raw,
+            include_str!("../../../../../../test/fixtures/pdf-paragraph-anchors/layout.json"),
+        )
+        .unwrap();
+        fs::write(root.join("source.md"), "[[papers/p1/p1.pdf#2#p2]]\n[paragraph](papers/p1/p1.pdf#2#p2)\n[[papers/p1/p1.pdf#2.1#p1]]\n[[papers/p1/p1.pdf#2#p3]]\n[[papers/p1/p1.pdf#section=2]]\n[[papers/p1/NOTES.md#2#p2]]").unwrap();
+        let vault = root.to_str().unwrap();
+        let mut index = WikiIndex::default();
+        index.rebuild(vault).unwrap();
+        let checks = index.check_links(vault, None);
+        assert_eq!(checks.counts.resolved, 5);
+        assert_eq!(checks.counts.invalid_fragment, 1);
+        for syntax in [InternalLinkSyntax::Markdown, InternalLinkSyntax::Wikilink] {
+            let text = if matches!(syntax, InternalLinkSyntax::Markdown) {
+                "papers/p1/p1.pdf#2#p2"
+            } else {
+                "[[papers/p1/p1.pdf#2#p2]]"
+            };
+            let link = index.resolve_text(vault, "source.md", text, syntax).link;
+            assert_eq!(link.status, LinkResolutionStatus::Resolved);
+            let fragment = match link.occurrence.fragment.unwrap() {
+                LinkFragment::Heading { path } => path.join("#"),
+                _ => panic!("expected heading"),
+            };
+            let target = crate::features::pdf::citation::resolve_citation(
+                root,
+                &format!("{}#{fragment}", link.target_path.unwrap()),
+            )
+            .unwrap();
+            assert_eq!(target.region_id, "body-2");
+            assert_eq!(target.bbox.h, 0.03);
+        }
+        // No Markdown changed: semantic validation must still observe a missing
+        // analysis result rather than reusing a cached resolved status.
+        fs::remove_file(raw).unwrap();
+        assert_eq!(index.check_links(vault, None).counts.invalid_fragment, 5);
+        assert_eq!(
+            index
+                .resolve_text(
+                    vault,
+                    "source.md",
+                    "[[papers/p1/p1.pdf#2#p2]]",
+                    InternalLinkSyntax::Wikilink
+                )
+                .link
+                .status,
+            LinkResolutionStatus::InvalidFragment
+        );
     }
 }

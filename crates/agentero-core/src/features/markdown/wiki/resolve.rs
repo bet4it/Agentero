@@ -344,6 +344,32 @@ pub(crate) fn resolve_occurrence_with(
     }
 }
 
+/// Refine PDF fragments with the same resolver used by the desktop jump.
+/// Called with a live vault for navigation, semantic checks and index restore.
+pub(crate) fn resolve_pdf_fragment(vault: &Path, mut link: ResolvedLink) -> ResolvedLink {
+    let Some(path) = link
+        .target_path
+        .as_deref()
+        .filter(|p| p.to_ascii_lowercase().ends_with(".pdf"))
+    else {
+        return link;
+    };
+    let Some(LinkFragment::Heading { path: parts }) = &link.occurrence.fragment else {
+        return link;
+    };
+    let fragment = parts.join("#");
+    link.status = match crate::features::pdf::citation::resolve_citation(
+        vault,
+        &format!("{path}#{fragment}"),
+    ) {
+        Ok(_) => LinkResolutionStatus::Resolved,
+        Err(e) if e.code().contains("ambiguous") => LinkResolutionStatus::Ambiguous,
+        Err(_) => LinkResolutionStatus::InvalidFragment,
+    };
+    link.candidates.clear();
+    link
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

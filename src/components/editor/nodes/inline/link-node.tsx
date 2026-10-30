@@ -12,6 +12,8 @@ import {
 	isAgentCitationHref,
 	isVaultPdfHref,
 } from "@/lib/agent/citation-href";
+import { errorText } from "@/lib/core/error";
+import { notifyError } from "@/lib/core/notify";
 import { cn } from "@/lib/core/utils";
 import {
 	isVaultLocalMarkdownLink,
@@ -59,9 +61,30 @@ export function LinkElement(props: PlateElementProps) {
 					href: url,
 					title: url,
 					"data-citation": "pdf",
-					onClick: (event: MouseEvent) => {
+					onClick: async (event: MouseEvent) => {
 						event.preventDefault();
 						event.stopPropagation();
+						// Resolve local PDF paths relative to the source note before
+						// handing the canonical target to the shared citation jumper.
+						if (
+							isVaultPdfHref(url) &&
+							wikiNav?.vaultPath &&
+							markdownDoc.filePath
+						) {
+							try {
+								const resolved = await resolveWikiReference(
+									wikiNav.vaultPath,
+									markdownDoc.filePath,
+									url,
+									"markdown",
+								);
+								if (resolved)
+									wikiNav.onWikiNavigate(navFromResolvedLink(resolved));
+							} catch (error) {
+								notifyError(errorText(error));
+							}
+							return;
+						}
 						openCitation(url);
 					},
 				}}

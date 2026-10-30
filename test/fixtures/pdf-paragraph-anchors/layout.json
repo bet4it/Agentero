@@ -1,0 +1,69 @@
+{
+	"schemaVersion": 3,
+	"source": { "mode": "embedpdf-layout", "generatedAt": "fixture" },
+	"regions": [
+		{
+			"id": "h2",
+			"kind": "header",
+			"text": "2 Method",
+			"pageIndex": 0,
+			"readingOrder": 0,
+			"score": 0.9,
+			"bbox": { "x": 0.1, "y": 0.1, "w": 0.8, "h": 0.02 }
+		},
+		{
+			"id": "body-2",
+			"kind": "text",
+			"text": "The second direct paragraph is in the right column.",
+			"pageIndex": 0,
+			"readingOrder": 2,
+			"score": 0.9,
+			"bbox": { "x": 0.55, "y": 0.15, "w": 0.35, "h": 0.03 }
+		},
+		{
+			"id": "body-1",
+			"kind": "text",
+			"text": "The first direct paragraph has low confidence.",
+			"pageIndex": 0,
+			"readingOrder": 1,
+			"score": 0.1,
+			"bbox": { "x": 0.1, "y": 0.2, "w": 0.35, "h": 0.1 }
+		},
+		{
+			"id": "h21",
+			"kind": "header",
+			"text": "2.1 Details",
+			"pageIndex": 0,
+			"readingOrder": 3,
+			"score": 0.9,
+			"bbox": { "x": 0.55, "y": 0.4, "w": 0.35, "h": 0.02 }
+		},
+		{
+			"id": "body-21",
+			"kind": "text",
+			"text": "The subsection owns this paragraph independently.",
+			"pageIndex": 1,
+			"readingOrder": 0,
+			"score": 0.9,
+			"bbox": { "x": 0.1, "y": 0.1, "w": 0.35, "h": 0.12 }
+		},
+		{
+			"id": "h3",
+			"kind": "header",
+			"text": "III. Results",
+			"pageIndex": 1,
+			"readingOrder": 1,
+			"score": 0.9,
+			"bbox": { "x": 0.1, "y": 0.3, "w": 0.35, "h": 0.02 }
+		},
+		{
+			"id": "body-3",
+			"kind": "text",
+			"text": "A separate section starts its own counter.",
+			"pageIndex": 1,
+			"readingOrder": 2,
+			"score": 0.9,
+			"bbox": { "x": 0.1, "y": 0.4, "w": 0.35, "h": 0.08 }
+		}
+	]
+}

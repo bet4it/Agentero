@@ -70,18 +70,6 @@ function WikiLinkNavigationElement({
 	const navigate = async (event: MouseEvent) => {
 		event.preventDefault();
 		event.stopPropagation();
-		// `[[papers/…/x.pdf#page=1]]` (and tex rewritten to pdf) share the
-		// agent citation jumper instead of heading navigation.
-		if (isAgentCitationHref(withHeading)) {
-			openCitation(withHeading);
-			return;
-		}
-		if (
-			path &&
-			tryOpenCitationHref(`${path}${el.heading ? `#${el.heading}` : ""}`)
-		) {
-			return;
-		}
 		if (wikiNav?.vaultPath && markdownDoc.filePath) {
 			try {
 				const resolved = await resolveWikiReference(
@@ -96,6 +84,18 @@ function WikiLinkNavigationElement({
 			} catch {
 				// Demo/offline fallback remains deliberately file-only.
 			}
+		}
+		// `[[papers/…/x.pdf#page=1]]` (and tex rewritten to pdf) share the
+		// agent citation jumper instead of heading navigation.
+		if (isAgentCitationHref(withHeading)) {
+			openCitation(withHeading);
+			return;
+		}
+		if (
+			path &&
+			tryOpenCitationHref(`${path}${el.heading ? `#${el.heading}` : ""}`)
+		) {
+			return;
 		}
 		wikiNav?.onWikiNavigate({
 			targetRaw: target,
