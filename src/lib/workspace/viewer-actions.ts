@@ -15,7 +15,7 @@ import { commands } from "@/lib/core/bindings";
 import { errorText } from "@/lib/core/error";
 import { notifyError } from "@/lib/core/notify";
 import { openExternalUrl } from "@/lib/core/open-external";
-import { dirnameOf, normalizePath } from "@/lib/core/path";
+import { dirnameOf, normalizePath, normalizeSlashes } from "@/lib/core/path";
 import { isTauri } from "@/lib/core/tauri";
 import {
 	detectPaperDirectory,
@@ -56,6 +56,7 @@ import {
 	ensureLocalFsScope,
 	joinVaultPath,
 	vaultPathExists,
+	vaultRelativePath,
 	writeVaultFile,
 } from "@/lib/vault";
 import { getVaultPath, refreshTree, vaultStore } from "@/lib/vault/store";
@@ -703,12 +704,25 @@ export function openVaultRel(rel: string): void {
 	openPath(joinVaultPath(vaultPath, clean));
 }
 
-/** True when `target` is a relative/absolute Vault path ending in `.html`. */
+/** POSIX `/…` or Windows `C:/…` path (callers normalize backslashes first). */
+function isAbsoluteLocalPath(value: string): boolean {
+	return value.startsWith("/") || /^[a-z]:\//i.test(value);
+}
+
+/**
+ * True when `target` is a relative/absolute Vault path ending in `.html`.
+ *
+ * Absolute paths are accepted here; {@link openHtmlPreviewLink} still checks
+ * that they live inside the active Vault. Agents routinely emit absolute
+ * `/Users/.../report.html` links, and rejecting them silently did nothing.
+ */
 export function isLocalHtmlLink(target: string): boolean {
-	const value = target.trim().replace(/^<|>$/g, "");
-	if (!value || value.startsWith("#") || value.startsWith("/")) return false;
-	if (value.startsWith("//") || /^[a-z][a-z0-9+.-]*:/i.test(value))
+	const value = normalizeSlashes(target.trim().replace(/^<|>$/g, ""));
+	if (!value || value.startsWith("#") || value.startsWith("//")) return false;
+	// A Windows drive (`C:/…`) looks like a URL scheme; keep it local.
+	if (!isAbsoluteLocalPath(value) && /^[a-z][a-z0-9+.-]*:/i.test(value)) {
 		return false;
+	}
 	return /\.html?($|[?#])/i.test(value);
 }
 
@@ -743,7 +757,8 @@ function decodeLinkPath(rel: string): string {
  *
  * Relative destinations resolve against the source note first (as the Host
  * wiki resolver does for Markdown), then against the Vault root. `fromFile`
- * is null for chat links, which carry no source document.
+ * is null for chat links, which carry no source document. Absolute paths must
+ * be inside the Vault; anything else is left to the caller.
  */
 export async function openHtmlPreviewLink(
 	source: string,
@@ -758,8 +773,14 @@ export async function openHtmlPreviewLink(
 	}
 	const rel = decodeLinkPath(trimmed.split(/[?#]/, 1)[0]);
 	const candidates: string[] = [];
-	if (fromFile) candidates.push(resolveLinkRelativeTo(fromFile, rel));
-	candidates.push(joinVaultPath(vaultPath, normalizeVaultRel(rel)));
+	if (isAbsoluteLocalPath(normalizeSlashes(rel))) {
+		const vaultRel = vaultRelativePath(vaultPath, rel);
+		if (vaultRel === null) return false;
+		candidates.push(joinVaultPath(vaultPath, vaultRel));
+	} else {
+		if (fromFile) candidates.push(resolveLinkRelativeTo(fromFile, rel));
+		candidates.push(joinVaultPath(vaultPath, normalizeVaultRel(rel)));
+	}
 
 	let target = candidates[0];
 	for (const candidate of candidates) {

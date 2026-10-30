@@ -156,7 +156,7 @@ Markdown 已能表达的语法不做 HTML 语义化转换，只处理 Markdown �
 
 单击 HTML 块在编辑器右侧展开 HTML 预览面板（`html-preview-panel.tsx`）：面板以 `clip-path` 从右边缘裁开，带 spring 过渡，`prefers-reduced-motion` 下仅淡入；宽面板占编辑器宽度的 72%（上限 42rem），`Esc` 或右上角关闭按钮收起。预览走与行内相同的净化结果，因此脚本/样式仍被剥离，只在更大的区域里阅读。悬停块右上角的铅笔按钮打开源码编辑气泡（原单击编辑改为该按钮，避免与预览手势冲突）。净化后为空（例如标签整体被剥离）时退化为等宽源码，保证内容仍可见可编辑。
 
-Markdown 里指向本地 `.html` / `.htm` 的链接（`[report](./figures/report.html)`、`[demo](papers/x/demo.html)`）不再走只索引 Markdown 的 wiki resolver：相对路径先按源笔记目录解析，再回退 Vault 根路径，命中后把 `LocalHtmlViewer` 作为右侧分屏打开（`openHtmlPreviewLink`）。Agent 对话里的本地 HTML 链接同样由 `openCitation` 接到这条路径，避免落回系统浏览器或静默失效。
+Markdown 里指向本地 `.html` / `.htm` 的链接（`[report](./figures/report.html)`、`[demo](papers/x/demo.html)`）不再走只索引 Markdown 的 wiki resolver：相对路径先按源笔记目录解析，再回退 Vault 根路径，命中后把 `LocalHtmlViewer` 作为右侧分屏打开（`openHtmlPreviewLink`）。Agent 对话里的本地 HTML 链接同样由 `openCitation` 接到这条路径，避免落回系统浏览器或静默失效。Agent 常写绝对路径（`/Users/…/demo.html`、`C:\…\demo.html`），`isLocalHtmlLink` 一并接受，再由 `vaultRelativePath` 换算成 Vault 相对路径；绝对路径在 Vault 外时保持不处理。
 
 渲染前经 `DOMPurify` 净化：剥离 `script` / `style` / 表单与内联事件，`iframe` 强制 `sandbox` + `referrerpolicy="no-referrer"` 且仅允许 http(s) `src`，链接强制 `target="_blank" rel="noopener noreferrer"`。应用未启用 CSP，因此净化是唯一防线——Markdown 文件始终保存作者原文，只收窄进入 DOM 的部分。
 
