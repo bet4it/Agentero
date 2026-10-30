@@ -163,10 +163,9 @@ fn resolve_section(
     paper_path: &str,
     heading: &str,
 ) -> Result<ResolvedFragment, AppError> {
-    let raw = read_raw_layout(vault, paper_path)?;
+    let raw = layout_index::load_raw_layout(vault, paper_path)?;
     let headers: Vec<&LayoutRegion> = raw.regions.iter().filter(|r| r.kind == "header").collect();
     let needle = normalize_heading(heading);
-    let needles = section_needle_aliases(&needle);
 
     if heading
         .split('.')
@@ -188,13 +187,10 @@ fn resolve_section(
             .or(region.text.as_deref())
             .unwrap_or("");
         let normalized = normalize_heading(text);
-        if needles.contains(&normalized) {
+        if normalized == needle {
             return Ok(region.into());
         }
-        let score = needles
-            .iter()
-            .map(|n| heading_similarity(n, &normalized))
-            .fold(0.0_f64, f64::max);
+        let score = heading_similarity(&needle, &normalized);
         if score >= 0.35 {
             candidates.push((score, region));
         }
@@ -340,42 +336,12 @@ fn normalize_caption_title(text: &str) -> String {
         .join(" ")
 }
 
-/// Expand `#section=3` / `#section=III` into alias needles for matching.
-fn section_needle_aliases(needle: &str) -> Vec<String> {
-    let mut out = vec![needle.to_string()];
-    if let Some(n) = parse_section_number(needle) {
-        let roman = to_roman(n);
-        if roman != needle {
-            out.push(roman.clone());
-        }
-        // OCR often inserts spaces inside Roman markers / words: "iii. p reliminaries"
-        out.push(format!("{roman}."));
-        out.push(n.to_string());
-    }
-    out.sort();
-    out.dedup();
-    out
-}
-
 fn parse_section_number(needle: &str) -> Option<u32> {
     let trimmed = needle.trim().trim_end_matches('.');
     if let Ok(n) = trimmed.parse::<u32>() {
         return (1..=20).contains(&n).then_some(n);
     }
     from_roman(trimmed)
-}
-
-fn to_roman(n: u32) -> String {
-    const MAP: &[(u32, &str)] = &[(10, "x"), (9, "ix"), (5, "v"), (4, "iv"), (1, "i")];
-    let mut n = n;
-    let mut out = String::new();
-    for &(val, sym) in MAP {
-        while n >= val {
-            out.push_str(sym);
-            n -= val;
-        }
-    }
-    out
 }
 
 fn from_roman(text: &str) -> Option<u32> {
@@ -437,10 +403,6 @@ fn heading_similarity(needle: &str, text: &str) -> f64 {
     }
     let intersection: Vec<_> = needle_tokens.intersection(&text_tokens).collect();
     intersection.len() as f64 / needle_tokens.len() as f64
-}
-
-fn read_raw_layout(vault: &Path, paper_path: &str) -> Result<layout_index::RawLayout, AppError> {
-    layout_index::load_raw_layout(vault, paper_path)
 }
 
 impl From<&LayoutRegion> for ResolvedFragment {
@@ -624,7 +586,6 @@ mod tests {
         ));
         assert_eq!(parse_section_number("iii"), Some(3));
         assert_eq!(parse_section_number("3"), Some(3));
-        assert_eq!(to_roman(4), "iv");
     }
     #[test]
     fn published_paragraph_queries_and_citations_resolve_identically() {
