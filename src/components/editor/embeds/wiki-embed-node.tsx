@@ -529,6 +529,8 @@ export function WikiEmbedElement({
 									targetPath={presentation.response.link.targetPath ?? target}
 									revision={targetRevision}
 									imageSize={element.alias}
+									vaultPath={wikiNav?.vaultPath}
+									fragment={presentation.response.link.occurrence.fragment}
 								/>
 							) : presentation.response.contentKind === "annotation" &&
 								wikiNav?.vaultPath &&

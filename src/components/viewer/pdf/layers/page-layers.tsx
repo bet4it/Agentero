@@ -128,6 +128,7 @@ import {
 	PDF_PAPER_TINT,
 	type PdfPaperTone,
 } from "@/lib/pdf/page-theme";
+import type { PdfNavigationRegion } from "@/lib/pdf/pending-pdf-page";
 import type { SelectionPin } from "@/lib/pdf/selection";
 
 const PASSIVE_HIGHLIGHT_RENDERER: BoxedAnnotationRenderer = {
@@ -476,6 +477,8 @@ export type PdfPageMarksSlice = {
 	/** Region whose crop is in flight; gets a spinner frame. */
 	visualCropRegion: PageRegion;
 	focusedLayoutRegion: PdfLayoutRegion | null;
+	/** Embed-owned citation highlight; never cleared by global focus or its timer. */
+	persistentRegion?: PdfNavigationRegion;
 	/** Citation jump: yellow flash that auto-clears (vs persistent figures selection). */
 	focusedLayoutFlash: boolean;
 	/** Restarts the flash CSS animation when the same region is jumped again. */
@@ -862,6 +865,10 @@ export const PdfPageLayers = memo(function PdfPageLayers({
 			? marks.visualCropRegion.region
 			: null;
 	const focus = marks.focusedLayoutRegion;
+	const persistentRegion =
+		marks.persistentRegion?.pageIndex === pageIndex
+			? marks.persistentRegion
+			: null;
 	const focusedLayoutsOnPage = focus?.highlights
 		? focus.highlights
 				.filter((hit) => hit.pageIndex === pageIndex)
@@ -1737,6 +1744,19 @@ export const PdfPageLayers = memo(function PdfPageLayers({
 					</div>
 				) : null}
 				{/* Figures selection outline, or citation yellow flash block. */}
+				{persistentRegion ? (
+					<div
+						data-pdf-embed-target={persistentRegion.id}
+						className="pointer-events-none absolute z-[6] rounded-sm border border-amber-400/45 bg-amber-300/20 dark:bg-amber-300/15"
+						style={{
+							left: `${persistentRegion.bbox.x * 100}%`,
+							top: `${persistentRegion.bbox.y * 100}%`,
+							width: `${persistentRegion.bbox.w * 100}%`,
+							height: `${persistentRegion.bbox.h * 100}%`,
+						}}
+						aria-hidden="true"
+					/>
+				) : null}
 				{focusedLayoutsOnPage.map((focusedLayoutOnPage) => (
 					<div
 						key={`${focusedLayoutOnPage.id}:${focusedLayoutOnPage.pageIndex}:${focusedLayoutOnPage.bbox.y}:${marks.focusedLayoutFlashToken}`}

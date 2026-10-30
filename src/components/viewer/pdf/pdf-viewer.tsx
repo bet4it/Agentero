@@ -251,7 +251,9 @@ export const PdfViewer = memo(function PdfViewer(props: PdfViewerProps) {
 
 	const translationOnly = Boolean(props.translationOnly);
 	const rightGutter =
-		translationOnly || props.plainViewer ? 0 : COMMENT_RAIL_WIDTH_PX;
+		translationOnly || props.plainViewer || props.reserveCommentRail === false
+			? 0
+			: COMMENT_RAIL_WIDTH_PX;
 	const plugins = useMemo(() => {
 		if (!source && !effectiveSourceBytes) return null;
 		// Prefer bytes (no fetch step); fall back to a URL (remote https).
@@ -489,6 +491,8 @@ function pdfSelectionMenuContext(input: {
 function PdfViewerInner({
 	docId,
 	baseDocId,
+	embeddedTarget,
+	reserveCommentRail = true,
 	sourceBytes = null,
 	paperAbsPath = null,
 	paperRelPath = null,
@@ -514,7 +518,9 @@ function PdfViewerInner({
 }: PdfViewerInnerProps) {
 	const { t } = useTranslation("viewer");
 	const rightGutter =
-		translationOnly || plainViewer ? 0 : COMMENT_RAIL_WIDTH_PX;
+		translationOnly || plainViewer || !reserveCommentRail
+			? 0
+			: COMMENT_RAIL_WIDTH_PX;
 	const [importBusy, setImportBusy] = useState(false);
 	// Parent often passes inline lambdas; keep latest in refs so data effects
 	// do not re-fire every parent render (was Maximum update depth exceeded).
@@ -669,6 +675,7 @@ function PdfViewerInner({
 	} = usePdfNavigation({
 		docId,
 		baseDocId,
+		embeddedTarget,
 		docCapRef,
 		paperKey,
 		currentPage,
@@ -1946,6 +1953,7 @@ function PdfViewerInner({
 			focusedLayoutRegion,
 			focusedLayoutFlash,
 			focusedLayoutFlashToken,
+			persistentRegion: embeddedTarget?.region,
 			pinsByPage,
 			commentsByPage,
 			editingCommentId: railEdit?.id ?? null,
@@ -1969,6 +1977,7 @@ function PdfViewerInner({
 			focusedLayoutRegion,
 			focusedLayoutFlash,
 			focusedLayoutFlashToken,
+			embeddedTarget,
 			pinsByPage,
 			commentsByPage,
 			railEdit?.id,

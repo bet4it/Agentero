@@ -12,9 +12,12 @@ export function scrollToPdfRegion(
 	region: PdfNavigationRegion,
 	document: PdfDocumentObject | null | undefined,
 	scroll: ScrollScope,
+	options?: { embedded?: boolean },
 ): void {
 	const kind = region.kind ?? layoutKindFromRegionId(region.id);
-	const bbox = expandFocusBboxForOverlay(region.bbox, kind);
+	const bbox = options?.embedded
+		? region.bbox
+		: expandFocusBboxForOverlay(region.bbox, kind);
 	const size = document?.pages[region.pageIndex]?.size;
 	scroll.scrollToPage({
 		pageNumber: region.pageIndex + 1,
@@ -27,6 +30,8 @@ export function scrollToPdfRegion(
 				}
 			: {}),
 	});
+	// Embeds paint their own persistent overlay, independent of global focus.
+	if (options?.embedded) return;
 	setFocusedLayoutRegion(
 		documentId,
 		region.id,

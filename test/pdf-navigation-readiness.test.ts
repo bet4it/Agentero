@@ -5,14 +5,16 @@ import type {
 	ScrollCapability,
 	ScrollScope,
 } from "@embedpdf/plugin-scroll";
-import { act, createElement } from "react";
+import { act, createElement, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import { usePdfNavigation } from "@/components/viewer/pdf/hooks/use-pdf-navigation";
 import {
 	beginPdfNavigation,
 	completePdfNavigation,
+	type PdfNavigationTarget,
 } from "@/lib/pdf/pending-pdf-page";
+import { scrollToPdfRegion } from "@/lib/pdf/region-navigation";
 
 const mocks = vi.hoisted(() => ({
 	capability: null as unknown as ScrollCapability,
@@ -30,6 +32,76 @@ vi.mock("@/lib/pdf/region-navigation", () => ({ scrollToPdfRegion: vi.fn() }));
 afterEach(() => {
 	vi.clearAllMocks();
 	vi.unstubAllGlobals();
+});
+
+it("waits for embed layout, navigates once per target, and restores the target on remount", async () => {
+	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+	const ready = createBehaviorEmitter<LayoutReadyEvent>();
+	const scope = { getMetrics: () => ({ currentPage: 1 }) } as ScrollScope;
+	mocks.capability = {
+		onLayoutReady: ready.on,
+		forDocument: () => scope,
+	} as unknown as ScrollCapability;
+	const target = {
+		page: 3,
+		region: {
+			id: "p1",
+			pageIndex: 2,
+			bbox: { x: 0.5, y: 0.4, w: 0.4, h: 0.1 },
+		},
+	};
+	function Viewer({ target }: { target: PdfNavigationTarget }) {
+		usePdfNavigation({
+			docId: "embed::r1",
+			baseDocId: "embed",
+			embeddedTarget: target,
+			paperKey: null,
+			currentPage: 1,
+			totalPages: 10,
+			scroll: null,
+			scrollRef: useRef(null),
+			docCapRef: useRef(null),
+		});
+		return null;
+	}
+	const root = createRoot(document.createElement("div"));
+	try {
+		await act(() => root.render(createElement(Viewer, { target })));
+		expect(scrollToPdfRegion).not.toHaveBeenCalled();
+		await act(() =>
+			ready.emit({
+				documentId: "embed::r1",
+				totalPages: 10,
+				pageNumber: 1,
+				isInitial: true,
+			}),
+		);
+		expect(scrollToPdfRegion).toHaveBeenCalledExactlyOnceWith(
+			"embed::r1",
+			target.region,
+			undefined,
+			scope,
+			{ embedded: true },
+		);
+		await act(() => root.render(createElement(Viewer, { target })));
+		await act(() =>
+			ready.emit({
+				documentId: "embed::r1",
+				totalPages: 10,
+				pageNumber: 3,
+				isInitial: false,
+			}),
+		);
+		expect(scrollToPdfRegion).toHaveBeenCalledOnce();
+		const next = { ...target, region: { ...target.region, id: "p2" } };
+		await act(() => root.render(createElement(Viewer, { target: next })));
+		expect(scrollToPdfRegion).toHaveBeenCalledTimes(2);
+		await act(() => root.render(null));
+		await act(() => root.render(createElement(Viewer, { target: next })));
+		expect(scrollToPdfRegion).toHaveBeenCalledTimes(3);
+	} finally {
+		await act(() => root.unmount());
+	}
 });
 
 it("uses replayed layout readiness and capability scope for a cold citation before reading restore", async () => {

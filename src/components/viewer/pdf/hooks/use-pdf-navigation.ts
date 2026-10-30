@@ -17,6 +17,7 @@ import type { useZoom } from "@embedpdf/plugin-zoom/react";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import {
 	type PdfNavigationRegion,
+	type PdfNavigationTarget,
 	registerPdfNavigationOwner,
 } from "@/lib/pdf/pending-pdf-page";
 import { readReadingPage, writeReadingPage } from "@/lib/pdf/reading-position";
@@ -37,6 +38,7 @@ export type UsePdfNavigationOptions = {
 	docId: string;
 	/** Stable workspace tab id; distinct from split/translation panes. */
 	baseDocId: string;
+	embeddedTarget?: PdfNavigationTarget | null;
 	docCapRef: RefObject<
 		ReturnType<typeof useDocumentManagerCapability>["provides"]
 	>;
@@ -67,6 +69,7 @@ export type PdfNavigation = {
 export function usePdfNavigation({
 	docId,
 	baseDocId,
+	embeddedTarget,
 	docCapRef,
 	paperKey,
 	currentPage,
@@ -79,6 +82,8 @@ export function usePdfNavigation({
 	const [pageField, setPageField] = useState("1");
 	const pageFocusedRef = useRef(false);
 	const restoredRef = useRef(false);
+	const embeddedTargetRef = useRef(embeddedTarget);
+	embeddedTargetRef.current = embeddedTarget;
 	const { provides: scrollCapability } = useScrollCapability();
 	const ownerRef = useRef<ReturnType<typeof registerPdfNavigationOwner> | null>(
 		null,
@@ -109,6 +114,7 @@ export function usePdfNavigation({
 						target.region,
 						docCapRef.current?.getDocument(docId),
 						scope,
+						{ embedded: target === embeddedTargetRef.current },
 					);
 				} else {
 					scope.scrollToPage({ pageNumber: target.page, behavior: "instant" });
@@ -168,6 +174,22 @@ export function usePdfNavigation({
 		baseDocId,
 		paperKey,
 		scrollCapability,
+		scrollRef,
+		docCapRef,
+		zoomRef,
+		reloadPositionRef,
+	]);
+
+	// Re-queue on owner/target changes, never on scroll/zoom renders.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: owner dependencies intentionally re-run navigation.
+	useEffect(() => {
+		if (embeddedTarget) ownerRef.current?.request(embeddedTarget);
+	}, [
+		embeddedTarget,
+		scrollCapability,
+		docId,
+		baseDocId,
+		paperKey,
 		scrollRef,
 		docCapRef,
 		zoomRef,

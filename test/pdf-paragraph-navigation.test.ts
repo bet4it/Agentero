@@ -49,3 +49,31 @@ it("scrolls and flashes the exact paragraph box without expanding a short block 
 	vi.runAllTimers();
 	expect(layoutAnalysisStore.getState().focused).toBeNull();
 });
+
+it("positions an embedded heading at its raw bbox without taking the main viewer's focus", () => {
+	const scrollToPage = vi.fn();
+	const region = {
+		id: "heading-2.1",
+		pageIndex: 0,
+		bbox: { x: 0.55, y: 0.3, w: 0.35, h: 0.02 },
+		kind: "header" as const,
+	};
+	const focused = layoutAnalysisStore.getState().focused;
+	scrollToPdfRegion(
+		"embed-document",
+		region,
+		{
+			pages: [{ size: { width: 600, height: 800 } }],
+		} as unknown as PdfDocumentObject,
+		{ scrollToPage } as unknown as ScrollScope,
+		{ embedded: true },
+	);
+	expect(scrollToPage).toHaveBeenCalledExactlyOnceWith({
+		pageNumber: 1,
+		behavior: "instant",
+		pageCoordinates: { x: 330, y: 240 },
+		alignX: 0,
+		alignY: 18,
+	});
+	expect(layoutAnalysisStore.getState().focused).toBe(focused);
+});

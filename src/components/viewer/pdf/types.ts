@@ -18,6 +18,7 @@ import type { CrossrefKind } from "@/lib/pdf/citation-dest-keys";
 import type { HighlightColor } from "@/lib/pdf/highlight/palette";
 import type { PdfHighlight } from "@/lib/pdf/highlight/types";
 import type { VisibleSelectionPage } from "@/lib/pdf/layout/visible-selection-rects";
+import type { PdfNavigationTarget } from "@/lib/pdf/pending-pdf-page";
 import type { PdfReloadPosition } from "@/lib/pdf/reload-position";
 import type { PdfViewerHandle } from "@/lib/workspace/viewer/pdf-viewer-registry";
 
@@ -61,6 +62,10 @@ export type PdfViewerProps = {
 	 * under a fresh PDFium document.
 	 */
 	docId?: string | null;
+	/** Embed-local citation: navigate once after layout and keep its raw bbox highlighted. */
+	embeddedTarget?: PdfNavigationTarget | null;
+	/** Reserve space beside the page for comment cards (off in note embeds). */
+	reserveCommentRail?: boolean;
 	/** Absolute path to paper folder for annotations/marks persistence */
 	paperAbsPath?: string | null;
 	/** Vault-relative paper path stored inside JSON */
