@@ -15,12 +15,12 @@ pub enum LayoutCmd {
         /// Vault-relative paper path or id.
         #[arg(value_hint = ValueHint::DirPath)]
         r#ref: String,
-        /// Filter: figure (image+chart), image, chart, table, algorithm, formula.
+        /// Filter: figure (image+chart), image, chart, table, algorithm, formula, section, paragraph.
         /// Repeatable; OR semantics.
         #[arg(
             long = "kind",
             value_name = "KIND",
-            value_parser = ["figure", "image", "chart", "table", "algorithm", "formula", "section"]
+            value_parser = ["figure", "image", "chart", "table", "algorithm", "formula", "section", "paragraph"]
         )]
         kinds: Vec<String>,
         /// Minimum score (0–1). Default: index minScore or 0.3.
@@ -32,7 +32,7 @@ pub enum LayoutCmd {
         /// Vault-relative paper path or id.
         #[arg(value_hint = ValueHint::DirPath)]
         r#ref: String,
-        /// Region id (e.g. figure-3).
+        /// Region id or exact anchor from layout list (e.g. figure-3 or '#2.1#p3').
         id: String,
     },
 }
@@ -66,6 +66,7 @@ fn list(
                 i.id.clone(),
                 i.section.clone(),
                 i.kind.clone(),
+                i.anchor.clone().unwrap_or_default(),
                 i.page.to_string(),
                 format!("{:.0}%", i.score * 100.0),
                 truncate_chars(i.title.as_deref().unwrap_or(""), 48),
@@ -77,7 +78,7 @@ fn list(
     } else {
         format_table(
             style,
-            &["ID", "SECTION", "KIND", "PAGE", "SCORE", "TITLE"],
+            &["ID", "SECTION", "KIND", "ANCHOR", "PAGE", "SCORE", "TITLE"],
             &table_rows,
         )
     };
