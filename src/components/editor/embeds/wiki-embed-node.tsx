@@ -6,6 +6,7 @@ import {
 	FileType2,
 	Highlighter,
 	ImageIcon,
+	LocateFixed,
 	ScanSearch,
 	TextQuote,
 } from "lucide-react";
@@ -60,6 +61,9 @@ const WikiAttachmentEmbed = lazy(async () => {
 	);
 	return { default: module.WikiAttachmentEmbed };
 });
+
+const EMBED_HEADER_ACTION_CLASS =
+	"inline-flex shrink-0 items-center gap-1 rounded-sm px-1.5 py-0.5 text-muted-foreground text-xs hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 type EmbedLoadState =
 	| { kind: "loading" }
@@ -284,6 +288,7 @@ export function WikiEmbedElement({
 				: `#${element.heading}`
 		: target;
 	const [targetRevision, setTargetRevision] = useState(0);
+	const [pdfLocateRequest, setPdfLocateRequest] = useState(0);
 	/**
 	 * highlight vs agent-trace for the header icon. Keyed by embed token so a
 	 * subtype from a previous link never sticks after the token changes
@@ -488,10 +493,28 @@ export function WikiEmbedElement({
 					<span className="min-w-0 flex-1 truncate font-medium text-foreground/90 text-xs">
 						{sourceLabel || t("embed.untitled")}
 					</span>
+					{!hideChromeActions &&
+					presentation.kind === "ready" &&
+					presentation.response.contentKind === "pdf" &&
+					presentation.response.link.occurrence.fragment?.kind === "heading" ? (
+						<button
+							type="button"
+							className={EMBED_HEADER_ACTION_CLASS}
+							aria-label={t("embed.locateTarget")}
+							title={t("embed.locateTarget")}
+							onClick={(event) => {
+								event.preventDefault();
+								event.stopPropagation();
+								setPdfLocateRequest((request) => request + 1);
+							}}
+						>
+							<LocateFixed className="size-3.5" aria-hidden />
+						</button>
+					) : null}
 					{!hideChromeActions && resolvedLink?.status === "resolved" ? (
 						<button
 							type="button"
-							className="inline-flex shrink-0 items-center gap-1 rounded-sm px-1.5 py-0.5 text-muted-foreground text-xs hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+							className={EMBED_HEADER_ACTION_CLASS}
 							aria-label={t("embed.openSource", { target: sourceLabel })}
 							title={t("embed.openSource", { target: sourceLabel })}
 							onClick={(event) => {
@@ -531,6 +554,7 @@ export function WikiEmbedElement({
 									imageSize={element.alias}
 									vaultPath={wikiNav?.vaultPath}
 									fragment={presentation.response.link.occurrence.fragment}
+									locateRequest={pdfLocateRequest}
 								/>
 							) : presentation.response.contentKind === "annotation" &&
 								wikiNav?.vaultPath &&

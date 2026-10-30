@@ -152,6 +152,7 @@
 		"unsupported": "This embed type is preserved as Markdown but is not rendered yet.",
 		"error": "The embedded content could not be loaded.",
 		"openSource": "Open {{target}}",
+		"locateTarget": "Return to cited location",
 		"annotationPage": "p.{{page}}",
 		"untitled": "Embed",
 		"annotationRoleUser": "You",

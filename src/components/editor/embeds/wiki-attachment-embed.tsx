@@ -27,6 +27,7 @@ type WikiAttachmentEmbedProps = {
 	imageSize?: string | null;
 	vaultPath?: string | null;
 	fragment?: LinkFragment | null;
+	locateRequest?: number;
 };
 
 type AttachmentState =
@@ -124,6 +125,7 @@ export function WikiAttachmentEmbed({
 	imageSize,
 	vaultPath,
 	fragment,
+	locateRequest,
 }: WikiAttachmentEmbedProps) {
 	const { t } = useTranslation("editor");
 	const instanceId = useId();
@@ -337,6 +339,7 @@ export function WikiAttachmentEmbed({
 			sourceBytes={state.bytes}
 			docId={`wiki-embed:${instanceId}:${targetPath}:${revision}`}
 			embeddedTarget={citationKey === citation?.key ? citation?.target : null}
+			embeddedTargetRequest={locateRequest}
 			reserveCommentRail={false}
 			rememberReadingPosition={false}
 			paperAbsPath={paperAbsPath}

@@ -50,11 +50,18 @@ it("waits for embed layout, navigates once per target, and restores the target o
 			bbox: { x: 0.5, y: 0.4, w: 0.4, h: 0.1 },
 		},
 	};
-	function Viewer({ target }: { target: PdfNavigationTarget }) {
+	function Viewer({
+		target,
+		request,
+	}: {
+		target: PdfNavigationTarget;
+		request?: number;
+	}) {
 		usePdfNavigation({
 			docId: "embed::r1",
 			baseDocId: "embed",
 			embeddedTarget: target,
+			embeddedTargetRequest: request,
 			paperKey: null,
 			currentPage: 1,
 			totalPages: 10,
@@ -93,12 +100,23 @@ it("waits for embed layout, navigates once per target, and restores the target o
 			}),
 		);
 		expect(scrollToPdfRegion).toHaveBeenCalledOnce();
+		await act(() => root.render(createElement(Viewer, { target, request: 1 })));
+		expect(scrollToPdfRegion).toHaveBeenCalledTimes(2);
+		expect(scrollToPdfRegion).toHaveBeenLastCalledWith(
+			"embed::r1",
+			target.region,
+			undefined,
+			scope,
+			{ embedded: true },
+		);
+		await act(() => root.render(createElement(Viewer, { target, request: 1 })));
+		expect(scrollToPdfRegion).toHaveBeenCalledTimes(2);
 		const next = { ...target, region: { ...target.region, id: "p2" } };
 		await act(() => root.render(createElement(Viewer, { target: next })));
-		expect(scrollToPdfRegion).toHaveBeenCalledTimes(2);
+		expect(scrollToPdfRegion).toHaveBeenCalledTimes(3);
 		await act(() => root.render(null));
 		await act(() => root.render(createElement(Viewer, { target: next })));
-		expect(scrollToPdfRegion).toHaveBeenCalledTimes(3);
+		expect(scrollToPdfRegion).toHaveBeenCalledTimes(4);
 	} finally {
 		await act(() => root.unmount());
 	}

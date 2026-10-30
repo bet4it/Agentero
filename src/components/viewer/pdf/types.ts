@@ -64,6 +64,8 @@ export type PdfViewerProps = {
 	docId?: string | null;
 	/** Embed-local citation: navigate once after layout and keep its raw bbox highlighted. */
 	embeddedTarget?: PdfNavigationTarget | null;
+	/** Increment to return to the same embed target without reopening the PDF. */
+	embeddedTargetRequest?: number;
 	/** Reserve space beside the page for comment cards (off in note embeds). */
 	reserveCommentRail?: boolean;
 	/** Note embeds keep their own scroll position instead of changing the paper's last-read page. */

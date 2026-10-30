@@ -152,6 +152,7 @@
 		"unsupported": "该嵌入类型会保留为 Markdown，但暂不渲染。",
 		"error": "无法加载嵌入内容。",
 		"openSource": "打开 {{target}}",
+		"locateTarget": "回到引用位置",
 		"annotationPage": "第 {{page}} 页",
 		"untitled": "嵌入",
 		"annotationRoleUser": "用户",

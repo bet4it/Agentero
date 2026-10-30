@@ -39,6 +39,7 @@ export type UsePdfNavigationOptions = {
 	/** Stable workspace tab id; distinct from split/translation panes. */
 	baseDocId: string;
 	embeddedTarget?: PdfNavigationTarget | null;
+	embeddedTargetRequest?: number;
 	docCapRef: RefObject<
 		ReturnType<typeof useDocumentManagerCapability>["provides"]
 	>;
@@ -70,6 +71,7 @@ export function usePdfNavigation({
 	docId,
 	baseDocId,
 	embeddedTarget,
+	embeddedTargetRequest,
 	docCapRef,
 	paperKey,
 	currentPage,
@@ -180,12 +182,13 @@ export function usePdfNavigation({
 		reloadPositionRef,
 	]);
 
-	// Re-queue on owner/target changes, never on scroll/zoom renders.
-	// biome-ignore lint/correctness/useExhaustiveDependencies: owner dependencies intentionally re-run navigation.
+	// Re-queue on owner/target changes or an explicit return request, never on scroll/zoom renders.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: owner dependencies and the return-request counter intentionally re-run navigation.
 	useEffect(() => {
 		if (embeddedTarget) ownerRef.current?.request(embeddedTarget);
 	}, [
 		embeddedTarget,
+		embeddedTargetRequest,
 		scrollCapability,
 		docId,
 		baseDocId,
