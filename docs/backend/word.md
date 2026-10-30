@@ -12,7 +12,7 @@
 
 macOS 安装官方 `Zotero.dotm` 和 `Zotero.scpt`，Windows 安装官方 Word 模板，按 Zotero 官方安装路径放置并重启 Word。在 Agentero 打开本地 Vault，开启「集成」卡片中的 Connector，再打开同一卡片中的「Zotero Word 插件」开关。开关仅对当前进程有效；退出重启后默认关闭。退出 Zotero Desktop 后才能启用。macOS 默认端口为 23119；若自定义 Connector 端口，需要用户已有的 `ZoteroPort.txt` 与之匹配。Windows 不使用该端口，由隐藏窗口接收模板消息。
 
-首次驱动 Word：macOS 需要 Automation 授权。打包配置提供 AppleEvents usage description 和 hardened-runtime entitlement；开发启动时授权可能归属于启动终端，发布包仍需独立验收。Windows 通过本机 PowerShell 5.1 的 `GetActiveObject("Word.Application")` 连接已经打开的 Word，不会退出 Word。64 位 PowerShell 无法附着 32 位 Office。
+首次驱动 Word：macOS 需要 Automation 授权。打包配置提供 AppleEvents usage description 和 hardened-runtime entitlement；开发启动时授权可能归属于启动终端，发布包仍需独立验收。Windows 通过本机 PowerShell 5.1 的 `GetActiveObject("Word.Application")` 连接已经打开的 Word，不会退出 Word。PowerShell 的位数跟随正在运行的 `WINWORD.EXE`；Word 未运行时再看 `Word.Application` 注册在 32 位还是 64 位视图。插入引文时先创建带结果区的打印日期域，再把指令换成 ADDIN，并读回结果文字，与 macOS driver 相同。
 
 ## 实现
 

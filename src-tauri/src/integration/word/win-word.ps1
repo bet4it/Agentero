@@ -18,7 +18,16 @@ try {
     $doc = $word.ActiveDocument
 
     function Same-Text([string]$actual, [string]$expected) {
+        # COM Result.Text keeps a trailing CR that AppleScript content() omits.
         return $actual.TrimEnd("`r", "`n") -eq $expected.TrimEnd("`r", "`n")
+    }
+
+    function Find-FieldAt([int64]$start) {
+        for ($i = 1; $i -le $doc.Fields.Count; $i++) {
+            $candidate = $doc.Fields.Item($i)
+            if ([int64]$candidate.Code.Start -eq $start) { return $candidate }
+        }
+        return $null
     }
 
     function Read-Snapshot {
@@ -96,13 +105,16 @@ try {
             }
         }
         $range = $doc.Range([int]$position, [int]$position)
-        # wdFieldQuote yields a field that already has a result range. Replace
-        # its instruction with the ADDIN code instead of asking Word to parse it.
-        $field = $doc.Fields.Add($range, 35, "x", $false)
+        # An ADDIN field has no result separator, so the citation text would land
+        # outside it. Start from a print-date field, which already has a result,
+        # then replace its instruction. Same sequence as the macOS driver.
+        $null = $doc.Fields.Add($range, 23, [Type]::Missing, $false)
+        $field = Find-FieldAt ($position + 1)
+        if ($null -eq $field) { throw "word.insertFailed" }
         $field.Code.Text = [string]$insert["code"]
         $field.Result.Text = [string]$insert["text"]
-        $field.ShowCodes = $false
         if (-not (Same-Text ([string]$field.Result.Text) ([string]$insert["text"]))) { throw "word.insertFailed" }
+        $field.ShowCodes = $false
         $end = [int64]$field.Result.End + 1
         $word.Selection.Start = $end
         $word.Selection.End = $end
@@ -117,7 +129,7 @@ try {
     } elseif ($message -match "Operation unavailable") {
         [Console]::Error.WriteLine("word.noDocument")
     } else {
-        [Console]::Error.WriteLine("word.driverFailed")
+        [Console]::Error.WriteLine($message)
     }
     exit 1
 }
