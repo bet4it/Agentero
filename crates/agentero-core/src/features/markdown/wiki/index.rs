@@ -2674,4 +2674,55 @@ mod tests {
             LinkResolutionStatus::InvalidFragment
         );
     }
+    #[test]
+    fn encoded_pdf_paths_and_legacy_source_citations_share_navigation_semantics() {
+        use crate::features::wiki::models::{InternalLinkSyntax, LinkResolutionStatus};
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        let paper = root.join("papers/Quantum Error");
+        fs::create_dir_all(paper.join("source")).unwrap();
+        fs::write(paper.join("a.pdf"), b"%PDF fixture").unwrap();
+        fs::write(paper.join("NOTES.md"), "# Notes").unwrap();
+        fs::write(paper.join("PAPER.md"), "body").unwrap();
+        fs::write(paper.join("source/main.tex"), "body").unwrap();
+        fs::write(
+            paper.join("source/layout.json"),
+            include_str!("../../../../../../test/fixtures/pdf-paragraph-anchors/layout.json"),
+        )
+        .unwrap();
+        fs::write(root.join("source.md"), "[encoded](papers/Quantum%20Error/a.pdf#2#p2)\n[[papers/Quantum Error/PAPER.md#section=2.1]]\n[[papers/Quantum Error/source/main.tex#section=2.1]]").unwrap();
+        let vault = root.to_str().unwrap();
+        let mut index = WikiIndex::default();
+        index.rebuild(vault).unwrap();
+        assert_eq!(index.check_links(vault, None).counts.resolved, 3);
+        for text in [
+            "<a.pdf#2#p2>",
+            "a.pdf#2#p2",
+            "<../../papers/Quantum Error/a.pdf#2#p2>",
+            "../../papers/Quantum%20Error/a.pdf#2#p2",
+        ] {
+            let link = index
+                .resolve_text(
+                    vault,
+                    "papers/Quantum Error/NOTES.md",
+                    text,
+                    InternalLinkSyntax::Markdown,
+                )
+                .link;
+            assert_eq!(link.status, LinkResolutionStatus::Resolved, "{text}");
+            assert_eq!(
+                link.target_path.as_deref(),
+                Some("papers/Quantum Error/a.pdf")
+            );
+        }
+        let tex = index
+            .resolve_text(
+                vault,
+                "source.md",
+                "[[papers/Quantum Error/source/main.tex#section=2.1]]",
+                InternalLinkSyntax::Wikilink,
+            )
+            .link;
+        assert_eq!(tex.status, LinkResolutionStatus::Resolved);
+    }
 }

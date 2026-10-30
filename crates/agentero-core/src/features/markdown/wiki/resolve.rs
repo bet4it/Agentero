@@ -37,6 +37,15 @@ fn add_extensions(value: &str) -> Vec<String> {
     candidates
 }
 
+fn document_target(occurrence: &InternalLinkOccurrence) -> std::borrow::Cow<'_, str> {
+    let raw = occurrence.target_raw.trim();
+    if matches!(occurrence.syntax, InternalLinkSyntax::Markdown) {
+        urlencoding::decode(raw).unwrap_or(std::borrow::Cow::Borrowed(raw))
+    } else {
+        std::borrow::Cow::Borrowed(raw)
+    }
+}
+
 fn source_relative(source: &str, target: &str) -> String {
     let parent = Path::new(source).parent().unwrap_or_else(|| Path::new(""));
     normalize_rel_lexical(&parent.join(target).to_string_lossy())
@@ -128,7 +137,8 @@ fn resolve_document(
             .ok_or_else(Vec::new);
     }
 
-    let raw = occurrence.target_raw.trim();
+    let decoded = document_target(occurrence);
+    let raw = decoded.as_ref();
     // Source-relative resolution:
     // - Markdown destinations are always source-relative (CommonMark).
     // - Wikilinks only when explicitly relative (`./` / `../`), so vault paths
@@ -347,17 +357,49 @@ pub(crate) fn resolve_occurrence_with(
 /// Refine PDF fragments with the same resolver used by the desktop jump.
 /// Called with a live vault for navigation, semantic checks and index restore.
 pub(crate) fn resolve_pdf_fragment(vault: &Path, mut link: ResolvedLink) -> ResolvedLink {
-    let Some(path) = link
-        .target_path
-        .as_deref()
-        .filter(|p| p.to_ascii_lowercase().ends_with(".pdf"))
-    else {
-        return link;
-    };
     let Some(LinkFragment::Heading { path: parts }) = &link.occurrence.fragment else {
         return link;
     };
     let fragment = parts.join("#");
+    let legacy = fragment.split_once('=').is_some_and(|(key, _)| {
+        matches!(
+            key,
+            "section" | "page" | "figure" | "table" | "algorithm" | "formula" | "region"
+        )
+    });
+    // TeX is not a Wiki target inventory kind. Explicit existing TeX citation
+    // paths still use the old PDF citation route, without indexing source trees.
+    if link.target_path.is_none() && legacy && link.status == LinkResolutionStatus::Missing {
+        let raw = document_target(&link.occurrence);
+        if [".tex", ".ltx"]
+            .iter()
+            .any(|ext| raw.to_ascii_lowercase().ends_with(ext))
+        {
+            let relative = source_relative(&link.occurrence.source, &raw);
+            let try_relative = !raw.starts_with('/')
+                && (matches!(link.occurrence.syntax, InternalLinkSyntax::Markdown)
+                    || raw.starts_with("./")
+                    || raw.starts_with("../"));
+            if try_relative && (relative == ".." || relative.starts_with("../")) {
+                return link;
+            }
+            let candidates = if try_relative {
+                vec![relative, raw.into_owned()]
+            } else {
+                vec![raw.into_owned()]
+            };
+            link.target_path = candidates.into_iter().find(|path| {
+                crate::fs::sanitize_vault_rel(path).is_ok_and(|rel| vault.join(rel).is_file())
+            });
+        }
+    }
+    let Some(path) = link.target_path.as_deref() else {
+        return link;
+    };
+    let pdf = path.to_ascii_lowercase().ends_with(".pdf");
+    if !pdf && !legacy {
+        return link;
+    }
     link.status = match crate::features::pdf::citation::resolve_citation(
         vault,
         &format!("{path}#{fragment}"),

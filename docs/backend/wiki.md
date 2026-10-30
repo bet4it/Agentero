@@ -74,4 +74,4 @@ Vault Markdown 变更
 
 ### PDF 章节与段落 fragment
 
-PDF 的 heading fragment 由 `agentero-core::features::pdf::citation` 解析，桌面导航与 Wiki 校验共用它。`[[papers/demo/demo.pdf#2.1#p3]]` 与普通 Markdown PDF 链接解析为同一版面区域。校验、单次解析和反链/出链读取会检查当前解析文件，避免 `layout.json` 更新或删除后保留旧的 resolved 状态；缓存恢复时也重新校验。缺失和歧义分别显示为 `invalidFragment` 与 `ambiguous`。批注 fragment 继续走既有规则，Markdown 文件依然按标题路径解析。
+PDF 的 heading fragment 与旧的 Markdown/TeX `#section=`、`#page=` 等显式引用由 `agentero-core::features::pdf::citation` 解析，桌面导航与 Wiki 校验共用它。`[[papers/demo/demo.pdf#2.1#p3]]` 与普通 Markdown PDF 链接解析为同一版面区域。校验、单次解析和反链/出链读取会检查当前解析文件，避免 `layout.json` 更新或删除后保留旧的 resolved 状态；缓存恢复时也重新校验。缺失和歧义分别显示为 `invalidFragment` 与 `ambiguous`。批注 fragment 继续走既有规则，Markdown 文件的普通标题 fragment 依然按标题路径解析。Markdown destination 的 URI 编码在路径查找时解码，源码范围保留原始字节，包含空格的路径与点击导航一致。

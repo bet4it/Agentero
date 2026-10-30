@@ -75,7 +75,7 @@ export function LinkElement(props: PlateElementProps) {
 								const resolved = await resolveWikiReference(
 									wikiNav.vaultPath,
 									markdownDoc.filePath,
-									url,
+									`<${url}>`,
 									"markdown",
 								);
 								if (resolved)

@@ -76,11 +76,19 @@ pub fn resolve_citation(vault: &Path, source: &str) -> Result<CitationTarget, Ap
         AppError::domain("citation_malformed_fragment", "invalid fragment encoding")
     })?;
     let target = if !decoded.contains('=') && path.to_ascii_lowercase().ends_with(".pdf") {
-        let rel = sanitize_vault_rel(&path).map_err(AppError::message)?;
-        if !vault.join(rel).is_file() {
+        let requested_pdf = vault.join(sanitize_vault_rel(&path).map_err(AppError::message)?);
+        if !requested_pdf.is_file() {
             return Err(AppError::domain(
                 "citation_target_missing",
                 format!("PDF target `{path}` not found"),
+            ));
+        }
+        if crate::features::paper::capabilities::find_local_pdf(&paper_dir).as_ref()
+            != Some(&requested_pdf)
+        {
+            return Err(AppError::domain(
+                "citation_layout_missing",
+                "paragraph anchors require the paper's primary PDF layout",
             ));
         }
         let item = layout_index::resolve_document_anchor(vault, &paper_rel, &decoded)?;
@@ -613,6 +621,9 @@ mod tests {
         }
         let target = resolve_citation(dir.path(), "papers/p1/p1.pdf#2%23p2").unwrap();
         assert_eq!(target.region_id, "body-2");
+        fs::create_dir_all(paper.join("attachments")).unwrap();
+        fs::write(paper.join("attachments/other.pdf"), b"%PDF other").unwrap();
+        assert!(resolve_citation(dir.path(), "papers/p1/attachments/other.pdf#2#p1").is_err());
         let legacy = resolve_citation(dir.path(), "papers/p1/p1.pdf#section=2").unwrap();
         assert_eq!(legacy.region_id, "h2");
         for href in [

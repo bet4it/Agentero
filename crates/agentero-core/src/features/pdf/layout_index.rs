@@ -557,22 +557,39 @@ pub fn document_anchors(layout: &RawLayout) -> Vec<LayoutIndexItem> {
 /// Explicit Arabic hierarchy or an IEEE Roman top-level marker. Never fuzzy
 /// match a numeric substring (2 must not resolve to 2.1, 12 or an arXiv id).
 fn section_number(title: &str) -> Option<String> {
-    let token = title
-        .split_whitespace()
-        .next()?
-        .trim_end_matches(['.', ':', ')']);
-    if token
-        .split('.')
-        .all(|p| !p.is_empty() && p.bytes().all(|b| b.is_ascii_digit()))
+    let trimmed = title.trim_start();
+    let numeric: String = trimmed
+        .chars()
+        .take_while(|c| c.is_ascii_digit() || *c == '.')
+        .collect();
+    let number = numeric.trim_end_matches('.');
+    let boundary = trimmed.get(numeric.len()..).unwrap_or("");
+    if !number.is_empty()
+        && (boundary.is_empty()
+            || boundary.starts_with(char::is_whitespace)
+            || boundary.starts_with([':', ')'])
+            || numeric.ends_with('.'))
+        && number
+            .split('.')
+            .all(|p| !p.is_empty() && p.bytes().all(|b| b.is_ascii_digit()))
     {
         return Some(
-            token
+            number
                 .split('.')
                 .map(|p| p.parse::<u32>().ok().map(|n| n.to_string()))
                 .collect::<Option<Vec<_>>>()?
                 .join("."),
         );
     }
+    let compact: String = trimmed.chars().filter(|c| !c.is_whitespace()).collect();
+    let token = if let Some((marker, _)) = compact.split_once('.') {
+        marker
+    } else {
+        trimmed
+            .split_whitespace()
+            .next()?
+            .trim_end_matches([':', ')'])
+    };
     let lower = token.to_ascii_lowercase();
     // Canonical Roman markers only; ordinary words are never section numbers.
     let roman = [
@@ -1017,5 +1034,15 @@ mod tests {
         assert_eq!(err.code(), "citation_anchor_ambiguous");
         let listed = list_regions(dir.path(), "papers/p1", &["paragraph".into()], None).unwrap();
         assert!(listed.items[0].anchor.is_none());
+    }
+    #[test]
+    fn section_markers_preserve_compact_roman_ocr_without_prefix_collisions() {
+        for title in ["III.Method", "III. M ETHOD", "I I I. Method", "III Method"] {
+            assert_eq!(section_number(title).as_deref(), Some("3"), "{title}");
+        }
+        assert_eq!(section_number("2.1 Method").as_deref(), Some("2.1"));
+        assert_eq!(section_number("2.Method").as_deref(), Some("2"));
+        assert_eq!(section_number("Introduction"), None);
+        assert_eq!(section_number("arXiv:2504.16054v1"), None);
     }
 }
