@@ -493,6 +493,7 @@ function PdfViewerInner({
 	baseDocId,
 	embeddedTarget,
 	reserveCommentRail = true,
+	rememberReadingPosition = true,
 	sourceBytes = null,
 	paperAbsPath = null,
 	paperRelPath = null,
@@ -677,7 +678,7 @@ function PdfViewerInner({
 		baseDocId,
 		embeddedTarget,
 		docCapRef,
-		paperKey,
+		paperKey: rememberReadingPosition ? paperKey : null,
 		currentPage,
 		totalPages,
 		scroll,
@@ -2028,10 +2029,17 @@ function PdfViewerInner({
 			regionSelecting,
 			visualCropPending,
 			visualDraftOpen: false,
+			insetCommentCards: !reserveCommentRail,
 			translationOnly,
 			plainViewer,
 		}),
-		[regionSelecting, visualCropPending, translationOnly, plainViewer],
+		[
+			regionSelecting,
+			visualCropPending,
+			translationOnly,
+			plainViewer,
+			reserveCommentRail,
+		],
 	);
 
 	const handleLayoutRegionClick = useCallback(

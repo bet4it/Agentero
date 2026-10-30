@@ -36,7 +36,10 @@ import { listPdfAskThreads } from "@/lib/pdf/ask";
 import { threadHasUserQuestion, threadPreview } from "@/lib/pdf/ask/schema";
 import type { PdfAskThread } from "@/lib/pdf/ask/types";
 import { marksDir } from "@/lib/pdf/selection";
-import { isRecentSelfWrite } from "@/lib/pdf/selection/marks-io";
+import {
+	isRecentSelfWrite,
+	subscribeLocalMarkWrites,
+} from "@/lib/pdf/selection/marks-io";
 import { listPdfTranslates } from "@/lib/pdf/translate";
 
 /**
@@ -271,6 +274,9 @@ export function usePdfMarksIo({
 			}, MARKS_REFRESH_BURST_MS);
 		};
 		const marksKey = `${normalizePathKey(marksDir(paperAbsPath))}/`;
+		const unsubLocal = subscribeLocalMarkWrites((path) => {
+			if (normalizePathKey(path).startsWith(marksKey)) scheduleRefresh();
+		});
 		const unsubMarks = listenVaultFileChangedGated((payload) => {
 			const paths = [...payload.paths];
 			if (payload.rename) {
@@ -290,6 +296,7 @@ export function usePdfMarksIo({
 			window.removeEventListener("focus", onFocus);
 			if (burstTimer !== null) window.clearTimeout(burstTimer);
 			unsubMarks();
+			unsubLocal();
 		};
 	}, [paperAbsPath, isActive]);
 

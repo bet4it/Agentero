@@ -91,6 +91,48 @@ it("focuses immediately and stays open when the pointer leaves an empty note", a
 	expect(document.activeElement).toBe(editor());
 	expect(onDismiss).not.toHaveBeenCalled();
 });
+
+it("keeps an embedded note editor inside the page and saves through the same callback", async () => {
+	await act(() =>
+		root.render(
+			createElement(CommentCardsLayer, {
+				inset: true,
+				items: [],
+				pageWidthPx: 600,
+				pageHeightPx: 800,
+				editingId: null,
+				hoveredId: null,
+				wikiTarget: null,
+				selectionDraft: { page: 1, anchorY: 0.2, quote: "selected", pages: [] },
+				onCommitSelectionComment: onCommit,
+				onDismissSelectionComment: onDismiss,
+				onOpen: noop,
+				onSave: noop,
+				onCancel: noop,
+				onDelete: noop,
+				onCopyLink: noop,
+				onCopyEmbed: noop,
+				onAddToChat: noop,
+				onHover: noop,
+				onLeave: noop,
+			}),
+		),
+	);
+	const card = container.querySelector<HTMLElement>("[data-selection-comment]");
+	expect(card?.style.right).toBe("8px");
+	expect(card?.style.left).toBe("");
+	await type("embedded note");
+	await act(() =>
+		editor().dispatchEvent(
+			new KeyboardEvent("keydown", {
+				bubbles: true,
+				key: "Enter",
+				metaKey: true,
+			}),
+		),
+	);
+	expect(onCommit).toHaveBeenCalledExactlyOnceWith("embedded note");
+});
 it("commits typed text once on the save shortcut, including a later blur", async () => {
 	await type("a note");
 	await act(() =>

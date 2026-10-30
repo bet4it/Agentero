@@ -89,6 +89,22 @@ export async function readMarkRaw(
 const SELF_WRITE_TTL_MS = 3000;
 const selfWrites = new Map<string, number>();
 
+const localWriteListeners = new Set<(path: string) => void>();
+
+/** Successful local writes must refresh other mounted viewers even when watcher echoes are skipped. */
+export function subscribeLocalMarkWrites(
+	listener: (path: string) => void,
+): () => void {
+	localWriteListeners.add(listener);
+	return () => {
+		localWriteListeners.delete(listener);
+	};
+}
+
+function notifyLocalMarkWrite(path: string): void {
+	for (const listener of localWriteListeners) listener(path);
+}
+
 /** Register a `marks/` path this app is about to write (echo suppression). */
 export function markSelfWrite(path: string): void {
 	const now = Date.now();
@@ -112,6 +128,7 @@ export async function writeMarkFile(
 	const path = markPath(paperAbsPath, id);
 	markSelfWrite(path);
 	await writeVaultFile(path, `${JSON.stringify(payload, null, 2)}\n`);
+	notifyLocalMarkWrite(path);
 }
 
 export async function deleteMarkFile(
@@ -122,6 +139,7 @@ export async function deleteMarkFile(
 	markSelfWrite(markPath(paperAbsPath, id));
 	try {
 		await removeVaultPath(markPath(paperAbsPath, id));
+		notifyLocalMarkWrite(markPath(paperAbsPath, id));
 	} catch {
 		// missing is fine
 	}

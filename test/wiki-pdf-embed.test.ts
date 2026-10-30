@@ -19,12 +19,19 @@ vi.mock("@/lib/agent/api", () => ({ resolvePdfCitation: mocks.resolve }));
 vi.mock("@/lib/core/notify", () => ({ notifyError: mocks.notify }));
 vi.mock("@/lib/paper/media", () => ({
 	localFileToArrayBuffer: async () => new ArrayBuffer(8),
+	findLocalPdfPath: async (root: string) => `${root}/demo.pdf`,
 }));
 vi.mock("@/components/viewer", () => ({
 	PdfViewer: (props: PdfViewerProps) =>
 		createElement("div", {
 			"data-doc": props.docId,
 			"data-target": props.embeddedTarget?.region?.id,
+			"data-paper": props.paperAbsPath,
+			"data-paper-rel": props.paperRelPath,
+			"data-vault": props.vaultPath,
+			"data-plain": props.plainViewer,
+			"data-pdf-path": props.pdfPath,
+			"data-remember": props.rememberReadingPosition,
 		}),
 }));
 
@@ -77,6 +84,14 @@ it("resolves canonical and legacy PDF embeds independently and preserves their t
 			["/vault", `${props.targetPath}#section=2.1`],
 		]);
 		const viewers = [...container.querySelectorAll("[data-doc]")];
+		for (const viewer of viewers) {
+			expect(viewer.getAttribute("data-paper")).toBe("/vault/papers/demo");
+			expect(viewer.getAttribute("data-paper-rel")).toBe("papers/demo");
+			expect(viewer.getAttribute("data-vault")).toBe("/vault");
+			expect(viewer.getAttribute("data-plain")).toBe("false");
+			expect(viewer.getAttribute("data-pdf-path")).toBe(props.absoluteTarget);
+			expect(viewer.getAttribute("data-remember")).toBe("false");
+		}
 		expect(viewers.map((el) => el.getAttribute("data-target"))).toEqual([
 			"paragraph",
 			"heading",
@@ -88,6 +103,28 @@ it("resolves canonical and legacy PDF embeds independently and preserves their t
 		await act(() => root.render(embeds()));
 		expect(mocks.resolve).toHaveBeenCalledTimes(2);
 		expect(container.querySelector('[data-target="paragraph"]')).not.toBeNull();
+	} finally {
+		await act(() => root.unmount());
+	}
+});
+
+it("does not attach the primary PDF's marks to a supplementary PDF", async () => {
+	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+	const container = document.createElement("div");
+	const root = createRoot(container);
+	try {
+		await act(() =>
+			root.render(
+				createElement(WikiAttachmentEmbed, {
+					...props,
+					absoluteTarget: "/vault/papers/demo/attachments/supp.pdf",
+					targetPath: "papers/demo/attachments/supp.pdf",
+				}),
+			),
+		);
+		const viewer = container.querySelector("[data-doc]");
+		expect(viewer?.getAttribute("data-paper")).toBeNull();
+		expect(viewer?.getAttribute("data-plain")).toBe("true");
 	} finally {
 		await act(() => root.unmount());
 	}

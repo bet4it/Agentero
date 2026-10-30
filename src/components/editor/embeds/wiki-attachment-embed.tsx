@@ -5,14 +5,17 @@ import { useTranslation } from "react-i18next";
 import { EmbedStatus } from "@/components/editor/embeds/embed-status";
 import { useMarkdownExportMode } from "@/components/editor/markdown-export-mode-context";
 import { PdfViewer } from "@/components/viewer";
+import { useVaultStore } from "@/hooks/use-app-stores";
 import { resolvePdfCitation } from "@/lib/agent/api";
 import { errorText } from "@/lib/core/error";
 import { createKeyedCache } from "@/lib/core/keyed-cache";
 import { notifyError } from "@/lib/core/notify";
 import { cn } from "@/lib/core/utils";
-import { localFileToArrayBuffer } from "@/lib/paper/media";
+import { paperDirFromPath } from "@/lib/paper/detect";
+import { findLocalPdfPath, localFileToArrayBuffer } from "@/lib/paper/media";
 import { layoutKindFromCitationFragment } from "@/lib/pdf/layout/store";
 import type { PdfNavigationTarget } from "@/lib/pdf/pending-pdf-page";
+import { normalizePathKey, vaultRelativePath } from "@/lib/vault/path";
 import { type LinkFragment, wikiFragmentSuffix } from "@/lib/wiki/api";
 import { imageMimeFromPath, isPlainPdfPath } from "@/lib/workspace/viewer";
 
@@ -169,6 +172,37 @@ export function WikiAttachmentEmbed({
 	const expandEmbeds = exportMode?.expandEmbeds === true;
 	const dimensions = parseWikiImageEmbedDimensions(imageSize);
 	const requestKey = attachmentRequestKey(kind, absoluteTarget, revision);
+	const paperFolders = useVaultStore((state) => state.paperFolders);
+	const paperRoot =
+		kind === "pdf" && vaultPath
+			? paperDirFromPath(absoluteTarget, paperFolders)
+			: null;
+	const paperContextKey =
+		paperRoot && !exportMode ? JSON.stringify([requestKey, paperRoot]) : null;
+	const [paperContext, setPaperContext] = useState<{
+		key: string;
+		path: string | null;
+	} | null>(null);
+	useEffect(() => {
+		if (!paperContextKey || !paperRoot) return;
+		let cancelled = false;
+		void findLocalPdfPath(paperRoot).then((primaryPdf) => {
+			if (cancelled) return;
+			setPaperContext({
+				key: paperContextKey,
+				path:
+					primaryPdf &&
+					normalizePathKey(primaryPdf) === normalizePathKey(absoluteTarget)
+						? paperRoot
+						: null,
+			});
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [paperContextKey, paperRoot, absoluteTarget]);
+	const paperAbsPath =
+		paperContext?.key === paperContextKey ? paperContext?.path : null;
 	const [load, setLoad] = useState<CachedAttachmentLoad>(() => {
 		const bytes = attachmentCache.get(requestKey);
 		return {
@@ -294,6 +328,9 @@ export function WikiAttachmentEmbed({
 			return <EmbedStatus message={t("embed.loading")} />;
 		}
 	}
+	if (paperContextKey && paperContext?.key !== paperContextKey) {
+		return <EmbedStatus message={t("embed.loading")} />;
+	}
 	return (
 		<PdfViewer
 			source={null}
@@ -301,7 +338,16 @@ export function WikiAttachmentEmbed({
 			docId={`wiki-embed:${instanceId}:${targetPath}:${revision}`}
 			embeddedTarget={citationKey === citation?.key ? citation?.target : null}
 			reserveCommentRail={false}
-			plainViewer={isPlainPdfPath(targetPath)}
+			rememberReadingPosition={false}
+			paperAbsPath={paperAbsPath}
+			paperRelPath={
+				paperAbsPath && vaultPath
+					? vaultRelativePath(vaultPath, paperAbsPath)
+					: null
+			}
+			vaultPath={vaultPath}
+			pdfPath={absoluteTarget}
+			plainViewer={isPlainPdfPath(targetPath) || !paperAbsPath}
 			className="h-96 w-full"
 		/>
 	);

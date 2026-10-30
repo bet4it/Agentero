@@ -26,6 +26,7 @@ import type {
 } from "@embedpdf/models";
 import { PdfAnnotationSubtype } from "@embedpdf/models";
 import type {
+	AnnotationEvent,
 	AnnotationTransferItem,
 	useAnnotationCapability,
 } from "@embedpdf/plugin-annotation/react";
@@ -35,6 +36,7 @@ import {
 	type RefObject,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useRef,
 	useState,
 } from "react";
@@ -54,6 +56,12 @@ import {
 	loadAnnotationItems,
 	saveAnnotationItems,
 } from "@/lib/pdf/highlight/annotation-store";
+import {
+	applyAnnotationMutation,
+	enqueueAnnotationSave,
+	publishAnnotationMutation,
+	subscribeAnnotationPeer,
+} from "@/lib/pdf/highlight/annotation-sync";
 import { createAnnotationDeleteQueue } from "@/lib/pdf/highlight/delete-queue";
 import { migrateHighlightMarks } from "@/lib/pdf/highlight/migrate-marks";
 import {
@@ -157,6 +165,41 @@ export function usePdfHighlights({
 	const importedRef = useRef(false);
 	const importingRef = useRef(false);
 	const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const deleteQueueRef = useRef<ReturnType<
+		typeof createAnnotationDeleteQueue
+	> | null>(null);
+	const initialImportDoneRef = useRef(false);
+	const pendingPeerEventsRef = useRef<
+		Exclude<AnnotationEvent, { type: "loaded" }>[]
+	>([]);
+	const applyPeerEvent = useCallback(
+		(event: Exclude<AnnotationEvent, { type: "loaded" }>) => {
+			if (!initialImportDoneRef.current) {
+				pendingPeerEventsRef.current.push(event);
+				return;
+			}
+			const scope = annotationCap?.forDocument(docId);
+			if (!scope) return;
+			const wasImporting = importingRef.current;
+			importingRef.current = true;
+			try {
+				if (event.type === "delete" && deleteQueueRef.current) {
+					const tracked = scope.getAnnotationById(event.annotation.id);
+					if (tracked && isLiveAnnotation(tracked))
+						deleteQueueRef.current.delete(event.pageIndex, event.annotation.id);
+				} else applyAnnotationMutation(scope, event);
+			} catch (error) {
+				notifyError(errorText(error));
+			} finally {
+				importingRef.current = wasImporting;
+			}
+		},
+		[annotationCap, docId],
+	);
+	useEffect(() => {
+		if (!paperAbsPath || !annotationCap) return;
+		return subscribeAnnotationPeer(paperAbsPath, docId, applyPeerEvent);
+	}, [paperAbsPath, docId, annotationCap, applyPeerEvent]);
 
 	const rebuildHighlights = useCallback(() => {
 		if (!annotationCap) return;
@@ -245,30 +288,41 @@ export function usePdfHighlights({
 		});
 	}, [rebuildHighlights]);
 
-	/**
-	 * `immediate` is used for deletions: a tab closed inside the normal debounce
-	 * would keep the deleted entry on disk and resurrect it on the next open.
-	 */
+	const persistAnnotations = useCallback(() => {
+		if (!paperAbsPath || !annotationCap) return;
+		// Capture while this document still exists, including an unmount flush.
+		const snapshot = annotationCap
+			.forDocument(docId)
+			.exportAnnotations()
+			.toPromise();
+		void enqueueAnnotationSave(paperAbsPath, async () => {
+			await saveAnnotationItems(paperAbsPath, await snapshot);
+		}).catch((error) => notifyError(errorText(error)));
+	}, [paperAbsPath, annotationCap, docId]);
+
+	/** Deletions bypass the normal debounce. */
 	const scheduleSave = useCallback(
 		(immediate = false) => {
 			if (!paperAbsPath || !annotationCap) return;
 			if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
 			saveTimerRef.current = setTimeout(
-				async () => {
-					try {
-						const items = await annotationCap
-							.forDocument(docId)
-							.exportAnnotations()
-							.toPromise();
-						await saveAnnotationItems(paperAbsPath, items);
-					} catch {
-						// transient export failures are non-fatal; next change retries
-					}
+				() => {
+					saveTimerRef.current = null;
+					persistAnnotations();
 				},
 				immediate ? 0 : HIGHLIGHT_SAVE_DEBOUNCE_MS,
 			);
 		},
-		[paperAbsPath, annotationCap, docId],
+		[paperAbsPath, annotationCap, persistAnnotations],
+	);
+	useLayoutEffect(
+		() => () => {
+			if (!saveTimerRef.current) return;
+			clearTimeout(saveTimerRef.current);
+			saveTimerRef.current = null;
+			persistAnnotations();
+		},
+		[persistAnnotations],
 	);
 
 	useEffect(() => {
@@ -276,13 +330,25 @@ export function usePdfHighlights({
 		const scope = annotationCap.forDocument(docId);
 		const off = scope.onAnnotationEvent((event) => {
 			scheduleRebuild();
-			if (event.type !== "loaded" && !importingRef.current) {
+			if (
+				event.type !== "loaded" &&
+				!event.committed &&
+				!importingRef.current
+			) {
+				if (paperAbsPath) publishAnnotationMutation(paperAbsPath, event);
 				scheduleSave(event.type === "delete");
 			}
 		});
 		rebuildHighlights();
 		return () => off();
-	}, [annotationCap, docId, rebuildHighlights, scheduleRebuild, scheduleSave]);
+	}, [
+		annotationCap,
+		docId,
+		paperAbsPath,
+		rebuildHighlights,
+		scheduleRebuild,
+		scheduleSave,
+	]);
 
 	useEffect(() => {
 		if (importedRef.current || !annotationCap || !docCap || totalPages <= 0)
@@ -321,11 +387,14 @@ export function usePdfHighlights({
 				if (plan.highlightOverrides.length) {
 					scope.updateAnnotations(plan.highlightOverrides);
 				}
-				setTimeout(() => {
-					importingRef.current = false;
-					rebuildHighlights();
-				}, 0);
 			}
+			setTimeout(() => {
+				importingRef.current = false;
+				initialImportDoneRef.current = true;
+				for (const event of pendingPeerEventsRef.current.splice(0))
+					applyPeerEvent(event);
+				rebuildHighlights();
+			}, 0);
 		})();
 	}, [
 		annotationCap,
@@ -334,6 +403,7 @@ export function usePdfHighlights({
 		totalPages,
 		paperAbsPath,
 		rebuildHighlights,
+		applyPeerEvent,
 	]);
 
 	// The CLI/Agent appends highlights straight into `marks/annotations.json`
@@ -475,9 +545,6 @@ export function usePdfHighlights({
 		[annotationCap, docId],
 	);
 
-	const deleteQueueRef = useRef<ReturnType<
-		typeof createAnnotationDeleteQueue
-	> | null>(null);
 	useEffect(() => {
 		if (!annotationCap) return;
 		const queue = createAnnotationDeleteQueue(

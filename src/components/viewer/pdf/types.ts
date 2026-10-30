@@ -66,6 +66,8 @@ export type PdfViewerProps = {
 	embeddedTarget?: PdfNavigationTarget | null;
 	/** Reserve space beside the page for comment cards (off in note embeds). */
 	reserveCommentRail?: boolean;
+	/** Note embeds keep their own scroll position instead of changing the paper's last-read page. */
+	rememberReadingPosition?: boolean;
 	/** Absolute path to paper folder for annotations/marks persistence */
 	paperAbsPath?: string | null;
 	/** Vault-relative paper path stored inside JSON */

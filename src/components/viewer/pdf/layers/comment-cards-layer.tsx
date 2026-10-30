@@ -9,7 +9,7 @@
  */
 
 import { Crop, Link2, MessageSquarePlus, Trash2 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MessageResponse } from "@/components/ai-elements/message";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,7 @@ const COMMENT_ACTION_BAR_CLASS =
 	"pointer-events-none absolute right-0 bottom-full z-[1] flex items-center gap-0.5 rounded-md border border-white/50 bg-background/82 p-0.5 shadow-[0_6px_18px_rgba(15,23,42,0.14)] ring-1 ring-black/5 backdrop-blur-xl backdrop-saturate-150 transition-opacity duration-150 group-hover:pointer-events-auto dark:border-white/10 dark:shadow-[0_8px_20px_rgba(0,0,0,0.4)] dark:ring-white/10";
 
 type CommentCardsLayerProps = {
+	inset?: boolean;
 	/** Comments for this page only. */
 	items: PageAnnotationComment[];
 	/** Rendered page width in px (zoom-aware); used by the hover connector. */
@@ -235,6 +236,7 @@ function autosizeTextarea(el: HTMLTextAreaElement | null) {
 }
 
 type CommentCardProps = {
+	inset?: boolean;
 	item: PageAnnotationComment;
 	topPx: number;
 	heightPx: number;
@@ -253,6 +255,7 @@ type CommentCardProps = {
 };
 
 const CommentCard = memo(function CommentCard({
+	inset,
 	item,
 	topPx,
 	heightPx,
@@ -357,7 +360,9 @@ const CommentCard = memo(function CommentCard({
 						: "",
 			)}
 			style={{
-				left: `calc(100% + ${COMMENT_CARD_GAP_PX}px)`,
+				...(inset
+					? { right: COMMENT_CARD_GAP_PX }
+					: { left: `calc(100% + ${COMMENT_CARD_GAP_PX}px)` }),
 				top: topPx,
 				width: COMMENT_CARD_WIDTH_PX,
 				height: editing ? undefined : heightPx,
@@ -611,6 +616,7 @@ const CommentCard = memo(function CommentCard({
 });
 
 type SelectionCommentAffordanceProps = {
+	inset?: boolean;
 	draft: SelectionCommentDraft;
 	pageHeightPx: number;
 	onCommit: (comment: string) => void;
@@ -621,6 +627,7 @@ type SelectionCommentAffordanceProps = {
 
 /** Selection note editor opened explicitly from the floating toolbar. */
 const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
+	inset,
 	draft,
 	pageHeightPx,
 	onCommit,
@@ -727,7 +734,9 @@ const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 				"z-[7] w-56 bg-background/92 shadow-[0_18px_44px_rgba(15,23,42,0.22),0_4px_16px_rgba(15,23,42,0.12)] ring-2 ring-ring/50 dark:shadow-[0_18px_46px_rgba(0,0,0,0.6),0_4px_16px_rgba(0,0,0,0.45)]",
 			)}
 			style={{
-				left: `calc(100% + ${COMMENT_CARD_GAP_PX}px)`,
+				...(inset
+					? { right: COMMENT_CARD_GAP_PX }
+					: { left: `calc(100% + ${COMMENT_CARD_GAP_PX}px)` }),
 				top: topPx,
 				minHeight: heightPx,
 			}}
@@ -808,6 +817,7 @@ const SelectionCommentAffordance = memo(function SelectionCommentAffordance({
 });
 
 export const CommentCardsLayer = memo(function CommentCardsLayer({
+	inset = false,
 	items,
 	pageWidthPx,
 	pageHeightPx,
@@ -828,6 +838,17 @@ export const CommentCardsLayer = memo(function CommentCardsLayer({
 	onHover,
 	onLeave,
 }: CommentCardsLayerProps) {
+	const [retainedHoverId, setRetainedHoverId] = useState<string | null>(null);
+	useEffect(() => {
+		if (!inset) return;
+		if (hoveredId) {
+			setRetainedHoverId(hoveredId);
+			return;
+		}
+		// Let the pointer cross from the source highlight into the inset card.
+		const timer = setTimeout(() => setRetainedHoverId(null), 250);
+		return () => clearTimeout(timer);
+	}, [inset, hoveredId]);
 	// Stacking depends only on items / page height / the edited card; hover
 	// re-renders (hoveredId flips) must not redo layout for the whole rail.
 	const laid = useMemo(
@@ -844,7 +865,7 @@ export const CommentCardsLayer = memo(function CommentCardsLayer({
 		: null;
 	const hoveredItem = hoveredId ? (byId.get(hoveredId) ?? null) : null;
 	const connectorD =
-		hoveredItem && hoveredPlacement
+		!inset && hoveredItem && hoveredPlacement
 			? commentConnectorPath(
 					hoveredItem.rects,
 					hoveredPlacement,
@@ -892,8 +913,17 @@ export const CommentCardsLayer = memo(function CommentCardsLayer({
 				{laid.map((pos) => {
 					const item = byId.get(pos.id);
 					if (!item) return null;
+					if (
+						inset &&
+						item.id !== editingId &&
+						item.id !== hoveredId &&
+						item.id !== retainedHoverId &&
+						!item.isNew
+					)
+						return null;
 					return (
 						<CommentCard
+							inset={inset}
 							key={item.id}
 							item={item}
 							topPx={pos.topPx}
@@ -915,6 +945,7 @@ export const CommentCardsLayer = memo(function CommentCardsLayer({
 				})}
 				{selectionDraft && onCommitSelectionComment ? (
 					<SelectionCommentAffordance
+						inset={inset}
 						draft={selectionDraft}
 						pageHeightPx={pageHeightPx}
 						onCommit={onCommitSelectionComment}
