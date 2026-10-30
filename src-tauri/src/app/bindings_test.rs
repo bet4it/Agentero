@@ -149,6 +149,7 @@ pub(crate) fn export_typescript_bindings() {
             crate::features::markdown::search::commands::vault_search,
             crate::core::usage::commands::activity_record_events,
             crate::core::usage::commands::usage_clear,
+            crate::core::telemetry::commands::feedback_submit,
             crate::app::logging::logs_clear,
             crate::features::paper::discovery::feeds::commands::feeds_list,
             crate::features::paper::discovery::feeds::commands::feeds_add,

@@ -30,6 +30,10 @@ fn main() {
 /// Variables baked into the binary at compile time and read via `option_env!`.
 const BUILD_ENV_KEYS: &[&str] = &[
     "AGENTERO_POSTHOG_KEY",
+    "AGENTERO_POSTHOG_SURVEY_ID",
+    "AGENTERO_POSTHOG_SURVEY_KIND_ID",
+    "AGENTERO_POSTHOG_SURVEY_MESSAGE_ID",
+    "AGENTERO_POSTHOG_SURVEY_CONTACT_ID",
     "AGENTERO_BUILTIN_BASE_URL",
     "AGENTERO_BUILTIN_API_KEY",
     "AGENTERO_BUILTIN_TRANSLATE_MODEL",

@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import agenteroAppIcon from "@/assets/agentero-app-icon.svg";
 import { CompactCodeBlock } from "@/components/ai-elements/code-block";
+import { AboutFeedback } from "@/components/settings/panes/about-feedback";
 import {
 	PageTitle,
 	SettingsGroup,
@@ -40,7 +41,7 @@ import { errorText } from "@/lib/core/error";
 import { clearLogs } from "@/lib/core/logger";
 import { notifyError, notifySuccess } from "@/lib/core/notify";
 import { openExternalUrl } from "@/lib/core/open-external";
-import { isMacOS, isTauri, isWindows } from "@/lib/core/tauri";
+import { isMacOS, isMobileApp, isTauri, isWindows } from "@/lib/core/tauri";
 import { warnIfNoProxyForDownload } from "@/lib/settings/proxy-guard";
 import {
 	checkForUpdate,
@@ -73,6 +74,7 @@ export function AboutPane() {
 	const [scratchBusy, setScratchBusy] = useState(false);
 	const isMac = useMemo(() => isMacOS(), []);
 	const isWin = useMemo(() => isWindows(), []);
+	const showFeedback = isTauri() && !isMobileApp();
 
 	const refreshCli = useCallback(async () => {
 		if (!isTauri()) return;
@@ -358,6 +360,7 @@ export function AboutPane() {
 					</div>
 				) : null}
 			</SettingsGroup>
+			{showFeedback ? <AboutFeedback /> : null}
 			{isTauri() ? (
 				<SettingsGroup>
 					<SettingsRow

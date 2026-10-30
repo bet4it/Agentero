@@ -29,7 +29,7 @@
 - 没有注入 key 的构建里 `available()` 为 `false`，`builtin_provider_status` 返回 `available: false`，UI 隐藏或禁用内置选项，`default_translate_provider()` / `default_parser_backend()` 回落到 `tencenttransmart` / `local`，`embedding_config()` 穿透到已存值（仍为空则返回 `None`，照常触发 `recommend.no_embedding`）。
 - 既有先例：`posthog_key()`（`src-tauri/src/core/telemetry/mod.rs`）用的就是同一套 `option_env!` + trim + filter-empty，见 [telemetry.md](telemetry.md) §开关语义。
 
-**构建脚本转发**：`src-tauri/build.rs` 的 `forward_build_env()` 为全部六个变量（`AGENTERO_POSTHOG_KEY` 加五个 `AGENTERO_BUILTIN_*`）发 `cargo:rerun-if-env-changed`，并在环境变量缺失时回退读仓库根 `.env`（gitignored），经 `cargo:rustc-env=` 重新导出。因此
+**构建脚本转发**：`src-tauri/build.rs` 的 `forward_build_env()` 为 `BUILD_ENV_KEYS` 里的每个变量发 `cargo:rerun-if-env-changed`，并在环境变量缺失时回退读仓库根 `.env`（gitignored），经 `cargo:rustc-env=` 重新导出。列表含 `AGENTERO_POSTHOG_KEY`、五个 `AGENTERO_BUILTIN_*`，以及可选的四份反馈问卷 id（见 [telemetry.md](telemetry.md)）。因此
 
 - 本地既可以直接导出环境变量，也可以把 `AGENTERO_BUILTIN_API_KEY` 写进 `.env`；显式环境变量优先。
 - 改变量值会触发 `src-tauri` 重编。这一条是必需的而非便利：cargo 默认不追踪 `option_env!` 读到的变量，缺了 `rerun-if-env-changed` 时换 key 不会重编，发布包会静默带着旧值或空值出去且毫无征兆。

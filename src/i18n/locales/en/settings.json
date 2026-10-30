@@ -928,6 +928,25 @@
 			"uninstallSuccess": "Finder Quick Action removed",
 			"installFailed": "Could not install the Finder Quick Action",
 			"uninstallFailed": "Could not remove the Finder Quick Action"
+		},
+		"feedback": {
+			"label": "Feedback",
+			"description": "Send a problem or an idea to the team",
+			"open": "Write",
+			"title": "Feedback",
+			"hint": "Includes the app version and system. Your library, file names, and papers stay on this device.",
+			"kindBug": "Problem",
+			"kindIdea": "Idea",
+			"message": "Description",
+			"messagePlaceholder": "What happened, or what you'd like",
+			"contact": "Email",
+			"contactPlaceholder": "Optional, if we should reply",
+			"send": "Send",
+			"sending": "Sending",
+			"sent": "Sent",
+			"unavailable": "This build can't send feedback",
+			"invalid": "Write a short description first",
+			"failed": "Couldn't send feedback. Try again"
 		}
 	},
 	"sync": {

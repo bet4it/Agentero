@@ -190,6 +190,13 @@ jobs:
           # PostHog project API key baked in at compile time (build.rs);
           # empty/absent secret compiles telemetry out. See docs/backend/telemetry.md.
           AGENTERO_POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+          # Optional. When all four are set, About feedback lands in that
+          # PostHog API survey. Absent secrets still build; feedback is sent
+          # as a `feedback submitted` activity event. See docs/backend/telemetry.md.
+          AGENTERO_POSTHOG_SURVEY_ID: ${{ secrets.POSTHOG_SURVEY_ID }}
+          AGENTERO_POSTHOG_SURVEY_KIND_ID: ${{ secrets.POSTHOG_SURVEY_KIND_ID }}
+          AGENTERO_POSTHOG_SURVEY_MESSAGE_ID: ${{ secrets.POSTHOG_SURVEY_MESSAGE_ID }}
+          AGENTERO_POSTHOG_SURVEY_CONTACT_ID: ${{ secrets.POSTHOG_SURVEY_CONTACT_ID }}
           # Built-in provider gateway key, baked in at compile time (build.rs);
           # empty/absent secret still builds, but ships without the built-in
           # provider, so verify it after release. See docs/backend/builtin-provider.md.

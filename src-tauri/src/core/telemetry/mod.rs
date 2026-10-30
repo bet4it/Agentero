@@ -2,15 +2,20 @@
 //!
 //! The project API key is baked in at build time via the
 //! `AGENTERO_POSTHOG_KEY` environment variable; when unset (or in debug
-//! builds) every entry point is a no-op, so local and OSS builds report
+//! builds) product analytics is a no-op, so local and OSS builds report
 //! nothing. Users can additionally opt out via
 //! `AppSettings::telemetry_enabled` (applies from the next launch).
+//!
+//! In-app feedback ([`feedback`]) is a separate, explicit send. It uses the
+//! same key but ignores the debug gate and the telemetry opt-out.
 //!
 //! Payloads are limited to app-version and device-level facts (see [`device`]).
 //! Vault paths, file names, and document content are never sent. The
 //! `distinct_id` is a random UUID persisted in the config directory.
 
+pub mod commands;
 mod device;
+mod feedback;
 
 use crate::core::usage::{record_events, usage_db_path, ActivityProjection, UsageRecord};
 use device::{collect_device_info, install_id, timezone_offset};

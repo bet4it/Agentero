@@ -410,6 +410,7 @@ export const commands = {
 	vaultSearch: (args: VaultSearchArgs) => __TAURI_INVOKE<ApiResult<VaultSearchResult_Serialize>>("vault_search", { args }),
 	activityRecordEvents: (args: ActivityRecordArgs) => typedError<ApiResult<number>, string>(__TAURI_INVOKE("activity_record_events", { args })),
 	usageClear: (args: UsageClearArgs) => __TAURI_INVOKE<ApiResult<number>>("usage_clear", { args }),
+	feedbackSubmit: (args: FeedbackSubmitArgs) => __TAURI_INVOKE<ApiResult<null>>("feedback_submit", { args }),
 	logsClear: () => __TAURI_INVOKE<ApiResult<number>>("logs_clear"),
 	feedsList: () => __TAURI_INVOKE<ApiResult<FeedList>>("feeds_list"),
 	feedsAdd: (args: FeedsAddArgs) => __TAURI_INVOKE<ApiResult<FeedSub>>("feeds_add", { args }),
@@ -3076,6 +3077,13 @@ export type FeedSub = {
 	itemCount: number,
 	pinned: boolean,
 	pinnedAt: string | null,
+};
+
+export type FeedbackSubmitArgs = {
+	category: string,
+	message: string,
+	contact?: string | null,
+	locale: string,
 };
 
 export type FeedsAddArgs = {

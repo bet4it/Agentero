@@ -928,6 +928,25 @@
 			"uninstallSuccess": "已移除访达快捷操作",
 			"installFailed": "无法安装访达快捷操作",
 			"uninstallFailed": "无法移除访达快捷操作"
+		},
+		"feedback": {
+			"label": "反馈",
+			"description": "把问题或想法发给开发团队",
+			"open": "填写",
+			"title": "反馈",
+			"hint": "会附带应用版本和系统信息。文库、文件名和论文内容留在这台设备上。",
+			"kindBug": "遇到问题",
+			"kindIdea": "想法",
+			"message": "描述",
+			"messagePlaceholder": "发生了什么，或者你希望怎样",
+			"contact": "邮箱",
+			"contactPlaceholder": "选填，方便我们回复",
+			"send": "发送",
+			"sending": "发送中",
+			"sent": "已发送",
+			"unavailable": "当前版本无法发送反馈",
+			"invalid": "请先写一段描述",
+			"failed": "发送失败，请重试"
 		}
 	},
 	"sync": {
