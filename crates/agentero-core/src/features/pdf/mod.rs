@@ -40,6 +40,8 @@ pub(crate) fn tiny_pdf(text: &str) -> Vec<u8> {
     out.into_bytes()
 }
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
+pub mod github_repo;
+#[cfg(not(any(target_os = "ios", target_os = "android")))]
 pub mod locate;
 pub mod marks;
 #[cfg(not(any(target_os = "ios", target_os = "android")))]

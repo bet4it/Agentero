@@ -88,6 +88,9 @@ fn paper_open_bundle_inner(
 ) -> Result<PaperOpenBundle, AppError> {
     ensure_vault_dir(vault)?;
     let (paper_dir, path_rel) = resolve_paper_dir(vault, path_raw)?;
+    // Existing papers are not scanned at import time. Fill once on open so
+    // Paper Info can show the repository from this bundle.
+    agentero_core::features::paper::import::code_repo::fill_code_repo_on_open(vault, &path_rel);
     let paper = papers::get_by_path(vault, &path_rel)?
         .ok_or_else(|| AppError::message("paper not found in catalog"))?;
     let caps = cache

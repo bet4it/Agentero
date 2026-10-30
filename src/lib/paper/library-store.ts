@@ -93,6 +93,7 @@ function samePapers(a: PaperLibraryRow[], b: PaperLibraryRow[]): boolean {
 			x.is_read !== y.is_read ||
 			x.has_pdf !== y.has_pdf ||
 			x.title !== y.title ||
+			(x.code_repo ?? "") !== (y.code_repo ?? "") ||
 			tagsFingerprint(x.tags) !== tagsFingerprint(y.tags) ||
 			JSON.stringify(x.custom_props ?? {}) !==
 				JSON.stringify(y.custom_props ?? {})
@@ -101,6 +102,22 @@ function samePapers(a: PaperLibraryRow[], b: PaperLibraryRow[]): boolean {
 		}
 	}
 	return true;
+}
+
+/**
+ * Open-bundle fill writes `code_repo` after the library snapshot. Paper Info
+ * prefers this map over the tab copy, so patch the row or the chip stays empty.
+ */
+export function adoptLibraryCodeRepo(paper: PaperMetadata): void {
+	const repo = paper.code_repo?.trim();
+	if (!repo || !paper.path) return;
+	setLibraryPapers((prev) =>
+		prev.map((row) =>
+			row.path === paper.path && (row.code_repo ?? "") !== repo
+				? { ...row, code_repo: repo, updated_at: paper.updated_at }
+				: row,
+		),
+	);
 }
 
 export function setLibraryPapers(

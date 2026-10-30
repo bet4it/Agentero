@@ -722,6 +722,10 @@ async fn import_standalone_local(
             );
         }
     }
+    if pdf_path.is_file() {
+        crate::features::paper::import::code_repo::fill_code_repo_from_pdf(vault, &commit.path)
+            .await;
+    }
 
     if commit.status == CommitStatus::Created && needs_recognize {
         if let Some(app) = app {

@@ -599,6 +599,10 @@ async fn migrate_one(
             let dest = paper_dir.join(pdf_dest_name(&meta.id));
             if fs::copy(src, &dest).is_ok() {
                 copied = true;
+                crate::features::paper::import::code_repo::fill_code_repo_from_pdf(
+                    vault, &path_rel,
+                )
+                .await;
             }
         }
     }

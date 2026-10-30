@@ -292,6 +292,10 @@ pub async fn paper_commit(
         c.invalidate(vault, &path_rel);
     }
 
+    if assets.pdf {
+        super::code_repo::fill_code_repo_from_pdf(vault, &path_rel).await;
+    }
+
     Ok(PaperCommitResult {
         status: CommitStatus::Created,
         path: path_rel,
@@ -536,6 +540,9 @@ async fn merge_pdf_into_existing(
 
     if let Some(c) = cache {
         c.invalidate(vault, &existing.path);
+    }
+    if became_main {
+        super::code_repo::fill_code_repo_from_pdf(vault, &existing.path).await;
     }
     crate::features::lifecycle::emit_paper_imported(app, vault, &existing.id, &existing.path);
     crate::features::lifecycle::emit_paper_assets_ready(app, vault, &existing.id, &existing.path);

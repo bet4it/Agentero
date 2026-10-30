@@ -289,6 +289,7 @@ pub async fn adopt_paper_folder(
     write_paper_shell_opts(dir, vault, &meta, opts.note_mode, false).await?;
     let record = meta.at_path(&rel);
     papers::upsert_paper(vault, &record)?;
+    super::code_repo::fill_code_repo_from_pdf(vault, &rel).await;
 
     if let Some(cache) = opts.cache {
         cache.invalidate(vault, &rel);

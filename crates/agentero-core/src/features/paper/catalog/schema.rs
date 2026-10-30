@@ -11,7 +11,7 @@
 //! - v8: multi-row discovery runs (`discovery_runs`) keyed by
 //!   source/model/categories/top_n, superseding the single-row
 //!   `arxiv_rec_state` (kept for old DBs; no longer written)
-//! - v9: manually maintained `code_repo` link (no auto resolution yet)
+//! - v9: `code_repo` link (filled from PDF page 1 on import when empty; still hand-editable)
 //! - v10: manually maintained `openreview_url` link
 //! - v11: `custom_properties` table + `papers.custom_props_json`
 

@@ -6,6 +6,7 @@ import { callApi, callApiResult } from "@/lib/core/ipc";
 import { toVaultRelative } from "@/lib/core/path";
 import { isTauri } from "@/lib/core/tauri";
 import { arxivUrls } from "@/lib/paper/arxiv";
+import { adoptLibraryCodeRepo } from "@/lib/paper/library-store";
 import type { PaperMetadata } from "@/lib/paper/types";
 import { paperFromWire } from "@/lib/paper/wire";
 
@@ -65,8 +66,10 @@ export async function loadPaperOpenBundle(
 			commands.paperOpenBundle({ vaultPath: vaultRoot, path }),
 		);
 		if (!data?.paper?.id) return null;
+		const paper = enrichArxivUrls(paperFromWire(data.paper));
+		adoptLibraryCodeRepo(paper);
 		return {
-			paper: enrichArxivUrls(paperFromWire(data.paper)),
+			paper,
 			pathRel: data.pathRel,
 			notesSeed: data.notesSeed ?? undefined,
 			pdfPath: data.pdfPath ?? undefined,

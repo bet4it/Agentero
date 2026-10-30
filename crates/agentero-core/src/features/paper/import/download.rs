@@ -805,6 +805,9 @@ async fn ensure_paper_assets_impl(
     if !paper_path.is_empty() {
         source::reconcile_body(vault, paper_path)?;
     }
+    if after.has_pdf() && !paper_path.is_empty() {
+        super::code_repo::fill_code_repo_from_pdf(vault, paper_path).await;
+    }
     super::check_task_not_cancelled(progress.task_id)?;
 
     if let Some(error) = tex_error {

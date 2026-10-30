@@ -15,6 +15,7 @@ pub mod api_mapper;
 pub use crate::features::scholar_api::identifiers::doi_slug;
 pub use api_mapper::{api_paper_to_meta, enrich_remote_urls, map_zotero_item_to_record};
 
+pub mod code_repo;
 pub mod download;
 pub mod recognize;
 pub mod search_router;

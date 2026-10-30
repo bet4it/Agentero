@@ -299,7 +299,8 @@ pub struct PaperRecord {
     pub html_url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source_url: Option<String>,
-    /// Manually maintained code-repository link (no auto resolution yet).
+    /// Code repository. Import fills this from the main PDF's first page when
+    /// it is empty; Edit Metadata can set or clear it afterwards.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub code_repo: Option<String>,
     /// Manually maintained OpenReview link; never resolved from identifiers.
