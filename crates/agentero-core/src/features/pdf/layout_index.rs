@@ -8,6 +8,8 @@ use serde::Serialize;
 use serde_json::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex, OnceLock};
+use std::time::SystemTime;
 
 pub const LAYOUT_INDEX_FILE: &str = "layout-index.json";
 pub const LAYOUT_RAW_FILE: &str = "layout.json";
@@ -71,7 +73,7 @@ pub struct RawLayoutRegion {
 
 /// Ordered raw regions for a paper. Order follows document reading order
 /// (page then top-to-bottom) so a caller can page through a paper naturally.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RawLayout {
     pub regions: Vec<RawLayoutRegion>,
 }
@@ -87,6 +89,9 @@ pub fn load_raw_layout(vault: &Path, paper_path: &str) -> Result<RawLayout, AppE
                 "{paper_path}/source/{LAYOUT_RAW_FILE} not found; open the paper and run layout analysis first"
             ),
         ));
+    }
+    if let Some(cached) = cached_raw_layout(&raw_path) {
+        return Ok(cached);
     }
     let text = std::fs::read_to_string(&raw_path)
         .map_err(|e| AppError::message(format!("failed to read raw layout: {e}")))?;
@@ -105,7 +110,94 @@ pub fn load_raw_layout(vault: &Path, paper_path: &str) -> Result<RawLayout, AppE
             .then_with(|| bbox_order(&a.bbox).total_cmp(&bbox_order(&b.bbox)))
             .then_with(|| a.id.cmp(&b.id))
     });
-    Ok(RawLayout { regions })
+    let layout = RawLayout { regions };
+    store_raw_layout(&raw_path, &layout);
+    Ok(layout)
+}
+
+struct LayoutCacheEntry {
+    modified: SystemTime,
+    len: u64,
+    layout: RawLayout,
+    /// Anchors enumerated once per file stamp. Citation checks clone this
+    /// `Arc` instead of parsing `layout.json` and walking every region again.
+    anchors: Arc<Vec<LayoutIndexItem>>,
+}
+
+fn layout_cache() -> &'static Mutex<std::collections::HashMap<PathBuf, LayoutCacheEntry>> {
+    static CACHE: OnceLock<Mutex<std::collections::HashMap<PathBuf, LayoutCacheEntry>>> =
+        OnceLock::new();
+    CACHE.get_or_init(|| Mutex::new(std::collections::HashMap::new()))
+}
+
+fn layout_fingerprint(path: &Path) -> Option<(SystemTime, u64)> {
+    let meta = fs::metadata(path).ok()?;
+    Some((meta.modified().ok()?, meta.len()))
+}
+
+/// Tests rewrite fixtures in place; a process-wide cache would hide that.
+fn cached_raw_layout(path: &Path) -> Option<RawLayout> {
+    if cfg!(test) {
+        return None;
+    }
+    let (modified, len) = layout_fingerprint(path)?;
+    let guard = layout_cache().lock().ok()?;
+    let hit = guard.get(path)?;
+    if hit.modified == modified && hit.len == len {
+        Some(hit.layout.clone())
+    } else {
+        None
+    }
+}
+
+fn cached_anchors(path: &Path) -> Option<Arc<Vec<LayoutIndexItem>>> {
+    if cfg!(test) {
+        return None;
+    }
+    let (modified, len) = layout_fingerprint(path)?;
+    let guard = layout_cache().lock().ok()?;
+    let hit = guard.get(path)?;
+    if hit.modified == modified && hit.len == len {
+        Some(Arc::clone(&hit.anchors))
+    } else {
+        None
+    }
+}
+
+fn store_raw_layout(path: &Path, layout: &RawLayout) {
+    if cfg!(test) {
+        return;
+    }
+    let Some((modified, len)) = layout_fingerprint(path) else {
+        return;
+    };
+    if let Ok(mut guard) = layout_cache().lock() {
+        guard.insert(
+            path.to_path_buf(),
+            LayoutCacheEntry {
+                modified,
+                len,
+                layout: layout.clone(),
+                anchors: Arc::new(enumerate_document_anchors(layout)),
+            },
+        );
+    }
+}
+
+fn document_anchor_items(
+    vault: &Path,
+    paper_path: &str,
+) -> Result<Arc<Vec<LayoutIndexItem>>, AppError> {
+    let dir = paper_abs(vault, paper_path)?;
+    let raw_path = dir.join("source").join(LAYOUT_RAW_FILE);
+    if let Some(cached) = cached_anchors(&raw_path) {
+        return Ok(cached);
+    }
+    let layout = load_raw_layout(vault, paper_path)?;
+    if let Some(cached) = cached_anchors(&raw_path) {
+        return Ok(cached);
+    }
+    Ok(Arc::new(enumerate_document_anchors(&layout)))
 }
 
 fn bbox_order(b: &Bbox) -> f64 {
@@ -614,9 +706,8 @@ pub fn resolve_document_anchor(
     paper_path: &str,
     fragment: &str,
 ) -> Result<LayoutIndexItem, AppError> {
-    let layout = load_raw_layout(vault, paper_path)?;
+    let items = document_anchor_items(vault, paper_path)?;
     let anchor = format!("#{}", fragment.strip_prefix('#').unwrap_or(fragment));
-    let items = enumerate_document_anchors(&layout);
     let section = anchor.split("#p").next().unwrap_or(&anchor);
     if items
         .iter()
@@ -630,8 +721,9 @@ pub fn resolve_document_anchor(
         ));
     }
     let matches: Vec<_> = items
-        .into_iter()
+        .iter()
         .filter(|i| i.anchor.as_deref() == Some(anchor.as_str()))
+        .cloned()
         .collect();
     match matches.len() {
         1 => Ok(matches.into_iter().next().unwrap()),

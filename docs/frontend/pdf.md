@@ -227,6 +227,6 @@ Host 下载/解析：[../backend/paper-import.md](../backend/paper-import.md)。
 
 ### 章节与正文块引用
 
-PDF 支持 `paper.pdf#2`、`paper.pdf#2.1` 和 `paper.pdf#2.1#p3`。段落是版面分析中的一个正文块，按直接所属章节计数，子章节单独计数；具体编号和原文通过 `agentero layout list <paper> --kind paragraph --json` 查询，不能凭页面展示顺序猜测。聊天引用、普通 Markdown 链接和双链 `[[paper.pdf#2.1#p3]]` 共用 Host 的解析、滚动和临时高亮；段落高亮保持原始 bbox，不生成永久批注。
+PDF 支持 `paper.pdf#2`、`paper.pdf#2.1` 和 `paper.pdf#2.1#p3`。段落是版面分析中的一个正文块，按直接所属章节计数，子章节单独计数；具体编号和原文通过 `agentero layout list <paper> --kind paragraph --json` 查询，不能凭页面展示顺序猜测。聊天引用、普通 Markdown 链接和双链 `[[paper.pdf#2.1#p3]]` 共用 Host 的解析、滚动和临时高亮；段落高亮保持原始 bbox，不生成永久批注。编辑器输入 `[[paper.pdf#]]` 时，按 `layout.json` 的章节名补全，Tab 后继续列出该章段落，见 [wiki.md](wiki.md)。
 
 缺少解析、目标不存在或章节编号重复时报告失败，不回退到其他段落。已有 `#section=`、`#page=`、图表引用与批注链接继续使用；Markdown 文件的 `#标题` 和嵌套标题语义不变。首版不合并跨页自然段，不恢复 PDF 替换后的旧锚点。

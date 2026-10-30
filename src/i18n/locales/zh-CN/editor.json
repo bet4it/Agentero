@@ -182,7 +182,8 @@
 		"loading": "正在搜索双链…",
 		"empty": "没有匹配的双链",
 		"displayName": "显示名称",
-		"syntaxHint": "#标题 · ^文本块 · |显示文本 · @批注；tab 补全 · enter 确认"
+		"syntaxHint": "#标题 · ^文本块 · |显示文本 · @批注；tab 补全 · enter 确认",
+		"syntaxHintPdf": "#章节 · 章节#p段落；tab 下一级 · enter 确认"
 	},
 	"slashCommand": {
 		"label": "格式命令",

@@ -182,7 +182,8 @@
 		"loading": "Searching links…",
 		"empty": "No matching internal links",
 		"displayName": "Display name",
-		"syntaxHint": "#heading · ^block · |alias · @annotation; tab complete · enter confirm"
+		"syntaxHint": "#heading · ^block · |alias · @annotation; tab complete · enter confirm",
+		"syntaxHintPdf": "#section · section#p paragraph; tab next · enter confirm"
 	},
 	"slashCommand": {
 		"label": "Formatting commands",

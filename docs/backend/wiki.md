@@ -32,7 +32,7 @@
 `WikiIndex::rebuild` 是增量流水线，语义与全量重建等价：
 
 - **指纹热路径**：全库 `graph_rebuild` 先列出并 stat 全库 `(path, size, mtime)` 指纹。若与内存中上一次构建完全一致，直接返回上次结果；若部分变化，仅重读变更文件，未变文件复用内存中的解析产物（documents + occurrences）。打开 Vault、Doctor、以及调用方没给出路径或索引还是冷的时候走这条。
-- **已知路径**：`graph_apply_paths` 在索引已经描述当前 Vault 时，只 stat / 读取调用方给出的文件；论文目录则只列那一个目录。路径接受同一资料库的规范写法（`\\?\`、`/var` 与 `/private/var`），不会因为前缀对不上被当成库外路径。然后在内存里对全部链接重新 resolve，这样新笔记的标题 alias 仍能点亮库里原有的 `[[标题]]`。对不上清单（冷索引、Vault 根、非单篇目录）时退回全库 `graph_rebuild`。文件监视器把保存过的 Markdown 记在索引锁外面的队列里，rename 规划时再并入；监视线程不等待 `graph_rebuild` / `graph_apply_paths`。本地 rename 在索引已热时不再前后各翻一遍库：改名前直接用当前索引规划改写，改名后按旧路径前缀更新内存清单，并只重读事务改过字的 Markdown 与移动目标目录。
+- **已知路径**：`graph_apply_paths` 在索引已经描述当前 Vault 时，只 stat / 读取调用方给出的文件；论文目录则只列那一个目录。路径接受同一资料库的规范写法（`\\?\`、`/var` 与 `/private/var`），不会因为前缀对不上被当成库外路径。然后在内存里对全部链接重新 resolve，这样新笔记的标题 alias 仍能点亮库里原有的 `[[标题]]`。Markdown 目标不读 `layout.json`。PDF fragment 仅在目标或 fragment 文本相对上次索引有变化时才打开 `layout.json`；同一条引用在后续保存里沿用已解析结果，不因正文里其它字符变化而重读。对不上清单（冷索引、Vault 根、非单篇目录）时退回全库 `graph_rebuild`。文件监视器把保存过的 Markdown 记在索引锁外面的队列里，rename 规划时再并入；监视线程不等待 `graph_rebuild` / `graph_apply_paths`。本地 rename 在索引已热时不再前后各翻一遍库：改名前直接用当前索引规划改写，改名后按旧路径前缀更新内存清单，并只重读事务改过字的 Markdown 与移动目标目录。
 - **Resolve 查找表**：`resolve.rs::DocumentLookup` 按精确路径 / ASCII 小写路径 / 路径段后缀 / stem / alias 预分桶，把逐 occurrence 的线性扫描（O(E×D)）降到哈希查找（≈O(E)），解析优先级与线性实现逐字节等价（有对照测试）。
 - **快照只存解析产物**：`.sqlite` 缓存（schema v3）按文件粒度存 documents 与 occurrences（`(source, ordinal)` 主键），行级 SHA-256 校验替代整份 JSON 快照哈希。resolve 结果**不**入库——加载时对完整文档集重跑解析，因此“别的文件改变了某条链接的解析结果”不会让缓存变脏。
 - **增量写盘**：磁盘缓存与内存快照同步时，持久化只 upsert/delete 变更文件的行；缓存缺失、schema/parser 版本不符或上次写盘失败则整体重写。
@@ -74,4 +74,4 @@ Vault Markdown 变更
 
 ### PDF 章节与段落 fragment
 
-PDF 的 heading fragment 与旧的 Markdown/TeX `#section=`、`#page=` 等显式引用由 `agentero-core::features::pdf::citation` 解析，桌面导航与 Wiki 校验共用它。`[[papers/demo/demo.pdf#2.1#p3]]` 与普通 Markdown PDF 链接解析为同一版面区域。校验、单次解析和反链/出链读取会检查当前解析文件，避免 `layout.json` 更新或删除后保留旧的 resolved 状态；缓存恢复时也重新校验。缺失和歧义分别显示为 `invalidFragment` 与 `ambiguous`。批注 fragment 继续走既有规则，Markdown 文件的普通标题 fragment 依然按标题路径解析。Markdown destination 的 URI 编码在路径查找时解码，源码范围保留原始字节，包含空格的路径与点击导航一致。
+PDF 的 heading fragment 与旧的 Markdown/TeX `#section=`、`#page=` 等显式引用由 `agentero-core::features::pdf::citation` 解析，桌面导航与 Wiki 校验共用它。`[[papers/demo/demo.pdf#2.1#p3]]` 与普通 Markdown PDF 链接解析为同一版面区域。校验、单次解析和反链/出链读取会检查当前解析文件，避免 `layout.json` 更新或删除后保留旧的 resolved 状态；解析结果按文件 mtime 与长度缓存在内存，同一次进程里不会为每条链接重新 parse JSON。缓存恢复时也重新校验。按键保存不因为 Markdown 正文变化而重读未改动的 PDF fragment。缺失和歧义分别显示为 `invalidFragment` 与 `ambiguous`。批注 fragment 继续走既有规则，Markdown 文件的普通标题 fragment 依然按标题路径解析。Markdown destination 的 URI 编码在路径查找时解码，源码范围保留原始字节，包含空格的路径与点击导航一致。

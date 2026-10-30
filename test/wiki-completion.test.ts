@@ -13,6 +13,7 @@ import {
 	isWikiCompletionSubmitKey,
 	narrowExactWikiFileCandidates,
 	parseWikiCompletionQuery,
+	replaceWikiCompletionToken,
 	sameWikiPath,
 	wikiCompletionInsert,
 	wikiFileCandidateSecondaryLine,
@@ -1183,5 +1184,78 @@ describe("wikilink completion grammar", () => {
 			text: "[[Second]]",
 			wikiLinkDraft: true,
 		});
+	});
+
+	it("keeps a pdf section token when Tab replaces an unfinished fragment", () => {
+		const raw = "see [[2509.25175.pdf#]] tail";
+		const markdown = "[[2509.25175.pdf#2#]]";
+		const caret = "see [[2509.25175.pdf#".length;
+		const editor = createSlateEditor({
+			plugins: [WikiLinkPlugin],
+			value: [{ type: "p", children: [{ text: raw, wikiLinkDraft: true }] }],
+		});
+		editor.tf.select({
+			anchor: { path: [0, 0], offset: caret },
+			focus: { path: [0, 0], offset: caret },
+		});
+		const match = findWikiCompletionMatch(raw, caret, "2509.25175.pdf#");
+		expect(match).toEqual({
+			start: 4,
+			end: caret + 2,
+			raw: "2509.25175.pdf#",
+		});
+		if (!match) throw new Error("expected a pdf section match");
+		replaceWikiCompletionToken(
+			editor,
+			{
+				anchor: { path: [0, 0], offset: match.start },
+				focus: { path: [0, 0], offset: match.end },
+			},
+			markdown,
+		);
+		expect(editor.api.string([0])).toBe(`see ${markdown} tail`);
+		expect(editor.selection?.anchor.offset).toBe(`see ${markdown}`.length - 2);
+	});
+
+	it("keeps a pdf section token when the link is already a stable node", () => {
+		const raw = "[[2509.25175.pdf#]]";
+		const markdown = "[[2509.25175.pdf#2#]]";
+		const caret = raw.length - 2;
+		const editor = createSlateEditor({
+			plugins: [WikiLinkPlugin],
+			value: [
+				{
+					type: "p",
+					children: [
+						{
+							type: "wikiLink",
+							value: "2509.25175.pdf",
+							children: [{ text: raw }],
+						},
+					],
+				},
+			],
+		});
+		editor.tf.select({
+			anchor: { path: [0, 0, 0], offset: caret },
+			focus: { path: [0, 0, 0], offset: caret },
+		});
+		const match = findWikiCompletionMatch(raw, caret, "2509.25175.pdf#");
+		expect(match).not.toBeNull();
+		if (!match) throw new Error("expected a pdf section match");
+		replaceWikiCompletionToken(
+			editor,
+			{
+				anchor: { path: [0, 0, 0], offset: match.start },
+				focus: { path: [0, 0, 0], offset: match.end },
+			},
+			markdown,
+		);
+		expect(JSON.stringify(editor.children)).toContain(markdown);
+		const text = editor.api.node(editor.selection?.anchor.path ?? [])?.[0] as
+			| { text?: string }
+			| undefined;
+		expect(text?.text).toContain(markdown);
+		expect(editor.selection?.anchor.offset).toBe(markdown.length - 2);
 	});
 });

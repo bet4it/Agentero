@@ -354,6 +354,28 @@ pub(crate) fn resolve_occurrence_with(
     }
 }
 
+/// True when resolving this edge reads `{paper}/source/layout.json`.
+/// Markdown headings, files and blocks do not.
+pub(crate) fn pdf_fragment_reads_layout(link: &ResolvedLink) -> bool {
+    let Some(LinkFragment::Heading { path: parts }) = &link.occurrence.fragment else {
+        return false;
+    };
+    if parts.is_empty() {
+        return false;
+    }
+    let fragment = parts.join("#");
+    let legacy = fragment.split_once('=').is_some_and(|(key, _)| {
+        matches!(
+            key,
+            "section" | "page" | "figure" | "table" | "algorithm" | "formula" | "region"
+        )
+    });
+    match link.target_path.as_deref() {
+        Some(path) => path.to_ascii_lowercase().ends_with(".pdf") || legacy,
+        None => false,
+    }
+}
+
 /// Refine PDF fragments with the same resolver used by the desktop jump.
 /// Called with a live vault for navigation, semantic checks and index restore.
 pub(crate) fn resolve_pdf_fragment(vault: &Path, mut link: ResolvedLink) -> ResolvedLink {
