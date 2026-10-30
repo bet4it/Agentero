@@ -8,9 +8,10 @@
 import { createStore } from "zustand/vanilla";
 import { errorText } from "@/lib/core/error";
 import { notifyError } from "@/lib/core/notify";
+import { toVaultRelative } from "@/lib/core/path";
 import { perfActive, perfWait } from "@/lib/core/perf";
 import { isTauri } from "@/lib/core/tauri";
-import { collectPaperFoldersFromTree } from "@/lib/paper";
+import { collectPaperFoldersFromTree } from "@/lib/paper/detect";
 import {
 	collectDirectoryRelPaths,
 	collectMarkdownRelPaths,
@@ -28,7 +29,6 @@ import {
 	upsertTreeChild,
 } from "@/lib/vault";
 import { watchRefreshDelayMs } from "@/lib/vault/shell-activity";
-import { toVaultRelative } from "@/lib/wiki";
 
 export type TreeCreateKind = "file" | "folder";
 

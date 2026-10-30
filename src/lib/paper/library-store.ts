@@ -7,11 +7,11 @@
 import { createStore } from "zustand/vanilla";
 import { perfWait } from "@/lib/core/perf";
 import { isTauri } from "@/lib/core/tauri";
-import type { PaperLibraryRow, PaperMetadata } from "@/lib/paper";
 import { listPapers, rescanPapers, setPaperTags } from "@/lib/paper/api";
 import type { LocalPdfImportEntry } from "@/lib/paper/lookup";
 import type { CitingScanResult } from "@/lib/paper/refs";
 import type { PaperTagInput } from "@/lib/paper/tags";
+import type { PaperLibraryRow, PaperMetadata } from "@/lib/paper/types";
 import { watchRefreshDelayMs } from "@/lib/vault/shell-activity";
 import { getVaultPath } from "@/lib/vault/store";
 
