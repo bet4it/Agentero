@@ -581,25 +581,30 @@ fn section_number(title: &str) -> Option<String> {
                 .join("."),
         );
     }
-    let compact: String = trimmed.chars().filter(|c| !c.is_whitespace()).collect();
-    let token = if let Some((marker, _)) = compact.split_once('.') {
-        marker
-    } else {
-        trimmed
-            .split_whitespace()
-            .next()?
-            .trim_end_matches([':', ')'])
-    };
-    let lower = token.to_ascii_lowercase();
-    // Canonical Roman markers only; ordinary words are never section numbers.
+    // Try compact dotted OCR markers, then a normal whitespace-delimited
+    // marker. A later dot in the heading text is not a marker boundary.
     let roman = [
         "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv",
         "xv", "xvi", "xvii", "xviii", "xix", "xx",
     ];
-    roman
-        .iter()
-        .position(|r| *r == lower)
-        .map(|n| (n + 1).to_string())
+    let roman_number = |marker: &str| {
+        roman
+            .iter()
+            .position(|r| *r == marker.to_ascii_lowercase())
+            .map(|n| (n + 1).to_string())
+    };
+    let compact: String = trimmed.chars().filter(|c| !c.is_whitespace()).collect();
+    if let Some((marker, _)) = compact.split_once('.') {
+        if let Some(number) = roman_number(marker) {
+            return Some(number);
+        }
+    }
+    roman_number(
+        trimmed
+            .split_whitespace()
+            .next()?
+            .trim_end_matches(['.', ':', ')']),
+    )
 }
 
 /// Resolve the exact, published fragment. Duplicate headings (including their
@@ -1040,6 +1045,10 @@ mod tests {
         for title in ["III.Method", "III. M ETHOD", "I I I. Method", "III Method"] {
             assert_eq!(section_number(title).as_deref(), Some("3"), "{title}");
         }
+        assert_eq!(
+            section_number("I Preliminaries (e.g. notation)").as_deref(),
+            Some("1")
+        );
         assert_eq!(section_number("2.1 Method").as_deref(), Some("2.1"));
         assert_eq!(section_number("2.Method").as_deref(), Some("2"));
         assert_eq!(section_number("Introduction"), None);
