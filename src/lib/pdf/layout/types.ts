@@ -21,6 +21,17 @@ export type PdfLayoutKind =
 	/** Paragraph / body text — blocker for formula merge, never sidebar. */
 	| "text";
 
+/** Minimal raw region shape shared by anchor enumeration and reading order. */
+export type DocumentAnchorRegion = {
+	id: string;
+	pageIndex: number;
+	kind: string;
+	title?: string;
+	text?: string;
+	readingOrder?: number;
+	bbox?: { x: number; y: number; w: number; h: number };
+};
+
 /**
  * One detected region after layout analysis.
  * `rect` is in PDF page points; `bbox` is normalized 0–1 (same convention as

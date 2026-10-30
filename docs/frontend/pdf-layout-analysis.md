@@ -358,7 +358,7 @@ type PdfLayoutRegion = {
 
 章节、段落锚点按原始 `layout.json` 枚举，先使用页码与阅读顺序确定归属及编号，再做查询筛选；Figures 侧栏的过滤、去重和排序不参与编号。`layout list --kind paragraph` 返回正文与可用 fragment，查询和导航的规则见 [CLI 文档](../backend/cli.md) 与 [PDF 阅读](pdf.md)。模板的 `paper-reader`、`agentero-cli`（含 Windows）及新 Vault 的 `AGENTS.md` 已加入查询后引用的要求，并更新各自版本；已有用户 `AGENTS.md` 保持创建时写入规则，不覆盖用户内容。
 
-双栏锚点（#877）：部分 MinerU / Paddle 结果的 `readingOrder` 只有纵坐标顺序，会把右栏标题后紧接的左栏正文误归属。Host 与补全共用一致的几何规则：正文水平区间之间至少 0.01 页宽的间隙、两侧正文垂直重叠，才认定为双栏；宽度超过 0.6 页宽的正文不参与栏间隙检测。通栏块分隔上下带，每带左栏读完再读右栏；无证据或坐标不完整时保留原顺序。读取时修正，不改写用户 sidecar，不需要重跑模型。真实回归样例为 EasySteer（2509.25175）第 3–4 页：`#4.2.1#p1` 对应 “Direct modification…”、`#3.2#p1` 对应 “Learning-based steering…”；同时覆盖下一页跨栏续段。前端补全与 Rust 查询 / citation 使用同一份夹具校验章节归属、段落编号及原始 bbox。
+双栏锚点（#877）：部分 MinerU / Paddle 结果的 `readingOrder` 只有纵坐标顺序，会把右栏标题后紧接的左栏正文误归属。Host 与补全共用一致的几何规则：正文水平区间之间至少 0.01 页宽的间隙、两侧正文垂直重叠，才认定为双栏；宽度超过 0.6 页宽的正文不参与栏间隙检测。通栏块分隔上下带，每带左栏读完再读右栏；无证据或坐标不完整时保留原顺序。读取时修正，不改写用户 sidecar，不需要重跑模型。真实回归样例为 EasySteer（2509.25175）第 3–4 页：`#4.2.1#p1` 对应 “Direct modification…”、`#3.2#p1` 对应 “Learning-based steering…”；同时覆盖下一页跨栏续段。前端补全与 Rust 查询 / citation 使用同一份夹具校验章节归属、段落编号及原始 bbox。前端锚点枚举和阅读顺序模块的共用区域类型放在 `layout/types.ts`，保持模块单向依赖（包括 type-only import），由 `pnpm deps:check` 检查。
 
 该规则参考 [PyMuPDF4LLM 的分带 / 分栏阅读顺序](https://github.com/pymupdf/pymupdf4llm/blob/main/src/helpers/utils.py)；继续复用已有正文块与坐标，不引入其 Python / PDF 解析运行时。当前修正覆盖有清晰栏间隙的双栏页，复杂多栏、重叠框和栏结构在同页变更仍需进一步评估。
 

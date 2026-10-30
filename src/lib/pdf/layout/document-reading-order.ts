@@ -1,4 +1,4 @@
-import type { DocumentAnchorRegion } from "./document-anchors";
+import type { DocumentAnchorRegion } from "./types";
 
 type Box = NonNullable<DocumentAnchorRegion["bbox"]>;
 type BoxedRegion = DocumentAnchorRegion & { bbox: Box };

@@ -1,4 +1,5 @@
 import { documentReadingOrder } from "./document-reading-order";
+import type { DocumentAnchorRegion } from "./types";
 
 /**
  * Numbered PDF sections and the paragraphs they own.
@@ -9,15 +10,7 @@ import { documentReadingOrder } from "./document-reading-order";
  * and ambiguous duplicate section numbers.
  */
 
-export type DocumentAnchorRegion = {
-	id: string;
-	pageIndex: number;
-	kind: string;
-	title?: string;
-	text?: string;
-	readingOrder?: number;
-	bbox?: { x: number; y: number; w: number; h: number };
-};
+export type { DocumentAnchorRegion } from "./types";
 
 export type DocumentAnchor = {
 	id: string;
