@@ -25,6 +25,9 @@
 打开论文 PDF（含非 active 的已挂载 tab）→ enqueue 到后台任务队列
         │  多篇并行打开：都进左下角任务列表
         │  本地 ONNX：JobCenter layoutAnalyze cap=1（避免抢模型）
+        │  查看器与 headless 共用一个 AiRuntime。插件销毁不能 release 这个
+        │  ONNX session，否则另一路推理报 invalid session id
+        │  （[pdf-layout-shared-onnx-session](../bug_fix/pdf-layout-shared-onnx-session.md)）
         │  远程 Provider（Paddle / MinerU）：无 JobCenter 并发上限（远端排队）；进度事件用 requestId 隔离
         │  实现：viewer mount 调 `enqueuePaperLayoutAnalysis`（与入库后同一路径）
         │  终态 `job_report` / 取消必须释放该 cap，否则后续任务会一直排队

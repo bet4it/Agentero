@@ -25,12 +25,23 @@ export function getPdfAiRuntime(): AiRuntime {
 					},
 				}
 			: undefined;
-		runtime = createAiRuntime({
+		const shared = createAiRuntime({
 			backend: "auto",
 			// Disk-managed in Tauri; keep Cache API only for plain browser.
 			cache: !isTauri(),
 			models,
 		});
+		// Viewer unmount and the headless registry both call `runtime.destroy()`,
+		// which releases the ONNX session. A second in-flight layout job then
+		// fails with "cannot run inference. invalid session id". This runtime
+		// lives for the app; plugin teardown must not drop it.
+		runtime = new Proxy(shared, {
+			get(target, prop, receiver) {
+				if (prop === "destroy") return () => Promise.resolve();
+				const value = Reflect.get(target, prop, receiver);
+				return typeof value === "function" ? value.bind(target) : value;
+			},
+		}) as AiRuntime;
 	}
 	return runtime;
 }
