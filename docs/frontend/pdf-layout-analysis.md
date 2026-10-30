@@ -353,3 +353,9 @@ type PdfLayoutRegion = {
 - **模型级整面板误标仍会漏图**（merge 层无法救回，页上没有可用 image/chart 检测）：ViT 附录 Fig 14（注意力图网格被标 `header` 0.91，同框 `image` 仅 0.05）、Transformer 附录 Fig 4（注意力可视化被标 `table` 0.88）。四篇论文（resnet / vit / transformer / swin，单双栏混合）实测图题召回 28/30 ≈ 93%，在容忍范围内；后续如换更强检测模型可回归 `test/pdf-layout-arxiv.test.ts` 复核。
 - **真实 PDF smoke test（opt-in，默认跳过）**：`test/pdf-layout-arxiv.test.ts`，需 `AGENTERO_LAYOUT_PDF_DIR`（放 `<name>.pdf`）+ `AGENTERO_LAYOUT_MODEL`（pp-doclayoutv3.onnx 路径），`AGENTERO_LAYOUT_PDFS` 逗号分隔指定论文名（默认 `resnet,vit`）。逐页输出渲染 PNG、合并后 bbox 叠加 PNG 与 `*-detections.json`，供 before/after 回归对比（`/tmp/agentero-bbox-validation/compare.mjs` 为临时脚本，不在仓库内）。
 - 后续：最终 figure sidecar、自动分析、一键视觉批注。
+
+## 正文块引用与后续
+
+章节、段落锚点按原始 `layout.json` 枚举，先使用页码与阅读顺序确定归属及编号，再做查询筛选；Figures 侧栏的过滤、去重和排序不参与编号。`layout list --kind paragraph` 返回正文与可用 fragment，查询和导航的规则见 [CLI 文档](../backend/cli.md) 与 [PDF 阅读](pdf.md)。模板的 `paper-reader`、`agentero-cli`（含 Windows）及新 Vault 的 `AGENTS.md` 已加入查询后引用的要求，并更新各自版本；已有用户 `AGENTS.md` 保持创建时写入规则，不覆盖用户内容。
+
+后续范围：句子级锚点、跨页自然段重建、PDF 替换后旧锚点恢复。首版仅支持有明确编号且编号唯一的章节下的正文块；未编号章节与重复编号不推测段落锚点。
