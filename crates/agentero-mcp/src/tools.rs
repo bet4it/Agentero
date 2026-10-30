@@ -136,7 +136,7 @@ fn default_true() -> bool {
 #[serde(rename_all = "camelCase")]
 struct LayoutListArgs {
     r#ref: String,
-    /// Filter kinds: figure|image|chart|table|algorithm|formula (OR).
+    /// Filter kinds: figure|image|chart|table|algorithm|formula|section|paragraph (OR).
     #[serde(default)]
     kind: Vec<String>,
     #[serde(default)]
@@ -151,7 +151,7 @@ struct LayoutListArgs {
 #[serde(rename_all = "camelCase")]
 struct LayoutGetArgs {
     r#ref: String,
-    /// Region id from layout_list (e.g. figure-3).
+    /// Region id or exact anchor from layout_list (e.g. figure-3 or #2.1#p3).
     id: String,
 
     /// Optional absolute local vault path from `vault_list`; defaults to the open vault.
@@ -987,7 +987,7 @@ impl AgenteroMcp {
     }
 
     #[tool(
-        description = "List sidebar layout regions (figures/tables/algorithms/formulas) from layout-index.json. Requires desktop layout analysis first."
+        description = "List layout regions; kind=section or paragraph reads layout.json and returns exact PDF anchors, original text, ownership and coordinates. Other kinds use layout-index.json. Requires desktop layout analysis."
     )]
     async fn layout_list(
         &self,
@@ -1003,7 +1003,9 @@ impl AgenteroMcp {
         }
     }
 
-    #[tool(description = "Get one layout region by id (e.g. figure-3) from layout-index.json.")]
+    #[tool(
+        description = "Get one layout region by id (e.g. figure-3) or exact published PDF anchor (e.g. #2.1#p3)."
+    )]
     async fn layout_get(
         &self,
         Parameters(args): Parameters<LayoutGetArgs>,

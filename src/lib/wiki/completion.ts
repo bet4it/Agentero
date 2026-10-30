@@ -1,4 +1,5 @@
 import type { WikiSearchCandidate } from "@/lib/wiki";
+import { parseWikiLinkMarkdown } from "@/lib/wiki/wikilink-model";
 
 export type WikiCompletionRequest =
 	| { kind: "file"; query: string }
@@ -221,6 +222,118 @@ export function wikiCompletionInsert(
 			hash < 0 ? undefined : candidate.insertText.slice(hash + 1) || undefined,
 		alias: displayAlias,
 	};
+}
+
+/**
+ * Tab on a PDF section keeps the trigger open for paragraphs: `file.pdf#2`
+ * becomes `file.pdf#2#`. Enter writes the section anchor and closes.
+ */
+export function wikiCompletionHeadingForSubmit(
+	insert: WikiCompletionInsert,
+	candidate: { pdfSection?: boolean },
+	submitKey: "Enter" | "Tab",
+): WikiCompletionInsert {
+	if (
+		submitKey !== "Tab" ||
+		!candidate.pdfSection ||
+		!insert.heading ||
+		insert.heading.endsWith("#")
+	) {
+		return insert;
+	}
+	return { ...insert, heading: `${insert.heading}#` };
+}
+
+/** The bottom hint switches once the link target is a PDF, not a Markdown note. */
+export function wikiCompletionUsesPdfHint(
+	request: WikiCompletionRequest | null,
+	selected: Pick<WikiSearchCandidate, "path" | "insertText"> | null,
+): boolean {
+	if (!request) return false;
+	if ("target" in request && request.target.toLowerCase().endsWith(".pdf")) {
+		return true;
+	}
+	if (request.kind !== "file") return false;
+	if (request.query.trim().toLowerCase().endsWith(".pdf")) return true;
+	const path = selected?.path.toLowerCase() ?? "";
+	const insertText = selected?.insertText.toLowerCase() ?? "";
+	return path.endsWith(".pdf") || insertText.endsWith(".pdf");
+}
+
+/**
+ * Tab on an unfinished fragment (`file.pdf#2#`) must stay source text.
+ * `parseWikiLinkMarkdown` rejects a trailing `#`, so applying it as a link
+ * node deletes the text and then has nothing to put back.
+ */
+export function wikiTabKeepsSourceDraft(markdown: string): boolean {
+	return parseWikiLinkMarkdown(markdown) === null;
+}
+
+type WikiCaretPoint = { path: number[]; offset: number };
+
+/**
+ * Replace the live `[[…]]` token without removing its leaf first.
+ * `file.pdf#` + Tab becomes `file.pdf#2#`, which is not a finished link;
+ * deleting the token and then failing to insert that text clears the input.
+ * The caret lands before the closing `]]` so the next query can continue.
+ */
+export function replaceWikiCompletionToken(
+	editor: {
+		selection: { anchor: WikiCaretPoint } | null;
+		api: {
+			node: (path: number[]) => [unknown, number[]] | undefined;
+		};
+		tf: {
+			withoutNormalizing: (fn: () => void) => void;
+			insertText: (
+				text: string,
+				options: { at: { anchor: WikiCaretPoint; focus: WikiCaretPoint } },
+			) => void;
+			select: (range: {
+				anchor: WikiCaretPoint;
+				focus: WikiCaretPoint;
+			}) => void;
+		};
+	},
+	range: { anchor: WikiCaretPoint; focus: WikiCaretPoint },
+	markdown: string,
+): void {
+	editor.tf.withoutNormalizing(() => {
+		editor.tf.insertText(markdown, { at: range });
+	});
+	const point = editor.selection?.anchor;
+	if (!point) return;
+	const entry = editor.api.node(point.path);
+	const text =
+		entry && typeof (entry[0] as { text?: unknown }).text === "string"
+			? (entry[0] as { text: string }).text
+			: "";
+	const at = text.lastIndexOf(markdown);
+	if (at < 0) return;
+	const offset = at + Math.max(markdown.length - 2, 0);
+	const caret = { path: point.path, offset };
+	editor.tf.select({ anchor: caret, focus: caret });
+}
+
+/**
+ * Tab stays in the menu only while the next query is the same kind and the
+ * chosen fragment is not a finished paragraph (`…#pN`).
+ */
+export function wikiTabContinuesCompletion(
+	candidate: Pick<WikiSearchCandidate, "kind" | "path" | "fragment">,
+	next: WikiCompletionRequest | null,
+): boolean {
+	if (!next || candidate.kind !== next.kind) return false;
+	// A finished PDF paragraph (`2#p1`) has nothing further to complete.
+	// Markdown headings keep the existing Tab-to-children behavior.
+	if (
+		candidate.path.toLowerCase().endsWith(".pdf") &&
+		candidate.fragment?.kind === "heading" &&
+		candidate.fragment.path.some((part) => /^p\d+$/.test(part))
+	) {
+		return false;
+	}
+	return true;
 }
 
 function normalizedCompletionText(value: string): string {

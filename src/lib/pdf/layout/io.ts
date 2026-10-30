@@ -214,6 +214,24 @@ export function layoutSidecarNeedsTextLayer(
 	);
 }
 
+type LayoutWriteListener = (paperAbsPath: string) => void;
+
+const layoutWriteListeners = new Set<LayoutWriteListener>();
+
+/** Completion caches parsed anchors; layout writes drop that cache. */
+export function subscribeLayoutSidecarWrite(
+	listener: LayoutWriteListener,
+): () => void {
+	layoutWriteListeners.add(listener);
+	return () => {
+		layoutWriteListeners.delete(listener);
+	};
+}
+
+function notifyLayoutSidecarWrite(paperAbsPath: string): void {
+	for (const listener of layoutWriteListeners) listener(paperAbsPath);
+}
+
 export async function readLayoutSidecar(
 	paperAbsPath: string | null | undefined,
 ): Promise<PdfLayoutSidecar | null> {
@@ -251,6 +269,7 @@ export async function writeLayoutSidecar(
 		layoutSidecarPath(paperAbsPath),
 		`${JSON.stringify(sidecar, null, 2)}\n`,
 	);
+	notifyLayoutSidecarWrite(paperAbsPath);
 }
 
 function layoutRectEqual(
@@ -325,6 +344,7 @@ export async function writeLayoutTextBackfill(
 		layoutSidecarPath(paperAbsPath),
 		`${JSON.stringify(sidecar, null, 2)}\n`,
 	);
+	notifyLayoutSidecarWrite(paperAbsPath);
 	return true;
 }
 

@@ -170,6 +170,11 @@ export type WikiSearchCandidate = {
 	/** Display alias chosen by the user; `insertText` stays canonical. */
 	alias?: string;
 	fragment?: LinkFragment;
+	/**
+	 * Local PDF section hit. Tab leaves a trailing `#` so paragraph
+	 * candidates (`section#pN`) can follow. Host search never sets this.
+	 */
+	pdfSection?: boolean;
 };
 
 export type RebuildResult = {

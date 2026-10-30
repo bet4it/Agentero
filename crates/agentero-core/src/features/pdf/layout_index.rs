@@ -8,6 +8,8 @@ use serde::Serialize;
 use serde_json::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex, OnceLock};
+use std::time::SystemTime;
 
 pub const LAYOUT_INDEX_FILE: &str = "layout-index.json";
 pub const LAYOUT_RAW_FILE: &str = "layout.json";
@@ -26,6 +28,15 @@ pub struct LayoutIndexItem {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
     pub layout_region_id: String,
+    /// Copy this fragment verbatim onto the paper PDF path.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub anchor: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub section_anchor: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paragraph_index: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, specta::Type)]
@@ -56,11 +67,13 @@ pub struct RawLayoutRegion {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
     pub bbox: Bbox,
+    pub reading_order: Option<u32>,
+    pub score: f64,
 }
 
 /// Ordered raw regions for a paper. Order follows document reading order
 /// (page then top-to-bottom) so a caller can page through a paper naturally.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RawLayout {
     pub regions: Vec<RawLayoutRegion>,
 }
@@ -77,6 +90,9 @@ pub fn load_raw_layout(vault: &Path, paper_path: &str) -> Result<RawLayout, AppE
             ),
         ));
     }
+    if let Some(cached) = cached_raw_layout(&raw_path) {
+        return Ok(cached);
+    }
     let text = std::fs::read_to_string(&raw_path)
         .map_err(|e| AppError::message(format!("failed to read raw layout: {e}")))?;
     let value: Value = serde_json::from_str(&text)
@@ -87,13 +103,101 @@ pub fn load_raw_layout(vault: &Path, paper_path: &str) -> Result<RawLayout, AppE
         a.page_index
             .cmp(&b.page_index)
             .then_with(|| {
-                bbox_order(&a.bbox)
-                    .partial_cmp(&bbox_order(&b.bbox))
-                    .unwrap_or(std::cmp::Ordering::Equal)
+                a.reading_order
+                    .unwrap_or(u32::MAX)
+                    .cmp(&b.reading_order.unwrap_or(u32::MAX))
             })
+            .then_with(|| bbox_order(&a.bbox).total_cmp(&bbox_order(&b.bbox)))
             .then_with(|| a.id.cmp(&b.id))
     });
-    Ok(RawLayout { regions })
+    let layout = RawLayout { regions };
+    store_raw_layout(&raw_path, &layout);
+    Ok(layout)
+}
+
+struct LayoutCacheEntry {
+    modified: SystemTime,
+    len: u64,
+    layout: RawLayout,
+    /// Anchors enumerated once per file stamp. Citation checks clone this
+    /// `Arc` instead of parsing `layout.json` and walking every region again.
+    anchors: Arc<Vec<LayoutIndexItem>>,
+}
+
+fn layout_cache() -> &'static Mutex<std::collections::HashMap<PathBuf, LayoutCacheEntry>> {
+    static CACHE: OnceLock<Mutex<std::collections::HashMap<PathBuf, LayoutCacheEntry>>> =
+        OnceLock::new();
+    CACHE.get_or_init(|| Mutex::new(std::collections::HashMap::new()))
+}
+
+fn layout_fingerprint(path: &Path) -> Option<(SystemTime, u64)> {
+    let meta = fs::metadata(path).ok()?;
+    Some((meta.modified().ok()?, meta.len()))
+}
+
+/// Tests rewrite fixtures in place; a process-wide cache would hide that.
+fn cached_raw_layout(path: &Path) -> Option<RawLayout> {
+    if cfg!(test) {
+        return None;
+    }
+    let (modified, len) = layout_fingerprint(path)?;
+    let guard = layout_cache().lock().ok()?;
+    let hit = guard.get(path)?;
+    if hit.modified == modified && hit.len == len {
+        Some(hit.layout.clone())
+    } else {
+        None
+    }
+}
+
+fn cached_anchors(path: &Path) -> Option<Arc<Vec<LayoutIndexItem>>> {
+    if cfg!(test) {
+        return None;
+    }
+    let (modified, len) = layout_fingerprint(path)?;
+    let guard = layout_cache().lock().ok()?;
+    let hit = guard.get(path)?;
+    if hit.modified == modified && hit.len == len {
+        Some(Arc::clone(&hit.anchors))
+    } else {
+        None
+    }
+}
+
+fn store_raw_layout(path: &Path, layout: &RawLayout) {
+    if cfg!(test) {
+        return;
+    }
+    let Some((modified, len)) = layout_fingerprint(path) else {
+        return;
+    };
+    if let Ok(mut guard) = layout_cache().lock() {
+        guard.insert(
+            path.to_path_buf(),
+            LayoutCacheEntry {
+                modified,
+                len,
+                layout: layout.clone(),
+                anchors: Arc::new(enumerate_document_anchors(layout)),
+            },
+        );
+    }
+}
+
+fn document_anchor_items(
+    vault: &Path,
+    paper_path: &str,
+) -> Result<Arc<Vec<LayoutIndexItem>>, AppError> {
+    let dir = paper_abs(vault, paper_path)?;
+    let raw_path = dir.join("source").join(LAYOUT_RAW_FILE);
+    if let Some(cached) = cached_anchors(&raw_path) {
+        return Ok(cached);
+    }
+    let layout = load_raw_layout(vault, paper_path)?;
+    if let Some(cached) = cached_anchors(&raw_path) {
+        return Ok(cached);
+    }
+    Ok(Arc::new(enumerate_document_anchors(&layout)))
 }
 
 fn bbox_order(b: &Bbox) -> f64 {
@@ -230,6 +334,11 @@ fn parse_raw_region(v: &Value) -> Option<RawLayoutRegion> {
         title,
         text,
         bbox,
+        reading_order: v
+            .get("readingOrder")
+            .and_then(Value::as_u64)
+            .and_then(|n| n.try_into().ok()),
+        score: v.get("score").and_then(Value::as_f64).unwrap_or(1.0),
     })
 }
 
@@ -242,6 +351,7 @@ pub struct LayoutCounts {
     pub algorithm: usize,
     pub formula: usize,
     pub section: usize,
+    pub paragraph: usize,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -402,6 +512,10 @@ fn parse_item(v: &Value) -> Option<LayoutIndexItem> {
         score,
         title,
         layout_region_id,
+        anchor: None,
+        section_anchor: None,
+        paragraph_index: None,
+        text: None,
     })
 }
 
@@ -414,14 +528,13 @@ pub fn normalize_kind_filters(kinds: &[String]) -> Result<Vec<String>, AppError>
             continue;
         }
         match t.as_str() {
-            "figure" | "image" | "chart" | "table" | "algorithm" | "formula" | "section" => {
-                out.push(t)
-            }
+            "figure" | "image" | "chart" | "table" | "algorithm" | "formula" | "section"
+            | "paragraph" => out.push(t),
             other => {
                 return Err(AppError::domain(
                     "usage",
                     format!(
-                        "unknown kind '{other}' (use figure|image|chart|table|algorithm|formula|section)"
+                        "unknown kind '{other}' (use figure|image|chart|table|algorithm|formula|section|paragraph)"
                     ),
                 ));
             }
@@ -434,7 +547,7 @@ fn item_matches_filters(item: &LayoutIndexItem, filters: &[String]) -> bool {
     filters.iter().any(|f| match f.as_str() {
         "figure" => item.section == "figure",
         "image" | "chart" | "table" | "algorithm" | "formula" => item.kind == *f,
-        "section" => item.section == "section",
+        "section" | "paragraph" => item.section == *f,
         _ => false,
     })
 }
@@ -451,75 +564,182 @@ fn count_items(items: &[LayoutIndexItem]) -> LayoutCounts {
             "algorithm" => c.algorithm += 1,
             "formula" => c.formula += 1,
             "section" => c.section += 1,
+            "paragraph" => c.paragraph += 1,
             _ => {}
         }
     }
     c
 }
 
-/// Load paragraph/section title regions from the raw `layout.json`.
-///
-/// These are not stored in `layout-index.json` (which only keeps figures /
-/// tables / algorithms / formulas), but they are useful for citations and
-/// navigation, so we merge them on demand when `--kind section` is requested.
-fn load_section_headers(vault: &Path, paper_path: &str) -> Result<Vec<LayoutIndexItem>, AppError> {
-    let dir = paper_abs(vault, paper_path)?;
-    let raw_path = dir.join("source").join(LAYOUT_RAW_FILE);
-    if !raw_path.is_file() {
-        return Ok(Vec::new());
-    }
-    let text = fs::read_to_string(&raw_path)
-        .map_err(|e| AppError::message(format!("failed to read raw layout: {e}")))?;
-    let value: Value = serde_json::from_str(&text)
-        .map_err(|e| AppError::message(format!("invalid raw layout json: {e}")))?;
-    let arr = value
-        .get("regions")
-        .and_then(|v| v.as_array())
-        .ok_or_else(|| {
-            AppError::domain("layout_raw_invalid", "layout.json missing regions array")
-        })?;
-
+/// Numbered headings and directly-owned body blocks, before any score/UI filter.
+/// Unnumbered headers still delimit ownership: their body must not leak into
+/// the preceding numbered section. Subsections own their own counter.
+fn enumerate_document_anchors(layout: &RawLayout) -> Vec<LayoutIndexItem> {
     let mut items = Vec::new();
-    for entry in arr.iter() {
-        let kind = entry.get("kind").and_then(|v| v.as_str()).unwrap_or("");
-        if kind != "header" {
+    let mut section_anchor: Option<String> = None;
+    let mut paragraph_index = 0u32;
+    for region in super::document_reading_order::document_reading_order(&layout.regions) {
+        let (kind, anchor, ordinal) = if region.kind == "header" {
+            section_anchor = region
+                .title
+                .as_deref()
+                .filter(|s| !s.trim().is_empty())
+                .or(region.text.as_deref())
+                .and_then(section_number);
+            paragraph_index = 0;
+            ("section", section_anchor.clone(), None)
+        } else if matches!(region.kind.as_str(), "text" | "paragraph")
+            && region.text.as_deref().is_some_and(|s| !s.trim().is_empty())
+        {
+            let Some(section) = section_anchor.as_ref() else {
+                continue;
+            };
+            paragraph_index += 1;
+            (
+                "paragraph",
+                Some(format!("{section}#p{paragraph_index}")),
+                Some(paragraph_index),
+            )
+        } else {
             continue;
-        }
-        let id = entry.get("id").and_then(|v| v.as_str()).unwrap_or("");
-        if id.is_empty() {
-            continue;
-        }
-        let page_index = entry.get("pageIndex").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
-        let score = entry.get("score").and_then(|v| v.as_f64()).unwrap_or(1.0);
-        let title = entry
-            .get("title")
-            .or_else(|| entry.get("text"))
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string())
-            .filter(|s| !s.is_empty());
-        let Some(bbox_v) = entry.get("bbox") else {
-            continue;
-        };
-        let bbox = Bbox {
-            x: bbox_v.get("x").and_then(|v| v.as_f64()).unwrap_or(0.0),
-            y: bbox_v.get("y").and_then(|v| v.as_f64()).unwrap_or(0.0),
-            w: bbox_v.get("w").and_then(|v| v.as_f64()).unwrap_or(0.0),
-            h: bbox_v.get("h").and_then(|v| v.as_f64()).unwrap_or(0.0),
         };
         items.push(LayoutIndexItem {
-            id: id.to_string(),
-            stable_key: id.to_string(),
-            kind: "section".to_string(),
-            section: "section".to_string(),
-            page: page_index + 1,
-            page_index,
-            bbox,
-            score,
-            title,
-            layout_region_id: id.to_string(),
+            id: region.id.clone(),
+            stable_key: region.id.clone(),
+            kind: kind.into(),
+            section: kind.into(),
+            page: region.page_index + 1,
+            page_index: region.page_index,
+            bbox: region.bbox.clone(),
+            score: region.score,
+            title: region.title.clone(),
+            layout_region_id: region.id.clone(),
+            anchor: anchor.map(|s| format!("#{s}")),
+            section_anchor: section_anchor.as_ref().map(|s| format!("#{s}")),
+            paragraph_index: ordinal,
+            text: region.text.clone(),
         });
     }
-    Ok(items)
+    items
+}
+
+/// Only advertise fragments whose owning section is unique in this result.
+pub fn document_anchors(layout: &RawLayout) -> Vec<LayoutIndexItem> {
+    let mut items = enumerate_document_anchors(layout);
+    let mut counts = std::collections::HashMap::new();
+    for item in &items {
+        if item.kind == "section" {
+            if let Some(anchor) = &item.anchor {
+                *counts.entry(anchor.clone()).or_insert(0) += 1;
+            }
+        }
+    }
+    for item in &mut items {
+        if item
+            .section_anchor
+            .as_ref()
+            .is_some_and(|a| counts.get(a).copied().unwrap_or(0) > 1)
+        {
+            item.anchor = None;
+        }
+    }
+    items
+}
+
+/// Explicit Arabic hierarchy or an IEEE Roman top-level marker. Never fuzzy
+/// match a numeric substring (2 must not resolve to 2.1, 12 or an arXiv id).
+fn section_number(title: &str) -> Option<String> {
+    let trimmed = title.trim_start();
+    let numeric: String = trimmed
+        .chars()
+        .take_while(|c| c.is_ascii_digit() || *c == '.')
+        .collect();
+    let number = numeric.trim_end_matches('.');
+    let boundary = trimmed.get(numeric.len()..).unwrap_or("");
+    if !number.is_empty()
+        && (boundary.is_empty()
+            || boundary.starts_with(char::is_whitespace)
+            || boundary.starts_with([':', ')'])
+            || numeric.ends_with('.'))
+        && number
+            .split('.')
+            .all(|p| !p.is_empty() && p.bytes().all(|b| b.is_ascii_digit()))
+    {
+        return Some(
+            number
+                .split('.')
+                .map(|p| p.parse::<u32>().ok().map(|n| n.to_string()))
+                .collect::<Option<Vec<_>>>()?
+                .join("."),
+        );
+    }
+    // Try compact dotted OCR markers, then a normal whitespace-delimited
+    // marker. A later dot in the heading text is not a marker boundary.
+    let roman = [
+        "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv",
+        "xv", "xvi", "xvii", "xviii", "xix", "xx",
+    ];
+    let roman_number = |marker: &str| {
+        roman
+            .iter()
+            .position(|r| *r == marker.to_ascii_lowercase())
+            .map(|n| (n + 1).to_string())
+    };
+    let compact: String = trimmed.chars().filter(|c| !c.is_whitespace()).collect();
+    if let Some((marker, _)) = compact.split_once('.') {
+        if let Some(number) = roman_number(marker) {
+            return Some(number);
+        }
+    }
+    roman_number(
+        trimmed
+            .split_whitespace()
+            .next()?
+            .trim_end_matches(['.', ':', ')']),
+    )
+}
+
+/// Resolve the exact, published fragment. Duplicate headings (including their
+/// paragraphs) are ambiguous; no positional or confidence-based fallback.
+pub fn resolve_document_anchor(
+    vault: &Path,
+    paper_path: &str,
+    fragment: &str,
+) -> Result<LayoutIndexItem, AppError> {
+    let items = document_anchor_items(vault, paper_path)?;
+    let anchor = format!("#{}", fragment.strip_prefix('#').unwrap_or(fragment));
+    let section = anchor.split("#p").next().unwrap_or(&anchor);
+    if items
+        .iter()
+        .filter(|i| i.kind == "section" && i.anchor.as_deref() == Some(section))
+        .count()
+        > 1
+    {
+        return Err(AppError::domain(
+            "citation_anchor_ambiguous",
+            format!("ambiguous PDF section `{section}`"),
+        ));
+    }
+    let matches: Vec<_> = items
+        .iter()
+        .filter(|i| i.anchor.as_deref() == Some(anchor.as_str()))
+        .cloned()
+        .collect();
+    match matches.len() {
+        1 => Ok(matches.into_iter().next().unwrap()),
+        0 => Err(AppError::domain(
+            "citation_anchor_not_found",
+            format!("no PDF anchor `{anchor}`"),
+        )),
+        _ => Err(AppError::domain(
+            "citation_anchor_ambiguous",
+            format!("ambiguous PDF anchor `{anchor}`"),
+        )),
+    }
+}
+
+fn load_document_anchors(vault: &Path, paper_path: &str) -> Result<Vec<LayoutIndexItem>, AppError> {
+    Ok(document_anchors(&load_raw_layout(vault, paper_path)?))
 }
 
 /// List regions with optional kind filters and min score.
@@ -529,27 +749,44 @@ pub fn list_regions(
     kinds: &[String],
     min_score: Option<f64>,
 ) -> Result<LayoutListResult, AppError> {
-    let loaded = load_index(vault, paper_path)?;
-    let threshold = min_score.unwrap_or(loaded.file_min_score);
     let filters = normalize_kind_filters(kinds)?;
+    let raw_only = !filters.is_empty()
+        && filters
+            .iter()
+            .all(|f| matches!(f.as_str(), "section" | "paragraph"));
+    let loaded = if raw_only {
+        // Body anchors do not depend on the optional sidebar index.
+        LoadedIndex {
+            index_path: format!("{paper_path}/source/{LAYOUT_RAW_FILE}"),
+            generated_at: String::new(),
+            file_min_score: 0.3,
+            items: Vec::new(),
+        }
+    } else {
+        load_index(vault, paper_path)?
+    };
+    let threshold = min_score.unwrap_or(loaded.file_min_score);
     let mut items = loaded.items;
-    items.retain(|i| i.score + f64::EPSILON >= threshold);
-    if !filters.is_empty() {
-        items.retain(|i| item_matches_filters(i, &filters));
+    if filters
+        .iter()
+        .any(|f| matches!(f.as_str(), "section" | "paragraph"))
+    {
+        items.extend(load_document_anchors(vault, paper_path)?);
     }
-
-    // Merge section headers from layout.json when explicitly requested.
-    if filters.iter().any(|f| f == "section") {
-        let mut headers = load_section_headers(vault, paper_path)?;
-        headers.retain(|i| i.score + f64::EPSILON >= threshold);
-        items.append(&mut headers);
+    // Enumeration always precedes filtering, so low confidence blocks still
+    // reserve their paragraph ordinal.
+    items.retain(|i| {
+        i.score + f64::EPSILON >= threshold
+            && (filters.is_empty() || item_matches_filters(i, &filters))
+    });
+    if filters
+        .iter()
+        .any(|f| matches!(f.as_str(), "section" | "paragraph"))
+    {
         items.sort_by(|a, b| {
-            a.page_index.cmp(&b.page_index).then_with(|| {
-                a.bbox
-                    .y
-                    .partial_cmp(&b.bbox.y)
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            })
+            a.page_index
+                .cmp(&b.page_index)
+                .then_with(|| a.bbox.y.total_cmp(&b.bbox.y))
         });
     }
 
@@ -570,21 +807,44 @@ pub fn get_region(
     paper_path: &str,
     region_id: &str,
 ) -> Result<LayoutGetResult, AppError> {
-    let loaded = load_index(vault, paper_path)?;
-    let item = loaded
-        .items
-        .into_iter()
-        .find(|i| i.id == region_id)
-        .ok_or_else(|| {
-            AppError::domain(
-                "layout_region_not_found",
-                format!("no layout region id '{region_id}'"),
-            )
-        })?;
+    let (item, index_path, generated_at) = if region_id.starts_with('#') {
+        (
+            resolve_document_anchor(vault, paper_path, region_id)?,
+            format!("{paper_path}/source/{LAYOUT_RAW_FILE}"),
+            String::new(),
+        )
+    } else {
+        match load_index(vault, paper_path) {
+            Ok(loaded) if loaded.items.iter().any(|i| i.id == region_id) => {
+                let item = loaded
+                    .items
+                    .into_iter()
+                    .find(|i| i.id == region_id)
+                    .unwrap();
+                (item, loaded.index_path, loaded.generated_at)
+            }
+            result => {
+                let raw_items = load_document_anchors(vault, paper_path);
+                let item = raw_items?.into_iter().find(|i| i.id == region_id);
+                let item = item.ok_or_else(|| match result {
+                    Err(e) => e,
+                    Ok(_) => AppError::domain(
+                        "layout_region_not_found",
+                        format!("no layout region id '{region_id}'"),
+                    ),
+                })?;
+                (
+                    item,
+                    format!("{paper_path}/source/{LAYOUT_RAW_FILE}"),
+                    String::new(),
+                )
+            }
+        }
+    };
     Ok(LayoutGetResult {
         paper_path: paper_path.to_string(),
-        index_path: loaded.index_path,
-        generated_at: loaded.generated_at,
+        index_path,
+        generated_at,
         item,
     })
 }
@@ -808,5 +1068,82 @@ mod tests {
         // No match at all -> None.
         assert_eq!(page_map(&layout, "absent keyword"), None);
         assert_eq!(page_map(&layout, ""), None);
+    }
+    #[test]
+    fn paragraph_anchors_follow_reading_order_and_survive_filtering() {
+        let dir = tempdir().unwrap();
+        let paper = dir.path().join("papers/p1");
+        let region = |id: &str, kind: &str, order: u32, text: &str, score: f64| {
+            serde_json::json!({
+                "id": id, "pageIndex": 0, "readingOrder": order, "kind": kind,
+                "text": text, "score": score, "bbox": {"x":0.1,"y":0.5,"w":0.3,"h":0.1}
+            })
+        };
+        let regions = vec![
+            region("subbody", "text", 4, "subsection body", 0.9),
+            region("h", "header", 0, "2 Method", 0.9),
+            region("p2", "text", 2, "second direct block", 0.9),
+            region("p1", "text", 1, "low confidence first block", 0.1),
+            region("sub", "header", 3, "2.1 Details", 0.9),
+            region("next", "header", 5, "3 Results", 0.9),
+            region("nextbody", "text", 6, "results body", 0.9),
+            region("end", "header", 7, "References", 0.9),
+            region("ref", "text", 8, "not section 3", 0.9),
+        ];
+        write_raw_layout(&paper, &serde_json::json!({"regions":regions}).to_string());
+        let listed =
+            list_regions(dir.path(), "papers/p1", &["paragraph".into()], Some(0.5)).unwrap();
+        assert_eq!(listed.items.len(), 3);
+        assert!(listed
+            .items
+            .iter()
+            .any(|i| i.anchor.as_deref() == Some("#2#p2") && i.id == "p2"));
+        assert!(!listed.items.iter().any(|i| i.id == "ref"));
+        for (anchor, id) in [
+            ("#2#p1", "p1"),
+            ("#2#p2", "p2"),
+            ("#2.1#p1", "subbody"),
+            ("#3#p1", "nextbody"),
+        ] {
+            let first = get_region(dir.path(), "papers/p1", anchor).unwrap().item;
+            let reopened = get_region(dir.path(), "papers/p1", anchor).unwrap().item;
+            assert_eq!(first.id, id);
+            assert_eq!(first.id, reopened.id);
+            assert!(first.text.is_some());
+        }
+        assert!(get_region(dir.path(), "papers/p1", "#2#p3").is_err());
+        assert!(get_region(dir.path(), "papers/p1", "#2.10").is_err());
+    }
+
+    #[test]
+    fn duplicate_sections_fail_closed_even_for_unique_paragraph_ordinals() {
+        let dir = tempdir().unwrap();
+        let paper = dir.path().join("papers/p1");
+        write_raw_layout(
+            &paper,
+            r#"{"regions":[
+            {"id":"h1","pageIndex":0,"kind":"header","text":"2 Method","bbox":{"x":0,"y":0,"w":1,"h":0.1}},
+            {"id":"p1","pageIndex":0,"kind":"text","text":"body","bbox":{"x":0,"y":0.1,"w":1,"h":0.1}},
+            {"id":"h2","pageIndex":1,"kind":"header","text":"2 Other","bbox":{"x":0,"y":0,"w":1,"h":0.1}}
+        ]}"#,
+        );
+        let err = resolve_document_anchor(dir.path(), "papers/p1", "2#p1").unwrap_err();
+        assert_eq!(err.code(), "citation_anchor_ambiguous");
+        let listed = list_regions(dir.path(), "papers/p1", &["paragraph".into()], None).unwrap();
+        assert!(listed.items[0].anchor.is_none());
+    }
+    #[test]
+    fn section_markers_preserve_compact_roman_ocr_without_prefix_collisions() {
+        for title in ["III.Method", "III. M ETHOD", "I I I. Method", "III Method"] {
+            assert_eq!(section_number(title).as_deref(), Some("3"), "{title}");
+        }
+        assert_eq!(
+            section_number("I Preliminaries (e.g. notation)").as_deref(),
+            Some("1")
+        );
+        assert_eq!(section_number("2.1 Method").as_deref(), Some("2.1"));
+        assert_eq!(section_number("2.Method").as_deref(), Some("2"));
+        assert_eq!(section_number("Introduction"), None);
+        assert_eq!(section_number("arXiv:2504.16054v1"), None);
     }
 }

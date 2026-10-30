@@ -116,34 +116,49 @@ export function scheduleWikiRebuild(absPath: string): void {
 }
 
 /** Paths this app just wrote to disk; their watcher echoes skip the rebuild. */
-const selfWrittenPaths = new Map<string, number>();
+const selfWrittenPaths = new Map<
+	string,
+	{ expiresAt: number; content?: string }
+>();
 
 /** Watcher echoes of an app write settle well within this window. */
 const SELF_WRITE_ECHO_TTL_MS = 4000;
 
 /**
  * Remember a path this app wrote to disk so its watcher echo does not
- * re-trigger a full Wiki rebuild on every autosave. Only gates the rebuild
- * trigger; every other watcher consumer still sees the event.
+ * re-trigger a full Wiki rebuild on every autosave. `content`, when passed,
+ * lets editor reload ignore that same body even if the tab seed is still stale.
  */
-export function trackSelfWrittenPath(path: string): void {
-	selfWrittenPaths.set(
-		normalizeTabPath(path),
-		Date.now() + SELF_WRITE_ECHO_TTL_MS,
-	);
+export function trackSelfWrittenPath(path: string, content?: string): void {
+	selfWrittenPaths.set(normalizeTabPath(path), {
+		expiresAt: Date.now() + SELF_WRITE_ECHO_TTL_MS,
+		...(content !== undefined ? { content } : {}),
+	});
 }
 
-function isSelfWrittenPath(absPath: string): boolean {
+function selfWriteEcho(
+	absPath: string,
+): { expiresAt: number; content?: string } | null {
 	const now = Date.now();
 	const normalized = normalizeTabPath(absPath);
-	for (const [path, expiresAt] of selfWrittenPaths) {
-		if (expiresAt <= now) {
+	let matched: { expiresAt: number; content?: string } | null = null;
+	for (const [path, entry] of selfWrittenPaths) {
+		if (entry.expiresAt <= now) {
 			selfWrittenPaths.delete(path);
 			continue;
 		}
-		if (normalized === path) return true;
+		if (path === normalized) matched = entry;
 	}
-	return false;
+	return matched;
+}
+
+function isSelfWrittenPath(absPath: string): boolean {
+	return selfWriteEcho(absPath) !== null;
+}
+
+/** True when `content` is the body just written to `path` by this app. */
+export function isSelfWrittenContent(path: string, content: string): boolean {
+	return selfWriteEcho(path)?.content === content;
 }
 
 /** Host watcher paths caused by a committed rename transaction. */

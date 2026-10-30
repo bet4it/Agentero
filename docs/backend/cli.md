@@ -25,7 +25,7 @@ Headless Vault / Catalog / Wiki 接口；**不含** BYOA / paper-reader。
 | `discover` | 查询式发现：按关键词/分类/提交日期窗口抓 arXiv 候选，确定性词法排序（headless、无 embedding key） |
 | `export` | 导出 |
 | `doctor` | Vault 结构与 Catalog 诊断；含 wikilink 检查与 aliases / 视觉批注 / catalog 去重修复 |
-| `layout` | 侧栏同构版面索引：`list` / `get`（figure / table / algorithm / formula / section） |
+| `layout` | 侧栏同构版面索引：`list` / `get`（figure / table / algorithm / formula / section / paragraph） |
 | `mark` | 阅读标注：`list` / `get` / `add`（`--quote` 文字锚点或 `--region` 区域锚点）/ `update` / `delete` |
 | `ui` | 桌面工作区/窗口操作：`open`（打开或聚焦文档/文件夹/论文）/ `close`（关闭面板）/ `window`（聚焦原生子窗口）/ `split`（分屏）；均走 `agentero://ui` 深链 + 请求文件 |
 | `translate` | 免费机器翻译纯文本（无需 API Key，不读桌面 settings） |
@@ -58,6 +58,8 @@ agentero layout list papers/demo --json
 agentero layout list papers/demo --kind figure --kind formula --json
 # section 从 source/layout.json 的 header 区域实时合并，不写入 layout-index.json
 agentero layout list papers/demo --kind section --json
+agentero layout list papers/demo --kind paragraph --json
+agentero layout get papers/demo '#2.1#p3' --json
 agentero layout get  papers/demo figure-3 --json
 
 # 按区域钉批注（bbox 归一，页面尺寸由 PDF 引擎测量）
@@ -73,9 +75,12 @@ Mark id 是 nanoid，字母表含 `-`，约 1/64 的 id 以 `-` 开头。`mark g
 |---|---|
 | `figure` | 侧栏插图分区（image + chart） |
 | `image` / `chart` / `table` / `algorithm` / `formula` | 精确 kind |
-| `section` | 章节 / 段落标题，实时从 `source/layout.json` 的 `kind=header` 区域合并 |
+| `section` | 从 `source/layout.json` 枚举章节标题；有明确编号且唯一的章节提供 `anchor` |
+| `paragraph` | 编号章节直接所属的正文块，返回 `anchor`、`sectionAnchor`、`paragraphIndex`、`text`、页码与 bbox |
 
-无 `layout-index.json` 时返回 `layout_index_missing`（提示先在 App 打开论文跑版面分析）。
+章节与段落查询只需 `source/layout.json`，其他查询仍需 `layout-index.json`。缺少对应文件时明确返回错误，提示先在 App 运行版面分析。
+
+`anchor` 可原样追加到 PDF 路径，例如 `papers/demo/demo.pdf#2.1#p3`。编号先按页码排序；检测到双栏正文的水平间隙且两侧正文在垂直方向重叠时，按通栏块分带，每带先左栏再右栏、栏内从上到下，修正远端解析结果可能存在的 `readingOrder` 左右交错。无双栏证据时保留 `readingOrder`（缺失时用坐标及 id 排序），在置信度筛选前按所属章节计数；子章节独立计数。未编号标题终止上一章节的归属，标题前正文不推测章节。重复编号章节及其段落不提供可用 `anchor`；直接查询歧义锚点返回 `citation_anchor_ambiguous`，不存在返回 `citation_anchor_not_found`。同一解析结果重开保持编号；首版不重建跨页自然段，也不恢复 PDF 替换后的旧锚点。
 
 ### 文字高亮 / 批注 / 翻译（已实现）
 

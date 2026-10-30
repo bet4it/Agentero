@@ -42,13 +42,19 @@ import {
 	isWikiCompletionSubmitKey,
 	narrowExactWikiFileCandidates,
 	parseWikiCompletionQuery,
+	replaceWikiCompletionToken,
 	sameWikiPath,
 	type WikiCompletionRequest,
 	wikiCompletionCandidateKey,
+	wikiCompletionHeadingForSubmit,
 	wikiCompletionInsert,
+	wikiCompletionUsesPdfHint,
 	wikiFileCandidateSecondaryLine,
+	wikiTabContinuesCompletion,
+	wikiTabKeepsSourceDraft,
 } from "@/lib/wiki/completion";
 import { useWikiNav } from "@/lib/wiki/nav-context";
+import { loadPdfHeadingCandidates } from "@/lib/wiki/pdf-anchor-completion";
 import {
 	isWikiLinkDraftText,
 	isWikiLinkNode,
@@ -399,6 +405,22 @@ export function WikiLinkSuggestion({
 					}
 					return;
 				}
+				// Only a PDF target reads layout.json. A Markdown path, including
+				// one typed as `NOTES.md#`, stays on the in-memory heading index.
+				if (
+					fetchRequest.kind === "heading" &&
+					resolved.targetPath.toLowerCase().endsWith(".pdf")
+				) {
+					const items = await loadPdfHeadingCandidates({
+						vaultPath,
+						pdfRelPath: resolved.targetPath,
+						query: fetchRequest.query,
+					});
+					if (!cancelled) {
+						setCandidateState({ requestKey: fetchRequestKey, items });
+					}
+					return;
+				}
 				const results = await searchWikiLinks(vaultPath, fetchRequest.query, {
 					path: resolved.targetPath,
 					kind: fetchRequest.kind,
@@ -488,27 +510,65 @@ export function WikiLinkSuggestion({
 				path: selection.anchor.path,
 				offset: match.end,
 			};
-			const insert = wikiCompletionInsert(candidate, request);
+			const insert = wikiCompletionHeadingForSubmit(
+				wikiCompletionInsert(candidate, request),
+				candidate,
+				submitKey,
+			);
 			const markdown = wikiLinkToMarkdown({
 				value: insert.target,
 				heading: insert.heading,
 				alias: insert.alias,
 				embed: draft.embed,
 			});
-			const link =
-				submitKey === "Enter" ? parseWikiLinkMarkdown(markdown) : null;
-			if (submitKey === "Enter" && !link) return false;
+			const parsed = parseWikiLinkMarkdown(markdown);
+			if (submitKey === "Enter" && !parsed) return false;
 			const parentEntry = editor.api.parent(selection.anchor.path);
 			const stableLinkPath =
 				parentEntry && isWikiLinkNode(parentEntry[0]) ? parentEntry[1] : null;
+			const remember = () => {
+				setRecentCandidates((recent) =>
+					addRecentWikiCandidate(recent, candidate),
+				);
+			};
+			const continueTab = () => {
+				const bounds = wikiLinkDraftEditableBounds(markdown);
+				const nextRaw = markdown.slice(bounds.start, bounds.end);
+				const nextRequest = parseWikiCompletionQuery(nextRaw);
+				if (wikiTabContinuesCompletion(candidate, nextRequest)) {
+					setCandidateState({
+						requestKey: completionRequestKey(nextRequest),
+						items: [candidate],
+					});
+					setSelectedIndex(0);
+					onContinue(nextRaw);
+				} else {
+					onClose();
+				}
+			};
+			// `[[file.pdf#2#]]` is not a finished link. Replace the token in
+			// place: deleting the leaf first, then bailing because parse fails,
+			// clears the whole input.
+			if (submitKey === "Tab" && wikiTabKeepsSourceDraft(markdown)) {
+				replaceWikiCompletionToken(
+					editor,
+					{ anchor: start, focus: end },
+					markdown,
+				);
+				continueTab();
+				remember();
+				return true;
+			}
 			// Do not null controllerRef here. The layout effect only binds once
 			// (stable identity); clearing it permanently kills ↑/↓/Enter until
 			// remount. Closed menus are ignored via draftRef.current === null.
-			editor.tf.delete({ at: { anchor: start, focus: end } });
 			if (stableLinkPath) {
-				const parsed = parseWikiLinkMarkdown(markdown);
 				if (!parsed) return false;
+				// Delete and write back in one batch. An empty inline is removed
+				// as soon as normalization runs, which drops the link if the
+				// replacement happens later.
 				editor.tf.withoutNormalizing(() => {
+					editor.tf.delete({ at: { anchor: start, focus: end } });
 					editor.tf.insertText(markdown);
 					editor.tf.setNodes(
 						{
@@ -526,57 +586,35 @@ export function WikiLinkSuggestion({
 						offset: wikiLinkDraftEditableBounds(markdown).end,
 					};
 					editor.tf.select({ anchor: point, focus: point });
-					const bounds = wikiLinkDraftEditableBounds(markdown);
-					const nextRaw = markdown.slice(bounds.start, bounds.end);
-					const nextRequest = parseWikiCompletionQuery(nextRaw);
-					if (nextRequest && candidate.kind === nextRequest.kind) {
-						setCandidateState({
-							requestKey: completionRequestKey(nextRequest),
-							items: [candidate],
-						});
-						setSelectedIndex(0);
-						onContinue(nextRaw);
-					} else {
-						onClose();
-					}
+					continueTab();
 				} else {
 					const after = editor.api.after(stableLinkPath);
 					if (after) editor.tf.select(after);
 					onClose();
 				}
-				setRecentCandidates((recent) =>
-					addRecentWikiCandidate(recent, candidate),
-				);
+				remember();
 				return true;
 			}
-			const remainder = editor.api.node(start.path);
-			if (remainder && isWikiLinkDraftText(remainder[0])) {
-				editor.tf.unsetNodes("wikiLinkDraft", { at: remainder[1] });
-			}
-			if (submitKey === "Tab") {
-				editor.tf.insertNodes({ text: markdown, wikiLinkDraft: true });
-				editor.tf.move({ distance: 2, reverse: true });
-				const bounds = wikiLinkDraftEditableBounds(markdown);
-				const nextRaw = markdown.slice(bounds.start, bounds.end);
-				const nextRequest = parseWikiCompletionQuery(nextRaw);
-				if (nextRequest && candidate.kind === nextRequest.kind) {
-					setCandidateState({
-						requestKey: completionRequestKey(nextRequest),
-						items: [candidate],
-					});
-					setSelectedIndex(0);
-					onContinue(nextRaw);
-				} else {
-					onClose();
+			if (submitKey === "Enter" && !parsed) return false;
+			editor.tf.withoutNormalizing(() => {
+				editor.tf.delete({ at: { anchor: start, focus: end } });
+				const remainder = editor.api.node(start.path);
+				if (remainder && isWikiLinkDraftText(remainder[0])) {
+					editor.tf.unsetNodes("wikiLinkDraft", { at: remainder[1] });
 				}
+				if (submitKey === "Tab") {
+					editor.tf.insertNodes({ text: markdown, wikiLinkDraft: true });
+				} else if (parsed) {
+					editor.tf.insertNodes([parsed, { text: "" }]);
+				}
+			});
+			if (submitKey === "Tab") {
+				editor.tf.move({ distance: 2, reverse: true });
+				continueTab();
 			} else {
-				if (!link) return false;
-				editor.tf.insertNodes([link, { text: "" }]);
 				onClose();
 			}
-			setRecentCandidates((recent) =>
-				addRecentWikiCandidate(recent, candidate),
-			);
+			remember();
 			return true;
 		},
 		[draft, editor, onClose, onContinue, request, setSelectedIndex],
@@ -584,6 +622,10 @@ export function WikiLinkSuggestion({
 	selectCandidateRef.current = selectCandidate;
 
 	if (!draft || !request) return null;
+	const pdfHint = wikiCompletionUsesPdfHint(
+		request,
+		candidates[selectedIndex] ?? null,
+	);
 	return (
 		<ViewportFloating
 			point={{ x: draft.left, y: draft.top }}
@@ -658,7 +700,11 @@ export function WikiLinkSuggestion({
 				})}
 			</div>
 			<p className="shrink-0 border-t px-2 py-1.5 text-caption text-muted-foreground text-center leading-4">
-				{t("wikiCompletion.syntaxHint")}
+				{t(
+					pdfHint
+						? "wikiCompletion.syntaxHintPdf"
+						: "wikiCompletion.syntaxHint",
+				)}
 			</p>
 		</ViewportFloating>
 	);

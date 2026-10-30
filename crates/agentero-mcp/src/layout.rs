@@ -30,6 +30,14 @@ pub struct LayoutItemOut {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
     pub layout_region_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub anchor: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub section_anchor: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paragraph_index: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
 }
 
 impl From<&LayoutIndexItem> for LayoutItemOut {
@@ -50,6 +58,10 @@ impl From<&LayoutIndexItem> for LayoutItemOut {
             score: i.score,
             title: i.title.clone(),
             layout_region_id: i.layout_region_id.clone(),
+            anchor: i.anchor.clone(),
+            section_anchor: i.section_anchor.clone(),
+            paragraph_index: i.paragraph_index,
+            text: i.text.clone(),
         }
     }
 }
@@ -62,6 +74,8 @@ pub struct LayoutCountsOut {
     pub table: usize,
     pub algorithm: usize,
     pub formula: usize,
+    pub section: usize,
+    pub paragraph: usize,
 }
 
 #[derive(Debug, Clone, Serialize, schemars::JsonSchema)]
@@ -88,6 +102,8 @@ impl From<LayoutListResult> for LayoutListOut {
                 table: r.counts.table,
                 algorithm: r.counts.algorithm,
                 formula: r.counts.formula,
+                section: r.counts.section,
+                paragraph: r.counts.paragraph,
             },
             items: r.items.iter().map(LayoutItemOut::from).collect(),
         }

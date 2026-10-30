@@ -224,3 +224,9 @@ Host 下载/解析：[../backend/paper-import.md](../backend/paper-import.md)。
 - EmbedPDF 升级时继续核对 engines 原生内存 / 坐标 / refcount、tiling 旋转与 DPR、AI 按 backend 选择 ORT 入口的补丁；2.15.1 对应实现仍与 2.14.4 相同，不能仅凭升版删掉。zoom 评论列留白补丁也需核对上游是否已有等价配置。Document Manager 的加载态关闭所有权补丁需验证迟到成功、失败、重复关闭和共享 pane 后才能移除。待上游修复 annotation 同 uid 在途变更被旧 commit 清 pending 的问题后，移除删除协调器。
 
 字符级全文翻译路径使用 `src/lib/pdf/reflow/`，将公式作为可移动矢量片段，基于固定字体度量重排；每页翻译结束后增量显示重排预览，全文结束时执行全局字号校正，最终预览与译文/双语 PDF 导出共用输出。该路径按段落对齐，旧句链逻辑只用于无引擎上下文的回退。限制及字体下载见 [translate.md](translate.md#与-babeldoc-的差异和后续)。
+
+### 章节与正文块引用
+
+PDF 支持 `paper.pdf#2`、`paper.pdf#2.1` 和 `paper.pdf#2.1#p3`。段落是版面分析中的一个正文块，按直接所属章节计数，子章节单独计数；具体编号和原文通过 `agentero layout list <paper> --kind paragraph --json` 查询，不能凭页面展示顺序猜测。聊天引用、普通 Markdown 链接和双链 `[[paper.pdf#2.1#p3]]` 共用 Host 的解析、滚动和临时高亮；段落高亮保持原始 bbox，不生成永久批注。编辑器输入 `[[paper.pdf#]]` 时，按 `layout.json` 的章节名补全，Tab 后继续列出该章段落，见 [wiki.md](wiki.md)。
+
+缺少解析、目标不存在或章节编号重复时报告失败，不回退到其他段落。已有 `#section=`、`#page=`、图表引用与批注链接继续使用；Markdown 文件的 `#标题` 和嵌套标题语义不变。首版不合并跨页自然段，不恢复 PDF 替换后的旧锚点。

@@ -419,13 +419,13 @@ pub fn build() -> Vec<OpSpec> {
             false,
             json!({
                 "ref": "paper id or path",
-                "kind?": ["figure|image|chart|table|algorithm|formula"],
+                "kind?": ["figure|image|chart|table|algorithm|formula|section|paragraph"],
                 "minScore?": "number 0-1"
             }),
             json!({
                 "paperPath": "string",
                 "indexPath": "string",
-                "items": [{"id": "string", "kind": "string", "section": "string", "page": "number", "bbox": {"x":0,"y":0,"w":0,"h":0}, "score": "number"}]
+                "items": [{"id": "string", "kind": "string", "section": "string", "anchor?": "#2.1#p3", "sectionAnchor?": "#2.1", "paragraphIndex?": "number", "text?": "string", "page": "number", "bbox": {"x":0,"y":0,"w":0,"h":0}, "score": "number"}]
             }),
             &["layout_index_missing", "layout_index_invalid", "paper_not_found", "usage"],
             &[

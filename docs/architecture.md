@@ -115,11 +115,11 @@ Plate + `@platejs/markdown`。普通文本粘贴默认按 Markdown 解析。`\$a
 
 ### 外部改动自动重载
 
-Host `notify` → `vault:file-changed`。打开的 `.md`/`NOTES.md` 磁盘变化：无未存改动则重载；有未存改动则 toast 提示；内容相等抑制自写回声。create/remove/rename 去抖刷新文件树。窗口隐藏/失焦时先缓冲变更，回到前台再 flush；后台去抖窗口更长。
+Host `notify` → `vault:file-changed`。打开的 `.md`/`NOTES.md` 磁盘变化：无未存改动则重载；有未存改动则 toast，不自动重载（论文 PDF 标签不算笔记编辑器，不能替它重载）。本次刚写入的正文，以及与种子相同的内容，都不当成外部修改。create/remove/rename 去抖刷新文件树。窗口隐藏/失焦时先缓冲变更，回到前台再 flush；后台去抖窗口更长。
 
 ### 保存冲突
 
-写盘前比对上次落盘内容；磁盘已被外部改则中止写入并警告（`diskConflict.saveBlocked`）。
+写盘前比对上次落盘内容；磁盘已被外部改则中止写入并警告（`diskConflict.saveBlocked`）。本窗口刚写过的同一正文不算外部修改：PDF 锚点解析会占住双链索引，编辑器快照可能还停在写入之前。
 
 ### 多窗口
 

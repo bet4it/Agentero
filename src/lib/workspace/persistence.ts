@@ -18,7 +18,11 @@ import {
 import { primeSeedCache } from "@/lib/vault/seed-cache";
 import { getVaultPath } from "@/lib/vault/store";
 import { applyWikiPaths } from "@/lib/wiki/api";
-import { bumpWikiIndexRevision, trackSelfWrittenPath } from "@/lib/wiki/store";
+import {
+	bumpWikiIndexRevision,
+	isSelfWrittenContent,
+	trackSelfWrittenPath,
+} from "@/lib/wiki/store";
 import { getTabs, setTabs } from "@/lib/workspace/store";
 import {
 	type DocTab,
@@ -26,6 +30,7 @@ import {
 	refreshPdfTab,
 	seedTabs,
 	syncTabSeedsForPath,
+	tabIsPaperNotes,
 } from "./tabs";
 import { isHtmlPath, viewerModeSpec } from "./viewer";
 
@@ -111,6 +116,9 @@ type DiskChangeKind = {
 
 const diskChangeKinds: DiskChangeKind[] = [
 	{
+		// Paper body tabs share notesPath so a closed NOTES pane still refreshes
+		// its seed. They do not render the note; a clean body tab must not reload
+		// while the NOTES editor is dirty (see the single decision below).
 		owns: (tab, norm) =>
 			Boolean(tab.notesPath && normalizeTabPath(tab.notesPath) === norm),
 		seed: "notesSeed",
@@ -126,7 +134,9 @@ const diskChangeKinds: DiskChangeKind[] = [
 	},
 	{
 		owns: (tab, norm) =>
-			normalizeTabPath(tab.path) === norm && isMarkdownPath(tab.path),
+			normalizeTabPath(tab.path) === norm &&
+			isMarkdownPath(tab.path) &&
+			!tabIsPaperNotes(tab),
 		seed: "markdownSeed",
 		dirty: "markdownDirty",
 		refresh: (prev, absPath, content) =>
@@ -153,9 +163,10 @@ const diskChangeKinds: DiskChangeKind[] = [
 /**
  * Reload an open editor when its file changed on disk (external editor /
  * Agent). Reseeds only when disk content differs from the current seed —
- * equal content means it was our own autosave. The mounted editor reloads the
- * new seed in place (no remount); the path is guarded briefly so a racing
- * autosave cannot overwrite the fresh disk text.
+ * equal content, or the body this app just wrote, is our own autosave. A
+ * dirty editor is left in place (one toast); a clean sibling must not reload
+ * it. The mounted editor reloads the new seed in place (no remount); the path
+ * is guarded briefly so a racing autosave cannot overwrite the fresh disk text.
  */
 export async function applyDiskChange(
 	absPath: string,
@@ -211,6 +222,24 @@ export async function applyDiskChange(
 	}
 	// Keep the open-path seed cache in step with what the reload just read.
 	primeSeedCache(absPath, content);
+	// Autosave records the body before the watcher echo. The tab seed can still
+	// be the previous text: wiki indexing runs after the write, and a popout
+	// copies the seed only after that returns. Reloading here wipes keystrokes
+	// typed during that gap and toasts a false external edit.
+	if (
+		isSelfWrittenContent(absPath, content) ||
+		lastOwnWriteByPath.get(norm) === content
+	) {
+		return;
+	}
+	// Disk diverged from the body this window last wrote. Forget that baseline
+	// so a later save cannot treat the external bytes as our own.
+	lastOwnWriteByPath.delete(norm);
+	// The pre-read snapshot misses a seed advanced while this read was in flight.
+	const ownersNow = diskChangeKinds.map((kind) => ({
+		kind,
+		owners: sink.getTabs().filter((tab) => kind.owns(tab, norm)),
+	}));
 	const guard = () => {
 		reseedGuard.add(norm);
 		window.setTimeout(() => reseedGuard.delete(norm), 500);
@@ -223,23 +252,54 @@ export async function applyDiskChange(
 			duration: 12000,
 		});
 	};
-	for (const { kind, owners } of kindOwners) {
-		for (const tab of owners) {
-			if (content === tab[kind.seed]) continue;
-			const reload = () => {
-				guard();
-				sink.updateTabs((prev) => kind.refresh(prev, absPath, content));
-			};
-			if (tab[kind.dirty]) promptReload(reload);
-			else reload();
+	for (const { kind, owners } of ownersNow) {
+		if (owners.length === 0) continue;
+		const reload = () => {
+			guard();
+			sink.updateTabs((prev) => kind.refresh(prev, absPath, content));
+		};
+		const dirty = owners.filter((tab) => tab[kind.dirty]);
+		if (dirty.length > 0) {
+			// The paper PDF tab is a notes owner and is never marked dirty.
+			// Reloading from it reseeds the NOTES editor and drops the unsaved
+			// text. Toast only when a dirty editor's own seed differs.
+			if (dirty.some((tab) => content !== tab[kind.seed])) promptReload(reload);
+			continue;
 		}
+		if (owners.some((tab) => content !== tab[kind.seed])) reload();
 	}
+}
+
+/**
+ * Body this window last wrote, keyed by normalized path. Unlike the watcher
+ * echo TTL, this stays until an external edit replaces it: PDF-anchor
+ * resolution keeps the wiki lock (and the editor's saved snapshot) busy long
+ * after the write, and opening `[[` searches that same index.
+ */
+const lastOwnWriteByPath = new Map<string, string>();
+
+/**
+ * True when `disk` is neither the editor's last saved snapshot nor a body
+ * this window just wrote. Equal bytes are not an external edit.
+ */
+export function markdownDiskConflicts(
+	disk: string,
+	lastSaved: string,
+	ownWrite: string | undefined,
+): boolean {
+	if (disk === lastSaved) return false;
+	if (ownWrite !== undefined && disk === ownWrite) return false;
+	return true;
 }
 
 /**
  * Shared autosave pipeline for the text-like editors (Markdown / Excalidraw /
  * plain text): per-path serialization, disk-conflict guard, self-write echo
  * registration, then the kind's post-write reseed.
+ *
+ * The returned promise resolves when the write and seed update finish. Wiki
+ * indexing stays on the per-path queue so later saves still wait for it, but
+ * the editor can adopt the new snapshot before PDF fragment resolution returns.
  */
 function persistTextLike(
 	kind: PersistKind,
@@ -251,30 +311,50 @@ function persistTextLike(
 	const queues = persistQueues[kind];
 	const normalizedPath = normalizeTabPath(path);
 	const previous = queues.get(normalizedPath) ?? Promise.resolve(false);
+	let resolveEditor: (ok: boolean) => void = () => {};
+	const editorResult = new Promise<boolean>((resolve) => {
+		resolveEditor = resolve;
+	});
 	const attempt = previous
 		.catch(() => false)
 		.then(async () => {
-			// Skip while this path is being reloaded from disk (external/Agent
-			// write): the unmount-flush must not clobber the fresh disk content.
-			if (reseedGuard.has(normalizedPath)) return false;
-			// Conflict guard: if the file changed on disk since we last saved,
-			// do NOT silently overwrite — keep the user's in-memory edit and warn.
+			let editorOk = false;
 			try {
-				const disk = await readVaultFile(path);
-				if (disk !== lastSaved) {
-					const name = path.split(/[\\/]/).pop() ?? path;
-					notifyWarning(i18n.t("app:diskConflict.saveBlocked", { name }));
-					return false;
+				// Skip while this path is being reloaded from disk (external/Agent
+				// write): the unmount-flush must not clobber the fresh disk content.
+				if (reseedGuard.has(normalizedPath)) return false;
+				// Conflict guard: if the file changed on disk since we last saved,
+				// do NOT silently overwrite — keep the user's in-memory edit and warn.
+				// A body this window wrote is not that external edit, even when the
+				// editor snapshot is still the pre-index text.
+				try {
+					const disk = await readVaultFile(path);
+					if (
+						markdownDiskConflicts(
+							disk,
+							lastSaved,
+							lastOwnWriteByPath.get(normalizedPath),
+						)
+					) {
+						const name = path.split(/[\\/]/).pop() ?? path;
+						notifyWarning(i18n.t("app:diskConflict.saveBlocked", { name }));
+						return false;
+					}
+				} catch {
+					// Missing/unreadable file → no conflict to guard against.
 				}
-			} catch {
-				// Missing/unreadable file → no conflict to guard against.
-			}
-			try {
 				await writeVaultFile(path, content);
+				lastOwnWriteByPath.set(normalizedPath, content);
+				// Advance the seed and remember the body before any await. Wiki
+				// indexing yields long enough for the watcher echo to land; if the
+				// seed is still the previous text, that echo looks like an external
+				// edit and a clean paper tab reloads the note over the keystrokes.
+				trackSelfWrittenPath(path, content);
+				persistOutcomes[kind](path, content);
+				editorOk = true;
 				// The watcher echo of this write must not re-trigger a full Wiki
 				// rebuild on every autosave (#270). The saved file itself is
 				// folded into the index here so a later rename sees the new links.
-				trackSelfWrittenPath(path);
 				if (isMarkdownPath(path)) {
 					const vault = getVaultPath();
 					if (vault) {
@@ -286,11 +366,12 @@ function persistTextLike(
 						}
 					}
 				}
-				persistOutcomes[kind](path, content);
 				return true;
 			} catch (e) {
 				notifyError(errorText(e));
 				return false;
+			} finally {
+				resolveEditor(editorOk);
 			}
 		});
 	queues.set(normalizedPath, attempt);
@@ -299,7 +380,7 @@ function persistTextLike(
 		if (queues.get(normalizedPath) === attempt) queues.delete(normalizedPath);
 	};
 	void attempt.then(settle, settle);
-	return attempt;
+	return editorResult;
 }
 
 /**

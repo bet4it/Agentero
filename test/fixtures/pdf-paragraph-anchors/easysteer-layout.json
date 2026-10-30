@@ -1,0 +1,618 @@
+{
+	"schemaVersion": 3,
+	"source": {
+		"mode": "mineru-layout",
+		"generatedAt": "2026-10-08T03:17:00.415Z",
+		"textLayerExtracted": true,
+		"figureCaptionsExtracted": true,
+		"sourceStylesExtracted": true
+	},
+	"regions": [
+		{
+			"id": "mineru-2-0",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 0,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.08499999999999999,
+				"w": 0.25199999999999995,
+				"h": 0.016
+			},
+			"text": "while negative values suppress it.",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-13",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 1,
+			"bbox": {
+				"x": 0.5069999999999999,
+				"y": 0.08499999999999999,
+				"w": 0.378,
+				"h": 0.032
+			},
+			"text": "wrapper, steering algorithm interface, and parame ter control module.",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-1",
+			"pageIndex": 2,
+			"kind": "header",
+			"readingOrder": 2,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.111,
+				"w": 0.244,
+				"h": 0.016
+			},
+			"text": "3.2 Learning-based Steering",
+			"title": "3.2 Learning-based Steering",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-14",
+			"pageIndex": 2,
+			"kind": "header",
+			"readingOrder": 3,
+			"bbox": {
+				"x": 0.5069999999999999,
+				"y": 0.12899999999999998,
+				"w": 0.19199999999999992,
+				"h": 0.013999999999999983
+			},
+			"text": "4.2.1 Model Wrapper",
+			"title": "4.2.1 Model Wrapper",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-2",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 4,
+			"bbox": {
+				"x": 0.11,
+				"y": 0.131,
+				"w": 0.37899999999999995,
+				"h": 0.09799999999999998
+			},
+			"text": "Learning-based steering employs a parameterized function f θ . This function can range from simple supervised additive vector to complex methods like LM-Steer ( Han et al. , 2023 ). Appendix B provides detailed descriptions of these methods. Parameters θ are optimized on task-specific data:",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-15",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 5,
+			"bbox": {
+				"x": 0.5069999999999999,
+				"y": 0.149,
+				"w": 0.37699999999999995,
+				"h": 0.08200000000000002
+			},
+			"text": "Direct modification of diverse LLM architectures (e.g., LLaMA, Qwen) for steering is impractical and difficult to maintain. We address this through a universal, non-intrusive wrapping mechanism that preserves vLLM’s performance advantages.",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-16",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 6,
+			"bbox": {
+				"x": 0.5069999999999999,
+				"y": 0.231,
+				"w": 0.37999999999999995,
+				"h": 0.22599999999999995
+			},
+			"text": "Our dynamic wrapping mechanism maintains a registry of decoder layer class names and automati cally wrapping them at model loading time. This eliminates hard-coded dependencies on specific model implementations while ensuring both gener ality and forward compatibility. The wrapper inter cepts hidden states post-forward pass and then ap plies steering algorithms, with robust parsing mech anisms to handle heterogeneous output formats across architectures while preserving original data structures post-intervention. The wrapper also sup ports vision-language models, enabling activation based steering over multimodal inputs ( Wu et al. , 2025 ; Li et al. , 2026a ).",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-3",
+			"pageIndex": 2,
+			"kind": "formula",
+			"readingOrder": 7,
+			"bbox": {
+				"x": 0.16599999999999998,
+				"y": 0.24,
+				"w": 0.26699999999999996,
+				"h": 0.023000000000000017
+			},
+			"text": "$$\n\\theta^ {*} = \\arg \\min _ {\\theta} \\mathbb {E} _ {x \\sim \\mathcal {D}} [ \\mathcal {L} (M (x; f _ {\\theta})) ],\\tag{2}\n$$",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-4",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 8,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.27299999999999996,
+				"w": 0.378,
+				"h": 0.12999999999999998
+			},
+			"text": "where represents the training distribution and D L denotes the task-specific objective. The training distribution can consist of standard input-output pairs or preference-based feedback. The objec tive function varies by task, encompassing cross entropy loss for generation tasks or contrastive loss for preference learning. Model parameters W re main frozen during optimization.",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-5",
+			"pageIndex": 2,
+			"kind": "header",
+			"readingOrder": 9,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.414,
+				"w": 0.27099999999999996,
+				"h": 0.016000000000000018
+			},
+			"text": "4 The EasySteer Framework",
+			"title": "4 The EasySteer Framework",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-6",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 10,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.439,
+				"w": 0.378,
+				"h": 0.08199999999999998
+			},
+			"text": "The EasySteer framework consists of four inte grated modules: the Steering Vector Generation and Application Module (Figure 1 ) as the two core components, along with a comprehensive Resource Library and an Interactive Demonstration System.",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-17",
+			"pageIndex": 2,
+			"kind": "header",
+			"readingOrder": 11,
+			"bbox": {
+				"x": 0.5069999999999999,
+				"y": 0.46799999999999997,
+				"w": 0.2929999999999999,
+				"h": 0.01699999999999996
+			},
+			"text": "4.2.2 Steering Algorithm Interface",
+			"title": "4.2.2 Steering Algorithm Interface",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-18",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 12,
+			"bbox": {
+				"x": 0.505,
+				"y": 0.48899999999999993,
+				"w": 0.3819999999999999,
+				"h": 0.22599999999999995
+			},
+			"text": "We provide a fully decoupled algorithm interface that enables researchers to implement, evaluate, and compare steering methods efficiently. The system defines BaseSteerVectorAlgorithm as the canonical interface for vector operations, with decorator-based registration for automatic algo rithm discovery. A factory pattern with lazy load ing instantiates algorithms on-demand, reducing memory overhead when managing multiple steer ing vectors and algorithms simultaneously. Beyond hidden-state steering, the interface supports captur ing and modifying router logits in MoE models for routing-level interventions ( Fayyaz et al. , 2026 ; Xu et al. , 2026 ).",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-7",
+			"pageIndex": 2,
+			"kind": "header",
+			"readingOrder": 13,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.5299999999999999,
+				"w": 0.33,
+				"h": 0.016000000000000018
+			},
+			"text": "4.1 Steering Vector Generation Module",
+			"title": "4.1 Steering Vector Generation Module",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-8",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 14,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.5509999999999999,
+				"w": 0.37499999999999994,
+				"h": 0.031999999999999904
+			},
+			"text": "EasySteer provides comprehensive tooling for both analytical and learning-based vector generation.",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-9",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 15,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.5919999999999999,
+				"w": 0.378,
+				"h": 0.113
+			},
+			"text": "Analytical Methods We implement established extraction techniques (e.g., CAA) through a unified hidden state capture module leveraging vLLM. Ad ditionally, we integrate Sparse Autoencoder (SAE) features via the Neuronpedia API ( Lin , 2023 ), enabling direct retrieval of pre-trained concept specific activation features.",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-10",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 16,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.7129999999999997,
+				"w": 0.37699999999999995,
+				"h": 0.06500000000000009
+			},
+			"text": "Learning-based Methods We refactored the pyreft library following extensibility principles, supporting LoReFT and related optimization-based approaches.",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-19",
+			"pageIndex": 2,
+			"kind": "header",
+			"readingOrder": 17,
+			"bbox": {
+				"x": 0.5069999999999999,
+				"y": 0.7269999999999999,
+				"w": 0.27899999999999997,
+				"h": 0.015999999999999882
+			},
+			"text": "4.2.3 Parameter Control Module",
+			"title": "4.2.3 Parameter Control Module",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-20",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 18,
+			"bbox": {
+				"x": 0.5069999999999999,
+				"y": 0.7469999999999999,
+				"w": 0.37999999999999995,
+				"h": 0.08199999999999998
+			},
+			"text": "Effective steering requires fine-grained control over intervention timing, location, and application strat egy. We design a comprehensive parameter con trol module addressing these requirements through three key mechanisms:",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-11",
+			"pageIndex": 2,
+			"kind": "header",
+			"readingOrder": 19,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.788,
+				"w": 0.33099999999999996,
+				"h": 0.015999999999999882
+			},
+			"text": "4.2 Steering Vector Application Module",
+			"title": "4.2 Steering Vector Application Module",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-12",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 20,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.8079999999999999,
+				"w": 0.378,
+				"h": 0.11400000000000002
+			},
+			"text": "To address the limitations of existing LLM steering frameworks, we present a high-performance, exten sible steering module built on vLLM. Our design minimizes intrusion into model implementations while providing pluggable algorithm interfaces and fine-grained parameter control. The system archi tecture comprises three core components: a model",
+			"score": 1
+		},
+		{
+			"id": "mineru-2-21",
+			"pageIndex": 2,
+			"kind": "text",
+			"readingOrder": 21,
+			"bbox": {
+				"x": 0.505,
+				"y": 0.8409999999999999,
+				"w": 0.3819999999999999,
+				"h": 0.08100000000000011
+			},
+			"text": "Unified Request Interface The system pro vides structured vector configuration through VectorConfig and SteerVectorRequest , form ing a unified API that enables flexible definition of steering parameters and strategies.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-0",
+			"pageIndex": 3,
+			"kind": "image",
+			"readingOrder": 0,
+			"bbox": {
+				"x": 0.11699999999999999,
+				"y": 0.082,
+				"w": 0.763,
+				"h": 0.19499999999999998
+			},
+			"title": "Figure 1: Core components of the EasySteer Framework, showing its two primary modules. (Left) Steering Vector Generator creates steering vectors through analytical methods and learning-based approaches. (Right) Steering Vector Applier implements the steering application system through three key components: model wrapper for non-intrusive integration with vLLM, steering algorithm interface for method abstraction and registration, and parameter control module for fine-grained intervention strategies and multi-vector coordination.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-16",
+			"pageIndex": 3,
+			"kind": "figure_title",
+			"readingOrder": 1,
+			"bbox": {
+				"x": 0.11260504201680671,
+				"y": 0.28894173602853745,
+				"w": 0.7731092436974789,
+				"h": 0.07491082045184304
+			},
+			"text": "Figure 1: Core components of the EasySteer Framework, showing its two primary modules. (Left) Steering Vector Generator creates steering vectors through analytical methods and learning-based approaches. (Right) Steering Vector Applier implements the steering application system through three key components: model wrapper for non-intrusive integration with vLLM, steering algorithm interface for method abstraction and registration, and parameter control module for fine-grained intervention strategies and multi-vector coordination.",
+			"title": "Figure 1: Core components of the EasySteer Framework, showing its two primary modules. (Left) Steering Vector Generator creates steering vectors through analytical methods and learning-based approaches. (Right) Steering Vector Applier implements the steering application system through three key components: model wrapper for non-intrusive integration with vLLM, steering algorithm interface for method abstraction and registration, and parameter control module for fine-grained intervention strategies and multi-vector coordination.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-1",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 2,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.386,
+				"w": 0.378,
+				"h": 0.09699999999999992
+			},
+			"text": "Fine-grained Triggering Mechanisms We ex tend vLLM’s forward_context with inference stage markers and token-level information, en abling precise conditional steering including token specific interventions, positional constraints, and context-aware activation.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-6",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 3,
+			"bbox": {
+				"x": 0.5069999999999999,
+				"y": 0.386,
+				"w": 0.378,
+				"h": 0.01799999999999997
+			},
+			"text": "and example applications spanning eight scenarios:",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-7",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 4,
+			"bbox": {
+				"x": 0.5289999999999999,
+				"y": 0.407,
+				"w": 0.355,
+				"h": 0.032000000000000035
+			},
+			"text": "• Safety: refusal control ( Arditi et al. , 2024 ), jailbreak resistance, toxicity mitigation.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-8",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 5,
+			"bbox": {
+				"x": 0.5289999999999999,
+				"y": 0.448,
+				"w": 0.35799999999999993,
+				"h": 0.06399999999999995
+			},
+			"text": "• Reasoning: thinking pattern modulation, overthinking prevention ( Chen et al. , 2025b ), performance improvement ( Højer et al. , 2025 ).",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-2",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 6,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.49199999999999994,
+				"w": 0.378,
+				"h": 0.11399999999999995
+			},
+			"text": "Multi-Vector Coordination The framework sup ports concurrent application of multiple steering algorithms and vectors within a single inference. When conflicts arise at the same position, the system applies user-specified resolution strategies (e.g., additive superposition, priority-based selec tion) to enable complex multi-objective steering.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-9",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 7,
+			"bbox": {
+				"x": 0.5289999999999999,
+				"y": 0.5209999999999999,
+				"w": 0.35600000000000004,
+				"h": 0.03300000000000005
+			},
+			"text": "• Knowledge: factual editing ( Scialanga et al. , 2025 ), unlearning ( Seyito glu et al. ˘ , 2024 ).",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-10",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 8,
+			"bbox": {
+				"x": 0.5289999999999999,
+				"y": 0.561,
+				"w": 0.35600000000000004,
+				"h": 0.047999999999999925
+			},
+			"text": "• Truthfulness: uncertainty estimation ( Fer rando et al. , 2024 ), hallucination detec tion ( Park et al. , 2025 ), factuality control.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-3",
+			"pageIndex": 3,
+			"kind": "header",
+			"readingOrder": 9,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.615,
+				"w": 0.188,
+				"h": 0.01500000000000001
+			},
+			"text": "4.3 Resource Library",
+			"title": "4.3 Resource Library",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-11",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 10,
+			"bbox": {
+				"x": 0.5309999999999999,
+				"y": 0.6179999999999999,
+				"w": 0.3559999999999999,
+				"h": 0.049000000000000064
+			},
+			"text": "• Language: control over natural lan guage ( Chou et al. , 2025 ), code, format, syntactic structure, etc.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-4",
+			"pageIndex": 3,
+			"kind": "image",
+			"readingOrder": 11,
+			"bbox": {
+				"x": 0.11699999999999999,
+				"y": 0.646,
+				"w": 0.3649999999999999,
+				"h": 0.1999999999999999
+			},
+			"title": "Figure 2: Eight application scenarios of LLM steering.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-12",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 12,
+			"bbox": {
+				"x": 0.5289999999999999,
+				"y": 0.674,
+				"w": 0.355,
+				"h": 0.03399999999999992
+			},
+			"text": "• Sentiment: modulation of emotional tone in specific contexts ( Farooq et al. , 2025 ).",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-13",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 13,
+			"bbox": {
+				"x": 0.5289999999999999,
+				"y": 0.7149999999999999,
+				"w": 0.355,
+				"h": 0.049000000000000064
+			},
+			"text": "• Personality: behavioral influence through personality vectors ( Chen et al. , 2025a ), value alignment, role-playing capabilities.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-14",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 14,
+			"bbox": {
+				"x": 0.5289999999999999,
+				"y": 0.772,
+				"w": 0.35600000000000004,
+				"h": 0.031999999999999904
+			},
+			"text": "• Style: creative writing ( Olson et al. , 2024 ), personalized generation, style transfer.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-15",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 15,
+			"bbox": {
+				"x": 0.5069999999999999,
+				"y": 0.809,
+				"w": 0.37999999999999995,
+				"h": 0.113
+			},
+			"text": "Each example includes complete implementa tion details, from data preparation through vec tor generation to application, with documented ex pected behaviors and usage guidelines. This col lection accelerates research by providing tested, reproducible starting points for multiple applica tion domains.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-17",
+			"pageIndex": 3,
+			"kind": "figure_title",
+			"readingOrder": 16,
+			"bbox": {
+				"x": 0.11260504201680671,
+				"y": 0.8585017835909631,
+				"w": 0.37310924369747894,
+				"h": 0.015457788347205705
+			},
+			"text": "Figure 2: Eight application scenarios of LLM steering.",
+			"title": "Figure 2: Eight application scenarios of LLM steering.",
+			"score": 1
+		},
+		{
+			"id": "mineru-3-5",
+			"pageIndex": 3,
+			"kind": "text",
+			"readingOrder": 17,
+			"bbox": {
+				"x": 0.11199999999999999,
+				"y": 0.8899999999999999,
+				"w": 0.37699999999999995,
+				"h": 0.032000000000000035
+			},
+			"text": "As shown in Figure 2 , EasySteer includes an extensive library of pre-computed steering vectors",
+			"score": 1
+		}
+	],
+	"expectedAnchors": {
+		"mineru-2-1": "#3.2",
+		"mineru-2-2": "#3.2#p1",
+		"mineru-2-4": "#3.2#p2",
+		"mineru-2-5": "#4",
+		"mineru-2-6": "#4#p1",
+		"mineru-2-7": "#4.1",
+		"mineru-2-8": "#4.1#p1",
+		"mineru-2-9": "#4.1#p2",
+		"mineru-2-10": "#4.1#p3",
+		"mineru-2-11": "#4.2",
+		"mineru-2-12": "#4.2#p1",
+		"mineru-2-13": "#4.2#p2",
+		"mineru-2-14": "#4.2.1",
+		"mineru-2-15": "#4.2.1#p1",
+		"mineru-2-16": "#4.2.1#p2",
+		"mineru-2-17": "#4.2.2",
+		"mineru-2-18": "#4.2.2#p1",
+		"mineru-2-19": "#4.2.3",
+		"mineru-2-20": "#4.2.3#p1",
+		"mineru-2-21": "#4.2.3#p2",
+		"mineru-3-1": "#4.2.3#p3",
+		"mineru-3-2": "#4.2.3#p4",
+		"mineru-3-3": "#4.3",
+		"mineru-3-5": "#4.3#p1",
+		"mineru-3-6": "#4.3#p2",
+		"mineru-3-7": "#4.3#p3",
+		"mineru-3-8": "#4.3#p4",
+		"mineru-3-9": "#4.3#p5",
+		"mineru-3-10": "#4.3#p6",
+		"mineru-3-11": "#4.3#p7",
+		"mineru-3-12": "#4.3#p8",
+		"mineru-3-13": "#4.3#p9",
+		"mineru-3-14": "#4.3#p10",
+		"mineru-3-15": "#4.3#p11"
+	}
+}

@@ -942,7 +942,7 @@ export function openCitation(source: string): void {
 				return;
 			}
 			cancelPdfNavigation(intent);
-			openGraphPath(path);
+			notifyError(citationResolveFailedMessage(trimmed));
 		})();
 		return;
 	}
@@ -1009,6 +1009,13 @@ function scheduleAnnotationJump(paperAbs: string, annotationId: string): void {
 
 export async function navigateWiki(nav: WikiNavTarget): Promise<void> {
 	const vaultPath = getVaultPath();
+	// Invalid PDF anchors fail before opening/restoring an unrelated location.
+	if (nav.status === "invalidFragment" && /\.pdf$/i.test(nav.path ?? "")) {
+		notifyError(
+			i18n.t("app:errors.wikiLinkInvalidFragment", { target: nav.targetRaw }),
+		);
+		return;
+	}
 	const destination = wikiNavigationDestination(nav);
 	if (destination) {
 		if (!vaultPath) {
@@ -1094,6 +1101,12 @@ export async function navigateWiki(nav: WikiNavTarget): Promise<void> {
 	}
 	if (!vaultPath) {
 		notifyError(i18n.t("app:errors.openVaultForCreate"));
+		return;
+	}
+	if (/\.pdf$/i.test(nav.targetRaw)) {
+		notifyError(
+			i18n.t("app:errors.wikiLinkInvalidFragment", { target: nav.targetRaw }),
+		);
 		return;
 	}
 	const createRel = missingNotePath(nav.targetRaw);
