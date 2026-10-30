@@ -84,23 +84,45 @@ graph LR
 
 ## Wikilinks
 
-Link to another note with double brackets:
+Double brackets can link to Markdown notes or PDFs. The meaning of `#` depends on the target format:
+
+| Target | `#` rule | Example |
+|---|---|---|
+| Markdown note | Heading text; multiple `#` separators form a nested heading path | `[[note.md#Experiments#Dataset]]` |
+| PDF | Section number | `[[paper.pdf#2.1]]` |
+| PDF paragraph | Section number followed by `#pN`, the Nth body block in that section | `[[paper.pdf#2.1#p3]]` |
+
+### Markdown notes
+
+The `.md` extension is optional. Include the extension or a Vault-relative path when names are ambiguous:
 
 ```markdown
 [[01 Papers and Import]]
-```
-
-Link to a heading inside a note:
-
-```markdown
-[[01 Papers and Import#Library]]
-```
-
-Nested headings use the full path:
-
-```markdown
+[[01 Papers and Import.md#Library]]
 [[01 Papers and Import#Import Methods#Zotero Connector]]
 ```
+
+Type `[[note#` to search headings, then another `#` to choose a child heading. Use the full nested path, or omit leading ancestors when the remaining consecutive heading path is unique.
+
+### PDF sections and paragraphs
+
+Keep the `.pdf` extension. `#2` and `#2.1` refer to section numbers; `#2.1#p3` refers to the third body block in Section 2.1. Here, `p3` does not mean page 3:
+
+```markdown
+[[papers/demo/demo.pdf#2]]
+[[papers/demo/demo.pdf#2.1]]
+[[papers/demo/demo.pdf#2.1#p3|Supporting paragraph]]
+```
+
+Type `[[paper.pdf#` to search numbered sections by title using the PDF layout analysis. With a section selected, **Enter** confirms the section link; **Tab** completes `paper.pdf#2.1#` and continues to that section's paragraphs. Paragraph candidates show source text so you can check the target.
+
+PDF layout analysis must already be available. Paragraphs count body blocks directly owned by the section; subsections count separately. A block may differ from a natural paragraph, so prefer completion over guessing. Missing analysis, missing targets, or ambiguity produces an error. Legacy `[[paper.pdf#section=2.1]]` and `[[paper.pdf#page=3]]` still work. Standard Markdown links accept the same PDF fragments:
+
+```markdown
+[Section 2.1, paragraph 3](papers/demo/demo.pdf#2.1#p3)
+```
+
+### Annotations and display names
 
 Use `@` for PDF highlights and visual annotations. Copy the `id` from the Annotations panel, or type `[[@` to open completion:
 
@@ -109,28 +131,32 @@ Use `@` for PDF highlights and visual annotations. Copy the `id` from the Annota
 [[papers/…/NOTES@annotationId|Paper title]]
 ```
 
-- `#` heading · `^` text block · `|` display name · `@` annotation; press `tab` to complete and `enter` to confirm.
+- `#`: Markdown heading or PDF section/paragraph; `^`: Markdown text block; `|`: display name; `@`: annotation.
 - Annotation targets must use a path (`NOTES`, `paper.pdf`, or `papers/…/NOTES`), not only the paper's display title.
 
-Agentero indexes all `[[...]]` links for the **Backlinks** panel and **Graph** view.
+Wikilinks support internal navigation and backlinks. The citation graph in References uses paper references separately from Markdown wikilinks.
 
 ## Embeds
 
-Prefix a wikilink with `!` to embed its content as a read-only block:
+Prefix a wikilink with `!` to embed its content:
 
 ```markdown
 ![[01 Papers and Import#Library]]
+![[papers/demo/demo.pdf#2.1#p3]]
 ![[papers/…/NOTES@annotationId]]
 ```
 
 You can embed:
 
-- **Note sections** — any heading path: `![[note#Section#Subsection]]`
+- **Note sections** — `![[note#Section#Subsection]]`
 - **Images** — `![[diagram.png]]` or `![](./assets/diagram.png)`
-- **PDF pages** — `![[paper.pdf]]`
-- **PDF annotations** — `![[…@annotationId]]`
+- **Whole PDFs** — `![[paper.pdf]]`
+- **PDF sections / paragraphs** — `![[paper.pdf#2.1]]` / `![[paper.pdf#2.1#p3]]`
+- **PDF annotation previews** — `![[…@annotationId]]`
 
-Embedded content stays in sync with the source. Editing the original file updates all embeds automatically. The embed itself is read-only; edit the source file to change it.
+PDF section and paragraph embeds fit the container width, navigate to the target, and keep a subtle highlight visible. Section links highlight the heading block; paragraph links highlight the body block. After scrolling away, click **Return to cited location**, the icon to the left of Open in the header.
+
+Markdown sections and annotation previews are read-only; open the source to edit them. **An embedded primary paper PDF supports highlights, comments, colour changes, deletion, and visual annotations**, using the same paper `marks/` data as the main reader. Viewers in the same window synchronize changes. Comment cards appear inside the embedded page on hover or while editing. Other PDF attachments keep basic reading mode and do not use the primary paper's annotations.
 
 ## Images
 
