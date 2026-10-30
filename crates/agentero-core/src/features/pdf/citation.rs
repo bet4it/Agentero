@@ -596,6 +596,46 @@ mod tests {
         assert_eq!(parse_section_number("3"), Some(3));
     }
     #[test]
+    fn paragraph_citations_repair_interleaved_columns_in_existing_layouts() {
+        let real: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../../test/fixtures/pdf-paragraph-anchors/easysteer-layout.json"
+        ))
+        .unwrap();
+        let mut cases: Vec<serde_json::Value> = serde_json::from_str(include_str!(
+            "../../../../../test/fixtures/pdf-paragraph-anchors/reading-order-cases.json"
+        ))
+        .unwrap();
+        cases.push(real);
+        for case in cases {
+            let dir = tempdir().unwrap();
+            let paper = make_paper(dir.path(), "papers/p1");
+            fs::write(paper.join("p1.pdf"), b"%PDF fixture").unwrap();
+            write_raw_layout(&paper, &case.to_string());
+            let listed = layout_index::list_regions(
+                dir.path(),
+                "papers/p1",
+                &["section".into(), "paragraph".into()],
+                None,
+            )
+            .unwrap();
+            let expected = case["expectedAnchors"].as_object().unwrap();
+            assert_eq!(listed.items.len(), expected.len());
+            for item in listed.items {
+                let anchor = item.anchor.as_deref().unwrap();
+                assert_eq!(anchor, expected[&item.id].as_str().unwrap(), "{}", item.id);
+                let resolved =
+                    resolve_citation(dir.path(), &format!("papers/p1/p1.pdf{anchor}")).unwrap();
+                assert_eq!(resolved.region_id, item.id);
+                assert_eq!(resolved.page_index, item.page_index);
+                assert_eq!(
+                    serde_json::to_value(resolved.bbox).unwrap(),
+                    serde_json::to_value(item.bbox).unwrap()
+                );
+            }
+        }
+    }
+
+    #[test]
     fn published_paragraph_queries_and_citations_resolve_identically() {
         let dir = tempdir().unwrap();
         let paper = make_paper(dir.path(), "papers/p1");

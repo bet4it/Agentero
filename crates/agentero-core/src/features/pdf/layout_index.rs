@@ -578,7 +578,7 @@ fn enumerate_document_anchors(layout: &RawLayout) -> Vec<LayoutIndexItem> {
     let mut items = Vec::new();
     let mut section_anchor: Option<String> = None;
     let mut paragraph_index = 0u32;
-    for region in &layout.regions {
+    for region in super::document_reading_order::document_reading_order(&layout.regions) {
         let (kind, anchor, ordinal) = if region.kind == "header" {
             section_anchor = region
                 .title

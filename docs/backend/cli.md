@@ -80,7 +80,7 @@ Mark id 是 nanoid，字母表含 `-`，约 1/64 的 id 以 `-` 开头。`mark g
 
 章节与段落查询只需 `source/layout.json`，其他查询仍需 `layout-index.json`。缺少对应文件时明确返回错误，提示先在 App 运行版面分析。
 
-`anchor` 可原样追加到 PDF 路径，例如 `papers/demo/demo.pdf#2.1#p3`。编号来自原始正文块的页码和 `readingOrder`（旧结果缺失时用坐标及 id 排序），在置信度筛选前按所属章节计数；子章节独立计数。未编号标题终止上一章节的归属，标题前正文不推测章节。重复编号章节及其段落不提供可用 `anchor`；直接查询歧义锚点返回 `citation_anchor_ambiguous`，不存在返回 `citation_anchor_not_found`。同一解析结果重开保持编号；首版不重建跨页自然段，也不恢复 PDF 替换后的旧锚点。
+`anchor` 可原样追加到 PDF 路径，例如 `papers/demo/demo.pdf#2.1#p3`。编号先按页码排序；检测到双栏正文的水平间隙且两侧正文在垂直方向重叠时，按通栏块分带，每带先左栏再右栏、栏内从上到下，修正远端解析结果可能存在的 `readingOrder` 左右交错。无双栏证据时保留 `readingOrder`（缺失时用坐标及 id 排序），在置信度筛选前按所属章节计数；子章节独立计数。未编号标题终止上一章节的归属，标题前正文不推测章节。重复编号章节及其段落不提供可用 `anchor`；直接查询歧义锚点返回 `citation_anchor_ambiguous`，不存在返回 `citation_anchor_not_found`。同一解析结果重开保持编号；首版不重建跨页自然段，也不恢复 PDF 替换后的旧锚点。
 
 ### 文字高亮 / 批注 / 翻译（已实现）
 

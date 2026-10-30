@@ -1,6 +1,7 @@
 //! PDF features (tauri-free subset).
 
 pub mod citation;
+mod document_reading_order;
 pub mod layout_index;
 
 /// Minimal one-page PDF with a real xref table, so PDFium loads it without

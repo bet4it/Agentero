@@ -20,6 +20,9 @@ import {
 	wikiLinkToMarkdown,
 } from "@/lib/wiki/wikilink-model";
 
+import easySteer from "./fixtures/pdf-paragraph-anchors/easysteer-layout.json";
+import readingOrderCases from "./fixtures/pdf-paragraph-anchors/reading-order-cases.json";
+
 const fixture = JSON.parse(
 	readFileSync(
 		join(
@@ -45,6 +48,34 @@ describe("sectionNumber", () => {
 });
 
 describe("documentAnchors", () => {
+	it.each([
+		easySteer,
+		...readingOrderCases,
+	])("repairs column ownership for $source.generatedAt", (layout) => {
+		const anchors = documentAnchors(layout.regions);
+		expect(
+			Object.fromEntries(anchors.map((item) => [item.id, item.anchor])),
+		).toEqual(layout.expectedAnchors);
+		// Enumeration must not depend on sidecar array order or mutate it.
+		expect(documentAnchors([...layout.regions].reverse())).toEqual(anchors);
+	});
+
+	it("completes EasySteer 4.2.1 with the model-wrapper paragraphs", () => {
+		const candidates = pdfHeadingCandidates(
+			"2509.25175.pdf",
+			"4.2.1#",
+			documentAnchors(easySteer.regions),
+		);
+		expect(candidates.map((item) => item.detail)).toEqual([
+			"4.2.1#p1",
+			"4.2.1#p2",
+		]);
+		expect(candidates[0]?.label).toMatch(
+			/^Direct modification of diverse LLM architectures/,
+		);
+		expect(candidates[1]?.label).toMatch(/^Our dynamic wrapping mechanism/);
+	});
+
 	it("numbers paragraphs in reading order under each section", () => {
 		const anchors = documentAnchors(fixture.regions).map((item) => ({
 			id: item.id,

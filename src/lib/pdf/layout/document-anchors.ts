@@ -1,3 +1,5 @@
+import { documentReadingOrder } from "./document-reading-order";
+
 /**
  * Numbered PDF sections and the paragraphs they own.
  *
@@ -102,29 +104,6 @@ function headerLabel(region: DocumentAnchorRegion): string | undefined {
 	return text || undefined;
 }
 
-function readingOrderKey(region: DocumentAnchorRegion): number {
-	return region.readingOrder ?? Number.MAX_SAFE_INTEGER;
-}
-
-function bboxKey(region: DocumentAnchorRegion): number {
-	const box = region.bbox;
-	if (!box) return 0;
-	return box.y * 100_000 + box.x;
-}
-
-function inReadingOrder(
-	regions: readonly DocumentAnchorRegion[],
-): DocumentAnchorRegion[] {
-	return [...regions].sort((a, b) => {
-		if (a.pageIndex !== b.pageIndex) return a.pageIndex - b.pageIndex;
-		const order = readingOrderKey(a) - readingOrderKey(b);
-		if (order !== 0) return order;
-		const box = bboxKey(a) - bboxKey(b);
-		if (box !== 0) return box;
-		return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-	});
-}
-
 /** Numbered headings and directly owned body blocks, before any score filter. */
 export function documentAnchors(
 	regions: readonly DocumentAnchorRegion[],
@@ -132,7 +111,7 @@ export function documentAnchors(
 	const items: DocumentAnchor[] = [];
 	let sectionAnchor: string | null = null;
 	let paragraphIndex = 0;
-	for (const region of inReadingOrder(regions)) {
+	for (const region of documentReadingOrder(regions)) {
 		if (region.kind === "header") {
 			const number = sectionNumber(headerLabel(region) ?? "");
 			sectionAnchor = number ? `#${number}` : null;
