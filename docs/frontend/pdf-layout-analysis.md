@@ -127,7 +127,7 @@ LayoutAnalysisPluginPackage: {
 
 ### 后端选择（本地 ONNX / 远程 Provider）
 
-设置 →「版面解析」可选择检测后端（`settings.layout.backend`），选项由前端注册表 `LAYOUT_PROVIDERS`（`src/lib/pdf/layout/providers.ts`）驱动；下拉只列出本地 + 已配置（apiKey 非空）的 provider，可选项 ≤1 时保留 Select 外观但 disabled、不弹出菜单（正文解析引擎 `parserBackend` 同理，避免换成纯文本导致布局抖动）。**内置 provider（`agentero`）没有 apiKey，因此必须和 `local` 一样豁免这条过滤**，否则它会整个从 `parserBackend` 下拉里消失、用户根本选不到：它改由 Host 可用性（`useBuiltinProviderAvailable`）门控，不可用时**若已被选中仍留在列表里但渲染为 disabled**，而不是凭空消失。凭证卡片一侧由 `isProviderCardConfigurable` 过滤掉没有任何可编辑字段的卡片，所以内置 parser 不会渲染出空卡或只有一个 Confirm 的卡。配置卡里清空 API Key 会立即清除已存密钥（无需点确认）；若当前后端指向该 provider 则回退本地：
+设置 →「版面解析」可选择检测后端（`settings.layout.backend`），选项由前端注册表 `LAYOUT_PROVIDERS`（`src/lib/pdf/layout/providers.ts`）驱动；下拉列出本地、当前选中项及已配置（apiKey 非空）的 provider，可选项 ≤1 时保留 Select 外观但 disabled、不弹出菜单（正文解析引擎 `parserBackend` 同理，避免换成纯文本导致布局抖动）。当前设置页不再提供内置正文解析 provider（`agentero`）；旧设置若仍选中它，会在加载设置页后回退到 `local`。底层内置 provider 实现和状态查询仍保留，设置页不再使用独立的可用性 hook。凭证卡片一侧由 `isProviderCardConfigurable` 过滤掉没有任何可编辑字段的卡片，所以内置 parser 不会渲染出空卡或只有一个 Confirm 的卡。配置卡里清空 API Key 会立即清除已存密钥（无需点确认）；若当前后端指向该 provider 则回退本地：
 
 凭证卡片区默认只平铺 Paddle / MinerU（推荐路径），OpenAI 兼容这类通用兜底卡片收进默认折叠的「其他服务商」，并用一行提示引导先配置 Paddle / MinerU（issue #656）。解析失败时给出可操作的排查入口：查看器内失败 toast 带「打开解析设置」动作（`use-pdf-layout-run.ts` 的 `notifyLayoutFailure` → `openSettingsWindow("layout")`，带动作时停留 20s）；headless / JobCenter 的 `layoutAnalyze` / `parseBody` / `parseRefs` 失败没有查看器 toast，由后台任务面板补同款 toast（`background-tasks-panel.tsx`，排除手动的 `layoutRun` 以免重复）；上述四类失败行本身也带一个设置跳转按钮。
 

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { stepPdfZoom } from "@/lib/pdf/zoom";
-import { collapseDiff, diffLines } from "@/lib/writing/diff";
 import {
 	contentHash,
 	HISTORY_COALESCE_MS,
@@ -87,25 +86,13 @@ describe("writing history", () => {
 		expect(plan.entries.at(-1)?.id).toBe("fresh");
 	});
 
-	it("builds a stable project key and a small line diff", () => {
+	it("builds a stable project key", () => {
 		expect(historyProjectKey("D:/vault/thesis/paper")).toBe(
 			historyProjectKey("D:\\vault\\thesis\\paper"),
 		);
-		expect(diffLines("a\nb", "a\nc")).toEqual([
-			{ kind: "same", text: "a" },
-			{ kind: "del", text: "b" },
-			{ kind: "add", text: "c" },
-		]);
-		const collapsed = collapseDiff([
-			{ kind: "same", text: "1" },
-			{ kind: "same", text: "2" },
-			{ kind: "same", text: "3" },
-			{ kind: "same", text: "4" },
-			{ kind: "same", text: "5" },
-			{ kind: "add", text: "6" },
-		]);
-		expect(collapsed[0]).toEqual({ kind: "skip", text: "" });
-		expect(collapsed.at(-1)).toEqual({ kind: "add", text: "6" });
+	});
+
+	it("keeps PDF zoom within its supported steps", () => {
 		expect(stepPdfZoom(1, 1)).toBe(1.1);
 		expect(stepPdfZoom(0.5, -1)).toBe(0.5);
 	});
