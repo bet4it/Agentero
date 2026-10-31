@@ -1,16 +1,10 @@
 import { Check, LoaderCircle } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useThemePreviews } from "@/hooks/use-theme-previews";
 import { cn } from "@/lib/core/utils";
 import type { AppSettings } from "@/lib/settings";
-import {
-	applyUiTheme,
-	DEFAULT_UI_THEME,
-	loadUiThemes,
-	UI_THEMES,
-	type UiThemeDef,
-} from "@/lib/ui/theme";
+import { applyUiTheme } from "@/lib/ui/theme";
 
 export function ThemeStep({
 	settings,
@@ -21,48 +15,11 @@ export function ThemeStep({
 }) {
 	const { t } = useTranslation(["onboarding", "settings"]);
 	const { resolvedTheme } = useTheme();
-	const [themeDefs, setThemeDefs] = useState<UiThemeDef[]>([]);
-
-	useEffect(() => {
-		let active = true;
-		void loadUiThemes()
-			.then((themes) => {
-				if (active) setThemeDefs(themes);
-			})
-			.catch(() => {
-				// Manifest names remain usable if preview data fails to load.
-			});
-		return () => {
-			active = false;
-		};
-	}, []);
-
 	const isDark = resolvedTheme === "dark";
-	const defaultPreview = {
-		background: isDark ? "oklch(0.145 0 0)" : "oklch(1 0 0)",
-		card: isDark ? "oklch(0.205 0 0)" : "oklch(1 0 0)",
-		primary: isDark ? "oklch(0.922 0 0)" : "oklch(0.205 0 0)",
-		secondary: isDark ? "oklch(0.269 0 0)" : "oklch(0.97 0 0)",
-		accent: isDark ? "oklch(0.269 0 0)" : "oklch(0.97 0 0)",
-		foreground: isDark ? "oklch(0.985 0 0)" : "oklch(0.145 0 0)",
-		border: isDark ? "oklch(1 0 0 / 10%)" : "oklch(0.922 0 0)",
-	};
-	const previewThemes = [
-		{
-			name: DEFAULT_UI_THEME,
-			title: t("settings:appearance.uiTheme.default"),
-			light: defaultPreview,
-			dark: defaultPreview,
-		},
-		...UI_THEMES.map(
-			(meta) =>
-				themeDefs.find((theme) => theme.name === meta.name) ?? {
-					...meta,
-					light: defaultPreview,
-					dark: defaultPreview,
-				},
-		),
-	];
+	const { previewThemes, hasPreviewData } = useThemePreviews(
+		isDark,
+		t("settings:appearance.uiTheme.default"),
+	);
 
 	return (
 		<div className="space-y-4">
@@ -125,7 +82,7 @@ export function ThemeStep({
 					);
 				})}
 			</div>
-			{themeDefs.length === 0 ? (
+			{!hasPreviewData ? (
 				<LoaderCircle className="mx-auto size-3.5 animate-spin text-muted-foreground" />
 			) : null}
 		</div>

@@ -17,6 +17,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useThemePreviews } from "@/hooks/use-theme-previews";
 import { cn } from "@/lib/core/utils";
 import type {
 	AppSettings,
@@ -31,13 +32,7 @@ import {
 	WIKI_EMBED_FONT_SIZE_MAX,
 	WIKI_EMBED_FONT_SIZE_MIN,
 } from "@/lib/settings";
-import {
-	applyUiTheme,
-	DEFAULT_UI_THEME,
-	loadUiThemes,
-	UI_THEMES,
-	type UiThemeDef,
-} from "@/lib/ui/theme";
+import { applyUiTheme } from "@/lib/ui/theme";
 
 export type AppearancePaneProps = {
 	theme: ThemePreference;
@@ -80,7 +75,6 @@ function AppearancePaneInner({
 	const wikiEmbedFontId = useId();
 	const markdownWidthId = useId();
 	const uiScaleId = useId();
-	const [themeDefs, setThemeDefs] = useState<UiThemeDef[]>([]);
 
 	const [fontSize, setFontSize] = useState(editorFontSize);
 	useEffect(() => {
@@ -134,51 +128,16 @@ function AppearancePaneInner({
 		return () => clearTimeout(id);
 	}, [scale, uiScale, patch]);
 
-	useEffect(() => {
-		let active = true;
-		void loadUiThemes()
-			.then((themes) => {
-				if (active) setThemeDefs(themes);
-			})
-			.catch(() => {
-				// Manifest names remain usable if preview data fails to load.
-			});
-		return () => {
-			active = false;
-		};
-	}, []);
-
 	const setThemePref = (next: ThemePreference) => {
 		patch({ theme: next });
 		setTheme(next);
 	};
 
 	const isDark = resolvedTheme === "dark";
-	const defaultPreview = {
-		background: isDark ? "oklch(0.145 0 0)" : "oklch(1 0 0)",
-		card: isDark ? "oklch(0.205 0 0)" : "oklch(1 0 0)",
-		primary: isDark ? "oklch(0.922 0 0)" : "oklch(0.205 0 0)",
-		secondary: isDark ? "oklch(0.269 0 0)" : "oklch(0.97 0 0)",
-		accent: isDark ? "oklch(0.269 0 0)" : "oklch(0.97 0 0)",
-		foreground: isDark ? "oklch(0.985 0 0)" : "oklch(0.145 0 0)",
-		border: isDark ? "oklch(1 0 0 / 10%)" : "oklch(0.922 0 0)",
-	};
-	const previewThemes = [
-		{
-			name: DEFAULT_UI_THEME,
-			title: t("appearance.uiTheme.default"),
-			light: defaultPreview,
-			dark: defaultPreview,
-		},
-		...UI_THEMES.map(
-			(meta) =>
-				themeDefs.find((theme) => theme.name === meta.name) ?? {
-					...meta,
-					light: defaultPreview,
-					dark: defaultPreview,
-				},
-		),
-	];
+	const { previewThemes, hasPreviewData } = useThemePreviews(
+		isDark,
+		t("appearance.uiTheme.default"),
+	);
 
 	return (
 		<>
@@ -291,7 +250,7 @@ function AppearancePaneInner({
 							);
 						})}
 					</div>
-					{themeDefs.length === 0 ? (
+					{!hasPreviewData ? (
 						<LoaderCircle className="mx-auto mt-2 size-3.5 animate-spin text-muted-foreground" />
 					) : null}
 				</div>
