@@ -28,6 +28,8 @@ Host `features/web/proxy.rs`(agentero-web scheme)
 
 与 `arxivReaderUrl` 同一约束:Windows WebView2 把自定义 scheme 拦截为 `http://<scheme>.localhost`。构造与 `event.origin` 校验统一走 `src/lib/web-view/proxy-url.ts`(`webViewProxyUrl` / `webViewProxyOrigins`,后者两种形态都接受)。
 
+网页论文、本地 HTML 预览与广场 iframe 共用 `src/hooks/use-iframe-drag-shield.ts`：捕获 `dragstart` 后暂停 iframe 命中测试，`dragend` / `drop` 后恢复，使拖放事件能到达 Dockview；各查看器的授权、导航与 sandbox 规则仍独立维护。
+
 ## 安全边界(Host 侧)
 
 | 防线 | 实现 |

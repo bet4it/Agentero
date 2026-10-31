@@ -6,6 +6,7 @@ import { AskPopover } from "@/components/viewer/pdf/cards/ask-popover";
 import { SelectionMenu } from "@/components/viewer/pdf/cards/selection-menu";
 import { TranslateCard } from "@/components/viewer/pdf/cards/translate-card";
 import { useWebViewSelection } from "@/components/viewer/web-view/use-web-view-selection";
+import { useIframeDragShield } from "@/hooks/use-iframe-drag-shield";
 import { commands } from "@/lib/core/bindings";
 import { callApiResult } from "@/lib/core/ipc";
 import { cn } from "@/lib/core/utils";
@@ -34,24 +35,8 @@ type ProxyGate = "pending" | "ready" | "denied";
 export function HtmlViewer({ srcUrl, title, className }: HtmlViewerProps) {
 	const { t } = useTranslation("viewer");
 	const iframeRef = useRef<HTMLIFrameElement | null>(null);
-	/** While HTML5 DnD is active, disable iframe hit-testing so dragover
-	 * reaches dockview drop targets (sandboxed iframe swallows drag events). */
-	const [dragShield, setDragShield] = useState(false);
+	const dragShield = useIframeDragShield();
 	const [gate, setGate] = useState<ProxyGate>("pending");
-
-	useEffect(() => {
-		const arm = () => setDragShield(true);
-		const disarm = () => setDragShield(false);
-		// Capture phase: see tree/OS drags before the event enters the iframe.
-		window.addEventListener("dragstart", arm, true);
-		window.addEventListener("dragend", disarm, true);
-		window.addEventListener("drop", disarm, true);
-		return () => {
-			window.removeEventListener("dragstart", arm, true);
-			window.removeEventListener("dragend", disarm, true);
-			window.removeEventListener("drop", disarm, true);
-		};
-	}, []);
 
 	const remote = srcUrl && /^https?:\/\//i.test(srcUrl) ? srcUrl : null;
 	const trusted = remote ? isArxivHostedUrl(remote) : false;

@@ -20,6 +20,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIframeDragShield } from "@/hooks/use-iframe-drag-shield";
 import { openExternalUrl } from "@/lib/core/open-external";
 import { cn } from "@/lib/core/utils";
 import { importPlazaPaper, type PlazaImportRequest } from "@/lib/plaza/import";
@@ -144,22 +145,7 @@ export function PlazaWebFrame({
 	});
 	/** Needed to post import results back into the frame. */
 	const frameRef = useRef<HTMLIFrameElement>(null);
-	/** While HTML5 DnD is active, disable frame hit-testing so dragover reaches
-	 *  dockview drop targets (the frame otherwise swallows drag events). */
-	const [dragShield, setDragShield] = useState(false);
-
-	useEffect(() => {
-		const arm = () => setDragShield(true);
-		const disarm = () => setDragShield(false);
-		window.addEventListener("dragstart", arm, true);
-		window.addEventListener("dragend", disarm, true);
-		window.addEventListener("drop", disarm, true);
-		return () => {
-			window.removeEventListener("dragstart", arm, true);
-			window.removeEventListener("dragend", disarm, true);
-			window.removeEventListener("drop", disarm, true);
-		};
-	}, []);
+	const dragShield = useIframeDragShield();
 
 	useEffect(() => {
 		if (!embedOrigin) return;

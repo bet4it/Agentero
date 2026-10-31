@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useIframeDragShield } from "@/hooks/use-iframe-drag-shield";
 import { commands } from "@/lib/core/bindings";
 import { callApiResult } from "@/lib/core/ipc";
 import { notifyError } from "@/lib/core/notify";
@@ -37,22 +38,7 @@ export function LocalHtmlViewer({
 	const grantRef = useRef<Grant | null>(null);
 	const [src, setSrc] = useState<string | null>(null);
 	const [failed, setFailed] = useState(false);
-	/** While HTML5 DnD is active, disable iframe hit-testing so dragover
-	 * reaches dockview drop targets (a sandboxed iframe swallows drag events). */
-	const [dragShield, setDragShield] = useState(false);
-
-	useEffect(() => {
-		const arm = () => setDragShield(true);
-		const disarm = () => setDragShield(false);
-		window.addEventListener("dragstart", arm, true);
-		window.addEventListener("dragend", disarm, true);
-		window.addEventListener("drop", disarm, true);
-		return () => {
-			window.removeEventListener("dragstart", arm, true);
-			window.removeEventListener("dragend", disarm, true);
-			window.removeEventListener("drop", disarm, true);
-		};
-	}, []);
+	const dragShield = useIframeDragShield();
 
 	useEffect(() => {
 		let cancelled = false;
