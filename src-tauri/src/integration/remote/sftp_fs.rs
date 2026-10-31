@@ -173,7 +173,7 @@ impl VaultFs for SftpFs {
             let meta = fs
                 .metadata(Path::new(&abs))
                 .await
-                .map_err(|e| AppError::message(format!("sftp stat {abs}: {e}")))?;
+                .map_err(|e| sftp_stat_error(&abs, e))?;
             Ok(meta_to_fs(&meta))
         })
         .await
@@ -276,6 +276,19 @@ impl VaultFs for SftpFs {
     }
 }
 
+fn sftp_stat_error(path: &str, error: openssh_sftp_client::Error) -> AppError {
+    use openssh_sftp_client::{error::SftpErrorKind, Error};
+
+    let message = format!("sftp stat {path}: {error}");
+    // Only the server's file-status response means the remote path is absent.
+    // A local transport IO error (even NotFound) must remain an error.
+    if matches!(error, Error::SftpError(SftpErrorKind::NoSuchFile, _)) {
+        std::io::Error::new(std::io::ErrorKind::NotFound, message).into()
+    } else {
+        AppError::message(message)
+    }
+}
+
 fn sftp_timeout(operation: &str) -> AppError {
     AppError::message(format!(
         "sftp {operation} timeout after {}s",
@@ -352,4 +365,32 @@ async fn remove_dir_all(fs: &mut openssh_sftp_client::fs::Fs, path: &str) -> Res
     fs.remove_dir(Path::new(path))
         .await
         .map_err(|e| AppError::message(format!("sftp rmdir {path}: {e}")))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use openssh_sftp_client::{error::SftpErrorKind, Error};
+
+    fn server_error(kind: SftpErrorKind) -> Error {
+        let message = serde_json::from_str(r#"["arbitrary message", "en"]"#).unwrap();
+        Error::SftpError(kind, message)
+    }
+
+    #[test]
+    fn stat_only_classifies_server_no_such_file_as_missing() {
+        let missing = sftp_stat_error("/vault/note.md", server_error(SftpErrorKind::NoSuchFile));
+        assert!(matches!(missing, AppError::Io(e) if e.kind() == std::io::ErrorKind::NotFound));
+        for error in [
+            server_error(SftpErrorKind::PermDenied),
+            server_error(SftpErrorKind::Failure),
+            Error::IOError(std::io::ErrorKind::ConnectionReset.into()),
+            Error::IOError(std::io::ErrorKind::NotFound.into()),
+        ] {
+            assert!(matches!(
+                sftp_stat_error("/vault/note.md", error),
+                AppError::Message(_)
+            ));
+        }
+    }
 }

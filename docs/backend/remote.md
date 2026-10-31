@@ -32,6 +32,10 @@
 
 **已知差异（wire 契约保留，待后续单独评估）**：`paper_list` 返回按 `id` 去重的 `PaperListRow`（含本地 `has_pdf` 探测）；`remote_paper_list` 刷新远端镜像后返回裸 `PaperRecord[]`，不去重、无 `has_pdf`（前端视为"未探测"，见 [api.md](api.md) 的 `paper_list` 一节）。两端命令名、参数、返回类型（specta bindings）保持现状，不因去重实现而变化。
 
+## 文件存在性检查
+
+`VaultFs::exists` 仅把本地 `ErrorKind::NotFound` 或 SFTP 服务端 `NoSuchFile` 转为 `false`；路径校验、权限、连接与超时错误继续返回错误。SFTP transport 自身的 IO NotFound 也不代表远端文件缺失，避免回收站恢复等碰撞检查在断连时继续执行。
+
 ## 超时
 
 建连与校验约 15s；SFTP 操作约 30s；SSH ServerAlive；不自动重连、不重放写。

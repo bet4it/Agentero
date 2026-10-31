@@ -84,7 +84,7 @@ impl VaultFs for LocalFs {
         let path = self.resolve(rel)?;
         let meta = fs::metadata(&path)
             .await
-            .map_err(|e| AppError::message(format!("stat {}: {e}", path.display())))?;
+            .map_err(|e| std::io::Error::new(e.kind(), format!("stat {}: {e}", path.display())))?;
         Ok(FsFileMeta {
             size: meta.len(),
             mtime: mtime_secs(&meta),
@@ -202,6 +202,16 @@ mod tests {
         assert_eq!(meta.size, 5);
         assert!(meta.is_file);
         let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[tokio::test]
+    async fn exists_distinguishes_missing_paths_from_invalid_paths() {
+        let root = tempfile::tempdir().unwrap();
+        let fs = LocalFs::new(root.path());
+        std::fs::write(root.path().join("note.md"), "note").unwrap();
+        assert!(fs.exists("note.md").await.unwrap());
+        assert!(!fs.exists("missing.md").await.unwrap());
+        assert!(fs.exists("../outside.md").await.is_err());
     }
 
     #[tokio::test]

@@ -149,6 +149,8 @@
 
 ## R · 前置正确性修复
 
+2026-10-31：恢复流程前置修复——`VaultFs::exists` 不再吞掉所有 io/message 错误；本地 stat 保留 IO kind，SFTP stat 仅将服务端 NoSuchFile 映射为缺失，权限、断连与非法路径继续报错。未扩展全仓错误体系，CLI 文本错误分类仍待单独处理。验证：core `fs::local::tests` 3 通过；Host `integration::remote::sftp_fs::tests` 1 通过，覆盖缺失、非法路径、服务端权限/通用失败及 transport 错误分类。
+
 小范围修复可单独提交，不等待架构重构；R1/R2/R3 已完成，其余状态见各项。安全与正确性修复不因其规模小而推迟。
 
 验证保护（2026-09-25）：CI 的既有 `cli-tests` 任务改为显式运行 `cargo test -p agentero-core -p agentero-cli`，使 R2 等共享层回归测试进入 PR 检查；复用该任务的 PDFium provisioning 与构建产物，不增加矩阵任务或桌面 adapter staging。本地 `cargo test -p agentero-core`：506 通过、4 个既有手动/性能测试 ignored、0 失败；详见[测试入口](../test/index.md)。提交：`4abb65180`。
