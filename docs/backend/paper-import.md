@@ -231,3 +231,7 @@ liteparse 在**运行时 `dlopen`** PDFium，而 `liteparse-pdfium-sys` 的 buil
 
 `src-tauri/src/features/import/`  
 前端 UI：[../frontend/paper-import.md](../frontend/paper-import.md)
+
+### 远程版面 PDF 请求预处理
+
+Host `features/paper/analyze/layout/hosted` 为 MinerU 与 Paddle 共用 PDF 上传预处理：空输入检查、96 MiB base64 字符数上限、base64 解码和空文件名回退 `paper.pdf`。供应商请求、进度通知及结果解析仍由各自引擎负责。

@@ -23,7 +23,6 @@ use crate::features::paper::analyze::layout::hosted::{
 };
 use crate::features::paper::import::CANCELLED_MESSAGE;
 use async_trait::async_trait;
-use base64::Engine;
 use reqwest::StatusCode;
 use serde_json::{json, Value};
 use std::collections::HashSet;
@@ -40,8 +39,6 @@ const MINERU_REQUEST_TIMEOUT: Duration = Duration::from_secs(120);
 /// MinerU's own default and covers Chinese (Simplified / Traditional) plus
 /// English, which fits mixed-language papers.
 const MINERU_DEFAULT_LANGUAGE: &str = "ch";
-/// Per-request payload cap for the whole-PDF upload (base64 chars).
-const MAX_PDF_BASE64_CHARS: usize = 96 * 1024 * 1024;
 /// Untrusted result zip: cap the download and each decompressed JSON entry
 /// to prevent zip-bomb OOM (same rationale as the sync gunzip caps).
 const MAX_RESULT_ZIP_BYTES: usize = 256 * 1024 * 1024;
@@ -874,27 +871,13 @@ async fn analyze_pdf(ctx: LayoutAnalyzeContext) -> Result<LayoutRemoteAnalyzePdf
         credentials,
         args,
     } = ctx;
-    if args.pdf_base64.trim().is_empty() {
-        return Err(AppError::message("layout_remote: PDF is empty"));
-    }
-    if args.pdf_base64.len() > MAX_PDF_BASE64_CHARS {
-        return Err(AppError::message("layout_remote: PDF too large"));
-    }
-    let pdf_bytes = base64::engine::general_purpose::STANDARD
-        .decode(args.pdf_base64.trim())
-        .map_err(|e| AppError::message(format!("layout_remote: invalid PDF base64: {e}")))?;
+    let (pdf_bytes, file_name) =
+        super::prepare_pdf_upload(&args.pdf_base64, args.file_name.as_deref())?;
 
     let request_id = args.request_id.clone();
     let emit_progress = move |phase: &str, extracted: Option<u64>, total: Option<u64>| {
         emit_cloud_progress(&app, phase, extracted, total, request_id.clone());
     };
-    let file_name = args
-        .file_name
-        .as_deref()
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .unwrap_or("paper.pdf")
-        .to_string();
 
     let zip_bytes =
         run_mineru_extract(&credentials, pdf_bytes, &file_name, &emit_progress, &|| {

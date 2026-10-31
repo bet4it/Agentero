@@ -25,8 +25,6 @@ const CLOUD_MODEL: &str = "PP-StructureV3";
 const CLOUD_POLL_INTERVAL: Duration = Duration::from_secs(3);
 const CLOUD_JOB_DEADLINE: Duration = Duration::from_secs(600);
 const CLOUD_REQUEST_TIMEOUT: Duration = Duration::from_secs(120);
-/// Per-request payload cap for the whole-PDF upload (base64 chars).
-const MAX_PDF_BASE64_CHARS: usize = 96 * 1024 * 1024;
 
 pub struct PaddleEngine;
 
@@ -366,27 +364,13 @@ async fn analyze_pdf(ctx: LayoutAnalyzeContext) -> Result<LayoutRemoteAnalyzePdf
         credentials,
         args,
     } = ctx;
-    if args.pdf_base64.trim().is_empty() {
-        return Err(AppError::message("layout_remote: PDF is empty"));
-    }
-    if args.pdf_base64.len() > MAX_PDF_BASE64_CHARS {
-        return Err(AppError::message("layout_remote: PDF too large"));
-    }
-    let pdf_bytes = base64::engine::general_purpose::STANDARD
-        .decode(args.pdf_base64.trim())
-        .map_err(|e| AppError::message(format!("layout_remote: invalid PDF base64: {e}")))?;
+    let (pdf_bytes, file_name) =
+        super::prepare_pdf_upload(&args.pdf_base64, args.file_name.as_deref())?;
 
     let request_id = args.request_id.clone();
     let emit_progress = move |phase: &str, extracted: Option<u64>, total: Option<u64>| {
         emit_cloud_progress(&app, phase, extracted, total, request_id.clone());
     };
-    let file_name = args
-        .file_name
-        .as_deref()
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .unwrap_or("paper.pdf")
-        .to_string();
 
     let (result_text, data_info) = run_paddle_ocr_job(
         credentials.api_key.as_deref(),
