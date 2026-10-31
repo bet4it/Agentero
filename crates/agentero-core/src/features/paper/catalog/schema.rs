@@ -14,6 +14,7 @@
 //! - v9: `code_repo` link (filled from PDF page 1 on import when empty; still hand-editable)
 //! - v10: manually maintained `openreview_url` link
 //! - v11: `custom_properties` table + `papers.custom_props_json`
+//! - v12: durable pending metadata sidecar paths
 
 use crate::error::AppError;
 use crate::sqlite::MigrationStep;
@@ -24,7 +25,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock};
 
 /// Current catalog schema version written to `schema_meta`.
-pub const SCHEMA_VERSION: i32 = 11;
+pub const SCHEMA_VERSION: i32 = 12;
 
 const DDL_V1: &str = r#"
 CREATE TABLE IF NOT EXISTS schema_meta (
@@ -175,6 +176,22 @@ CREATE TABLE IF NOT EXISTS custom_properties (
 ALTER TABLE papers ADD COLUMN custom_props_json TEXT NOT NULL DEFAULT '{}';
 "#;
 
+// Triggers keep direct SQL updates, moves and deletes in the same contract.
+const MIGRATE_V11_TO_V12: &str = r#"
+CREATE TABLE IF NOT EXISTS pending_sidecars (path TEXT PRIMARY KEY NOT NULL);
+INSERT OR IGNORE INTO pending_sidecars SELECT path FROM papers;
+CREATE TRIGGER IF NOT EXISTS paper_sidecar_insert AFTER INSERT ON papers BEGIN
+    INSERT OR REPLACE INTO pending_sidecars(path) VALUES (NEW.path);
+END;
+CREATE TRIGGER IF NOT EXISTS paper_sidecar_update AFTER UPDATE ON papers BEGIN
+    DELETE FROM pending_sidecars WHERE path = OLD.path;
+    INSERT OR REPLACE INTO pending_sidecars(path) VALUES (NEW.path);
+END;
+CREATE TRIGGER IF NOT EXISTS paper_sidecar_delete AFTER DELETE ON papers BEGIN
+    DELETE FROM pending_sidecars WHERE path = OLD.path;
+END;
+"#;
+
 /// Absolute path to `{vault}/.agentero/catalog.sqlite`.
 pub fn catalog_db_path(vault_root: &Path) -> std::path::PathBuf {
     vault_root.join(".agentero").join("catalog.sqlite")
@@ -189,6 +206,7 @@ pub fn ensure_catalog(vault_root: &Path) -> Result<Connection, AppError> {
     let conn = crate::sqlite::open_standard(&db_path, crate::sqlite::DbMsgs::CATALOG)?;
 
     migrate(&conn)?;
+    super::sidecar::retry_pending(vault_root, &conn, None);
     Ok(conn)
 }
 
@@ -285,7 +303,7 @@ pub fn with_catalog<T>(
 
 /// Migration ladder, applied by [`crate::sqlite::run_migrations`] (per-step
 /// version re-read, stamping, `newer than app` guard).
-const MIGRATION_STEPS: [MigrationStep; 11] = [
+const MIGRATION_STEPS: [MigrationStep; 12] = [
     MigrationStep::batch(1, DDL_V1),
     // SQLite ADD COLUMN is not fully batch-safe across existing cols; the
     // v2–v4 entries run one-by-one and ignore duplicate-column errors.
@@ -299,6 +317,7 @@ const MIGRATION_STEPS: [MigrationStep; 11] = [
     MigrationStep::script_tolerant(9, MIGRATE_V8_TO_V9),
     MigrationStep::script_tolerant(10, MIGRATE_V9_TO_V10),
     MigrationStep::script_tolerant(11, MIGRATE_V10_TO_V11),
+    MigrationStep::batch(12, MIGRATE_V11_TO_V12),
 ];
 
 fn migrate(conn: &Connection) -> Result<(), AppError> {

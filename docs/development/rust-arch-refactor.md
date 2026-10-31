@@ -62,11 +62,12 @@
 
 ## B · 数据提交、投影与恢复契约
 
-**问题与证据：** core `catalog/papers.rs::upsert_paper` 在 DB 提交后独立写 sidecar；字段操作原先读整行再 upsert 的并发窗口已由 R2 的事务内 patch 修复，可靠投影仍待实施；Host `integration/remote/catalog_mirror.rs` 发布原先裸读 SQLite 主文件的问题已由 R1 的一致快照修复。`integration/sync/engine.rs:466` 从拉取的文件重建 Catalog，说明投影失败会影响跨设备传播。关联 V1、V10、V11、V33、V35。
+**问题与证据：** core `catalog/papers.rs::upsert_paper` 在 DB 提交后独立写 sidecar；字段操作原先读整行再 upsert 的并发窗口已由 R2 的事务内 patch 修复，本地持久化投影已完成，远端持久化发布恢复仍待完成；Host `integration/remote/catalog_mirror.rs` 发布原先裸读 SQLite 主文件的问题已由 R1 的一致快照修复。`integration/sync/engine.rs:466` 从拉取的文件重建 Catalog，说明投影失败会影响跨设备传播。关联 V1、V10、V11、V33、V35。
 
-- [ ] **B1 字段级事务与可重试投影**（以前置 R1/R2 为基础；R2 字段修改事务已完成，投影部分未开始）
+- [ ] **B1 字段级事务与可重试投影**（以前置 R1/R2 为基础；R2 字段修改事务与本地投影已完成，远端持久化发布恢复待完成）
+  - 2026-10-31：本地持久化投影已实现窄切片：schema v12 pending 路径 + SQLite IMMEDIATE 投影，失败重开重试、同步前 flush，移动/删除同步维护 pending。稀疏远端目录跳过本地写，远端发布仍走 B2 的会话机制；不宣称跨进程远端发布恢复完成。盘上较新 sidecar 保留并要求 rescan 对账。
   - 以 `PaperMutation` 或等价用例保存字段 patch 语义，读改写在一个 DB 事务内完成；不把所有更新统一成全行覆盖。
-  - 同事务记录待投影版本，由有序 projector 写 sidecar；失败可重试，旧版本不得覆盖新版本。同步扫描前排空相关投影或显式报告未就绪。
+  - 已采用同事务 pending 路径表 + SQLite IMMEDIATE 写预约实现有序投影，不需要额外版本 worker；失败可重试，重读最新行避免旧值覆盖。同步扫描前 flush 已有论文目录或显式报告未就绪。
   - 验收：并发改不同字段不丢值；投影失败、乱序及重启后可恢复；Catalog 始终是结构化 metadata 的事实来源。
 - [ ] **B2 明确远端 snapshot/publish 边界**（R1 一致快照与读取刷新已完成，发布协调待完成）
   - 2026-10-10：连接与论文列表刷新读取含 WAL 的服务器快照，保留未发布修改，只读断开不发布；远端原子 CAS、多写者协调与完整会话清退仍未完成。

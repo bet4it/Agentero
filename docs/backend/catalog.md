@@ -15,10 +15,10 @@
 ## 要点
 
 - 主键：论文 `path`（Vault 相对路径）
-- 字段以 `crates/agentero-core/src/features/paper/catalog/schema.rs` 为准（当前 schema v11）
+- 字段以 `crates/agentero-core/src/features/paper/catalog/schema.rs` 为准（当前 schema v12）
 - **单一模型**：`papers.rs::PaperRecord` 同时是 catalog 行、`papers/<id>/metadata.json` sidecar 投影与 IPC 出参（前端 `PaperMetadata` 只是其生成类型的派生别名）。构造走 `PaperRecord::local_pdf(id, title)`（`path` 故意为空），入库管线分配到文件夹后用 `at_path(rel)` 绑定；`upsert_conn` 归一化 `\` → `/` 并**拒绝空 `path`**，避免写出 `path = ''` 主键或把 sidecar 落到 Vault 根（#181）
 - **`date` / `year`**：发表时间以 `date`（TEXT）为准，精度随来源——`YYYY`、`YYYY-MM` 或 `YYYY-MM-DD`（arXiv/alphaXiv/bioRxiv 给全日期；Crossref 取 `issued`→`published-online`→`published-print` 的 date-parts，PubMed 取首个 `PubDate` 的 Year/Month/Day）。`year` 是派生列，由 `date` 的前四位重算，供引用键、树标签与既有消费者使用；`paper_update_meta` 只接受 `date`，清空它同时清空 `year`
-- **字段修改事务**：`update_meta` / `set_is_read` / `set_tags` / `add_tags` / `remove_tags` 共用 `mutate_paper`，在 `BEGIN IMMEDIATE` 事务内读取当前行、应用 patch、写入并回读结果后提交。写预约先于读，既防同进程并发，也覆盖桌面与 CLI 独立连接；标签增删保留集合语义。提交后 sidecar 与标题对应的 NOTES 同步仍为 best-effort；可靠投影重试与顺序保护尚未实现（见架构计划 B1）。
+- **字段修改事务**：`update_meta` / `set_is_read` / `set_tags` / `add_tags` / `remove_tags` 共用 `mutate_paper`，在 `BEGIN IMMEDIATE` 事务内读取当前行、应用 patch、写入并回读结果后提交。写预约先于读，既防同进程并发，也覆盖桌面与 CLI 独立连接；标签增删保留集合语义。提交后 sidecar 经持久化 pending 路径重试并保持顺序（见下文）；标题对应的 NOTES 同步仍为 best-effort。
 - **sidecar 形状**：`metadata.json` = `PaperRecord` 的 pretty JSON（snake_case，`abstract` / `type` 经 serde rename）。读回时 `path` 一律取盘上位置（sidecar 随文件夹移动，内嵌值可能过期）；容忍 Connector 时代的旧文件（无 `path`、tags 为裸字符串）
 - **`type` 列 = `PaperKind` 枚举**：`arxiv` / `pdf` / `html` / `doi` / `other`（全小写序列化，与前端 union 一致）。读侧归一化：历史 `'article'` → `Doi`，任何未识别值 → `Other`；**没有 schema migration**，下次 upsert 自然写回规范拼写。`From<&str>` / `FromSql` / `Deserialize` 三条读路径共用同一归一化，因此不会因脏值整行解析失败
 - **`status` 列 = 导入状态**，词表 `pending` / `importing` / `completed` / `failed`；已读与否由 `is_read` 专管（不要把阅读状态写进 `status`）。当前所有生产者都写 `completed`。Rust 侧仍是 `String`，前端靠 union 窄化维持类型安全；旧库遗留的 `status = 'unread'` 行**未**在读侧 heal（对比 `'article'`），因为前端目前不 switch `status`，无实际后果
@@ -59,3 +59,9 @@ CLI：`agentero paper …` / `paper tag *`。
 
 入库如何写 catalog：[paper-import.md](paper-import.md)。  
 代码：模型 / schema / sidecar 与派生能力探测在 `crates/agentero-core/src/features/paper/catalog/` 与 `crates/agentero-core/src/features/paper/capabilities.rs`；Tauri 命令层在 `src-tauri/src/features/paper/catalog/commands.rs`，本地/远端共享的命令体在 `src-tauri/src/features/paper/catalog/service.rs`（远端侧见 `src-tauri/src/integration/remote/commands.rs`）。
+
+### Metadata 投影重试
+
+Catalog schema v12 在论文变更的同一事务内记录 `pending_sidecars` 路径，移动时迁移路径，删除时清除。单篇写入只重试该路径；打开 Catalog 重试积压项。投影持有 SQLite IMMEDIATE 写预约，读取最新行后原子替换 `metadata.json`，成功才清记录，因此失败和进程退出不会丢失待投影状态，旧调用也不会写回捕获的旧行。升级时将已有论文加入待投影集合。
+
+S3/WebDAV/Git 同步扫描前先 flush；已有目录的写失败或更新的外部 sidecar 会阻止同步，后者先由现有 rescan 对账。稀疏远端 work mirror 中缺少的论文目录保留 pending，但跳过本地投影，不创建目录。远端文件发布仍由 `CatalogMirror` 负责。盘上导入/同步回填不产生额外投影，避免 NOTES-only 论文在空闲同步时新增 sidecar。这里不提供跨文件事务或外部编辑器的文件锁。

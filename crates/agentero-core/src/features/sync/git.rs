@@ -108,6 +108,12 @@ pub async fn sync_vault(
     cfg.validate()?;
     let git = Git::new(vault)?;
 
+    let projection_root = vault.to_path_buf();
+    tokio::task::spawn_blocking(move || {
+        crate::features::paper::catalog::sidecar::flush_pending(&projection_root)
+    })
+    .await
+    .map_err(|e| AppError::message(format!("sidecar projection task: {e}")))??;
     progress("scan", 0, 0);
     git.ensure_repo(cfg).await?;
     let committed = git.commit_local(&cfg.scope).await?;
@@ -1148,7 +1154,7 @@ mod tests {
         let a = tmp.path().join("a");
         fs::create_dir_all(a.join(".agentero")).unwrap();
         write_paper(&a, "# x\n");
-        fs::write(a.join(".agentero/catalog.sqlite"), b"db").unwrap();
+        crate::features::paper::catalog::ensure_catalog(&a).unwrap();
 
         let up = sync_vault(&a, &cfg, noop_progress()).await.unwrap();
         assert!(up.uploaded >= 2, "{up:?}");

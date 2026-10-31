@@ -407,7 +407,10 @@ impl PaperRecord {
 /// Upsert paper row to catalog and project it into the paper's sidecar.
 pub fn upsert_paper(vault_root: &Path, record: &PaperRecord) -> Result<PaperRecord, AppError> {
     let persisted = with_catalog(vault_root, |conn| upsert_conn(conn, record))?;
-    super::sidecar::write_sidecar(vault_root, &persisted);
+    with_catalog(vault_root, |conn| {
+        super::sidecar::retry_pending(vault_root, conn, Some(&persisted.path));
+        Ok(())
+    })?;
     Ok(persisted)
 }
 
@@ -907,7 +910,7 @@ pub fn rebuild_from_disk(vault_root: &Path) -> Result<usize, AppError> {
                         (None, None) => Some(minimal_record_for(&dir, &rel_path)),
                     };
                     if let Some(record) = next {
-                        if upsert_conn(conn, &record).is_ok() {
+                        if import_disk_row(conn, &record).is_ok() {
                             count += 1;
                         }
                     }
@@ -943,14 +946,14 @@ pub fn ensure_row_for_path(
             // (sync, or an external replace) updates this one row.
             if let Some(sidecar) = super::sidecar::read_sidecar(vault_root, &rel_path) {
                 if crate::time::rfc3339_after(&sidecar.updated_at, &row.updated_at) {
-                    return upsert_conn(conn, &sidecar).map(Some);
+                    return import_disk_row(conn, &sidecar).map(Some);
                 }
             }
             return Ok(Some(row));
         }
         let record = super::sidecar::read_sidecar(vault_root, &rel_path)
             .unwrap_or_else(|| minimal_record_for(&vault_root.join(&rel_path), &rel_path));
-        upsert_conn(conn, &record).map(Some)
+        import_disk_row(conn, &record).map(Some)
     })
 }
 
@@ -1384,8 +1387,11 @@ fn mutate_paper(
         tx.commit()?;
         Ok(persisted)
     })?;
-    // Projection stays best-effort and outside the transaction, as for upsert.
-    super::sidecar::write_sidecar(vault_root, &persisted);
+    // The durable pending path survives a failed projection.
+    with_catalog(vault_root, |conn| {
+        super::sidecar::retry_pending(vault_root, conn, Some(&persisted.path));
+        Ok(())
+    })?;
     Ok(persisted)
 }
 
@@ -1623,6 +1629,19 @@ pub fn set_page_counts(vault_root: &Path, counts: &[(String, i64)]) -> Result<()
     })
 }
 
+// Reconciliation imports an existing disk representation; it must not generate
+// a new sidecar for NOTES-only papers or turn a sync download into a new upload.
+fn import_disk_row(conn: &Connection, record: &PaperRecord) -> Result<PaperRecord, AppError> {
+    let tx = conn.unchecked_transaction()?;
+    let persisted = upsert_conn(&tx, record)?;
+    tx.execute(
+        "DELETE FROM pending_sidecars WHERE path = ?1",
+        [&persisted.path],
+    )?;
+    tx.commit()?;
+    Ok(persisted)
+}
+
 /// Single funnel for catalog writes. `path` is normalized and required here:
 /// an empty one upserts a row whose sidecar would land on the vault root.
 fn upsert_conn(conn: &Connection, r: &PaperRecord) -> Result<PaperRecord, AppError> {
@@ -1839,7 +1858,7 @@ fn map_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<PaperRecord> {
     })
 }
 
-fn get_conn(conn: &Connection, path: &str) -> Result<Option<PaperRecord>, AppError> {
+pub(crate) fn get_conn(conn: &Connection, path: &str) -> Result<Option<PaperRecord>, AppError> {
     let mut stmt = conn
         .prepare(&format!(
             r#"
@@ -2080,6 +2099,7 @@ mod tests {
             "agentero-patch-concurrent-{}",
             uuid::Uuid::new_v4()
         ));
+        fs::create_dir_all(dir.join("papers/x")).unwrap();
         let conn = ensure_catalog(&dir).unwrap();
         insert(&conn, "papers/x");
         drop(conn);
@@ -2127,6 +2147,11 @@ mod tests {
         assert!(row.is_read);
         assert_eq!(row.publication.as_deref(), Some("Journal 31"));
         assert_eq!(row.tags.len(), count);
+        assert_eq!(
+            serde_json::to_value(super::super::sidecar::read_sidecar(&dir, "papers/x").unwrap())
+                .unwrap(),
+            serde_json::to_value(&row).unwrap()
+        );
         for i in 0..count {
             assert!(row.tags.iter().any(|tag| tag.name == format!("add-{i}")));
         }

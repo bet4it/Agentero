@@ -159,9 +159,12 @@ async fn run_sync<S: RemoteStore>(
     let mut local_files = {
         let vault = vault.to_path_buf();
         let scope = cfg.scope;
-        tokio::task::spawn_blocking(move || snapshot::scan_vault(&vault, &base, &scope))
-            .await
-            .map_err(|e| AppError::message(format!("scan task: {e}")))??
+        tokio::task::spawn_blocking(move || {
+            crate::features::paper::catalog::sidecar::flush_pending(&vault)?;
+            snapshot::scan_vault(&vault, &base, &scope)
+        })
+        .await
+        .map_err(|e| AppError::message(format!("scan task: {e}")))??
     };
 
     let mut outcome = SyncOutcome::default();
@@ -822,6 +825,28 @@ mod tests {
         assert_eq!((gets - before.0, puts - before.1), (1, 0));
 
         let _ = fs::remove_dir_all(&vault);
+    }
+
+    #[tokio::test]
+    async fn projection_failure_stops_sync_before_remote_io() {
+        use crate::features::paper::catalog::papers::{self, PaperRecord};
+        let vault = tempfile::tempdir().unwrap();
+        fs::create_dir_all(vault.path().join("papers/x/metadata.json")).unwrap();
+        papers::upsert_paper(
+            vault.path(),
+            &PaperRecord::local_pdf("x".into(), "X".into()).at_path("papers/x"),
+        )
+        .unwrap();
+        let store = MemStore::default();
+        assert!(run_sync(
+            vault.path(),
+            &SyncBackendConfig::default(),
+            &store,
+            noop_progress()
+        )
+        .await
+        .is_err());
+        assert_eq!(store.counts(), (0, 0));
     }
 
     /// Two idle devices must not advance HEAD. A download rewrites the file
