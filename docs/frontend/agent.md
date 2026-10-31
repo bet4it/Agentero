@@ -1,5 +1,7 @@
 # Agent 面板
 
+输入框的 DOM 序列化、光标定位和 chip 构造集中在 `components/agent/composer/composer-inline-dom.ts`；`composer-inline-input.tsx` 保留 React 生命周期、IME 与输入事件处理，快捷菜单复用同一 skill 显示名规范化函数。
+
 BYOA：连接本机（或远程）ACP Agent。Host 协议见 [../backend/agent.md](../backend/agent.md)。
 
 ## UI 分层

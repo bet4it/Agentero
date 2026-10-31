@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import { cleanSkillDisplayName } from "@/components/agent/composer/composer-inline-input";
+import { cleanSkillDisplayName } from "@/components/agent/composer/composer-inline-dom";
 import { PopoverContent } from "@/components/ui/popover";
 import type { AgentSkill } from "@/lib/agent";
 import type { AcpCommand } from "@/lib/agent/slash-commands";
