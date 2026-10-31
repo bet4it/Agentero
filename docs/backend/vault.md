@@ -68,6 +68,11 @@
 
 本地与远端 `path_trash` 共用 core `plan_trash` 和同一 `manifest.json` 结构；文件移动仍各自执行，远端 catalog 发布仍在 trash bridge 末尾。本地 `path_trash` 成功后会取消被删论文的全部排队/运行中 JobCenter 任务（`JobCenter::cancel_for_paper`），避免已删论文继续下载 / 解析。
 
+回收 manifest 在第一次移动前原子保存，逐项记录 `prepared` / `trashed` / `restoring`；旧 manifest 默认 `trashed`。恢复先验证目标冲突，再保存恢复意图。文件已经移回但 Catalog 或远端发布失败时，重试只补缺失的 Catalog 行，不覆盖已恢复后编辑的 metadata。未移动的 prepared 项不显示为已删除文件；恢复可跳过它。批量/单项恢复均在 Catalog 发布成功后才移除对应恢复记录。
+
+远端 manifest 使用临时文件 + rename，不回退到截断写；回收/恢复同样只使用 rename。跨文件系统移动或服务器不支持替换 rename 时明确失败，保留原文件与已有 manifest，不采用可能留下半份目标的 copy+remove。恢复协议处理单次操作中断，不提供并行操作同一回收批次的事务隔离。
+
+
 ## 文件监听
 
 - Host `notify` → `vault:file-changed`。

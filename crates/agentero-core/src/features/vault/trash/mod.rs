@@ -33,6 +33,53 @@ pub struct TrashItem {
     /// Catalog rows removed for this item (empty when not under `papers/`).
     #[serde(default)]
     pub catalog_rows: Vec<PaperRecord>,
+    #[serde(default)]
+    pub phase: TrashPhase,
+}
+
+/// Durable move intent; old manifests already describe trashed files.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum TrashPhase {
+    Prepared,
+    #[default]
+    Trashed,
+    Restoring,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RestoreAction {
+    Move,
+    Finish,
+    Unmoved,
+}
+
+pub fn restore_action(
+    item: &TrashItem,
+    stored: bool,
+    target: bool,
+) -> Result<RestoreAction, AppError> {
+    match (stored, target, item.phase) {
+        (true, false, _) => Ok(RestoreAction::Move),
+        (false, true, TrashPhase::Restoring) => Ok(RestoreAction::Finish),
+        (false, true, TrashPhase::Prepared) => Ok(RestoreAction::Unmoved),
+        (_, true, _) => Err(AppError::message(format!(
+            "cannot restore: '{}' already exists",
+            item.rel
+        ))),
+        _ => Err(AppError::message(format!(
+            "trash content missing: {}",
+            item.rel
+        ))),
+    }
+}
+
+/// A retry must not overwrite metadata edited after an earlier item completed.
+pub fn restore_catalog(vault: &Path, item: &TrashItem) -> Result<(), AppError> {
+    for row in &item.catalog_rows {
+        papers::insert_paper_if_missing(vault, row)?;
+    }
+    Ok(())
 }
 
 /// Recycle-bin batch manifest (`manifest.json`).
@@ -66,6 +113,7 @@ impl From<TrashPlanItem> for TrashItem {
             rel: item.rel,
             stored: item.stored,
             catalog_rows: item.catalog_rows,
+            phase: TrashPhase::Prepared,
         }
     }
 }
@@ -144,15 +192,6 @@ pub fn is_trash_candidate(rel: &str) -> bool {
     !rel.is_empty() && rel != "papers" && !rel.contains("..") && !rel.starts_with(".agentero")
 }
 
-/// Manifest write failed after files were moved. The message includes the
-/// batch id so a later restore can find `.agentero/.trash/<batch_id>/`.
-/// Callers must not delete the moved files.
-pub fn manifest_write_failed(batch_id: &str, err: &impl std::fmt::Display) -> AppError {
-    AppError::message(format!(
-        "trash manifest write failed; moved files remain in .agentero/.trash/{batch_id}: {err}"
-    ))
-}
-
 /// Decide which rels are eligible and their stored names.
 ///
 /// `present` reports whether a normalized rel exists. `rows_for` supplies the
@@ -163,15 +202,8 @@ pub fn manifest_write_failed(batch_id: &str, err: &impl std::fmt::Display) -> Ap
 /// distinct. Local and remote skip rules already matched; this does not drop
 /// a path the local command trashes.
 ///
-/// Failure point for both executors (this function does not touch the
-/// filesystem): an invalid batch id returns here, before any move. After
-/// moves, a manifest write failure returns [`manifest_write_failed`] and
-/// leaves the files in the batch. Catalog `delete_under_path` runs only after
-/// that manifest is stored, via [`delete_trashed_catalog`]; a catalog error
-/// also returns `Err` and leaves the batch in place so restore can replay it.
-/// Both sides used to ignore per-item catalog delete errors (remote still
-/// aborted later if `cat.push` failed, without rolling files back). Remote
-/// catalog publish stays in the existing `trash_paths` `cat.push` call.
+/// The executor saves this plan before moving files and records each move in
+/// the manifest before deleting catalog rows.
 pub fn plan_trash<P, R>(
     rels: &[String],
     batch_id: &str,
@@ -184,9 +216,10 @@ where
 {
     validate_batch_id(batch_id)?;
     let mut items = Vec::new();
+    let mut seen = std::collections::HashSet::new();
     for (i, raw) in rels.iter().enumerate() {
         let rel = normalize_rel_separators(raw);
-        if !is_trash_candidate(&rel) || !present(&rel) {
+        if !is_trash_candidate(&rel) || !seen.insert(rel.clone()) || !present(&rel) {
             continue;
         }
         let base = Path::new(&rel)
@@ -205,10 +238,14 @@ where
             catalog_rows,
         });
     }
-    // Snapshots are taken before any delete. A parent requested together with
-    // a child would otherwise keep the child's rows; give each row to the
-    // longest planned path that covers it.
-    retain_rows_for_deepest_item(&mut items);
+    // Moving a selected parent includes its descendants. Keep one operation
+    // and one complete snapshot rather than overlapping restore destinations.
+    let selected: Vec<_> = items.iter().map(|item| item.rel.clone()).collect();
+    items.retain(|item| {
+        !selected
+            .iter()
+            .any(|other| other != &item.rel && path_covers(other, &item.rel))
+    });
     Ok(TrashPlan {
         batch_id: batch_id.to_string(),
         items,
@@ -218,18 +255,6 @@ where
 /// `row_path` is `rel` or a descendant (`rel/...`), not a sibling with a shared prefix.
 fn path_covers(rel: &str, row_path: &str) -> bool {
     row_path == rel || row_path.starts_with(&format!("{rel}/"))
-}
-
-fn retain_rows_for_deepest_item(items: &mut [TrashPlanItem]) {
-    let rels: Vec<String> = items.iter().map(|item| item.rel.clone()).collect();
-    for item in items.iter_mut() {
-        item.catalog_rows.retain(|row| {
-            rels.iter()
-                .filter(|rel| path_covers(rel, &row.path))
-                .max_by_key(|rel| rel.len())
-                .is_some_and(|owner| owner == &item.rel)
-        });
-    }
 }
 
 /// Delete catalog rows for papers whose files are already in the trash batch.
@@ -271,7 +296,7 @@ fn read_manifest(batch_dir: &Path) -> Result<TrashManifest, AppError> {
 fn write_manifest(batch_dir: &Path, manifest: &TrashManifest) -> Result<(), AppError> {
     let json =
         serde_json::to_string_pretty(manifest).map_err(|e| AppError::message(e.to_string()))?;
-    fs::write(batch_dir.join("manifest.json"), json)?;
+    crate::fs::atomic_write(&batch_dir.join("manifest.json"), json.as_bytes())?;
     Ok(())
 }
 
@@ -289,11 +314,18 @@ pub fn trash_paths(vault_root: &Path, rels: &[String]) -> Result<TrashResult, Ap
         now.format("%Y%m%dT%H%M%S"),
         now.timestamp_subsec_nanos()
     );
+    let mut snapshots = std::collections::HashMap::new();
+    for rel in rels {
+        let rel = normalize_rel_separators(rel);
+        if is_trash_candidate(&rel) {
+            snapshots.insert(rel.clone(), papers::list_under_path(vault_root, &rel)?);
+        }
+    }
     let plan = plan_trash(
         rels,
         &batch_id,
         |rel| vault_root.join(rel).exists(),
-        |rel| papers::list_under_path(vault_root, rel).unwrap_or_default(),
+        |rel| snapshots.remove(rel).unwrap_or_default(),
     )?;
     if plan.items.is_empty() {
         return Ok(TrashResult {
@@ -306,37 +338,20 @@ pub fn trash_paths(vault_root: &Path, rels: &[String]) -> Result<TrashResult, Ap
     // Join the trash root and the batch id as path components. The id has
     // already rejected `/` and `\`, so it cannot add another segment.
     let batch_dir = vault_root.join(TRASH_REL).join(&plan.batch_id);
-    let mut items: Vec<TrashItem> = Vec::new();
-    for item in plan.items {
-        if fs::create_dir_all(&batch_dir).is_err() {
-            continue;
-        }
-        let abs = vault_root.join(&item.rel);
-        if fs::rename(&abs, batch_dir.join(&item.stored)).is_err() {
-            // Leave the item in place and the catalog untouched.
-            continue;
-        }
-        items.push(item.into());
-    }
-
-    if items.is_empty() {
-        // Nothing moved — drop the (possibly created) empty batch dir.
-        let _ = fs::remove_dir(&batch_dir);
-        return Ok(TrashResult {
-            batch_id,
-            count: 0,
-            rels: Vec::new(),
-        });
-    }
-
-    let rels_out: Vec<String> = items.iter().map(|item| item.rel.clone()).collect();
-    let manifest = TrashManifest {
-        batch_id: plan.batch_id.clone(),
+    fs::create_dir_all(&batch_dir)?;
+    let mut manifest = TrashManifest {
+        batch_id: plan.batch_id,
         created_at: crate::time::now_rfc3339_millis(),
-        items,
+        items: plan.items.into_iter().map(Into::into).collect(),
     };
-    write_manifest(&batch_dir, &manifest)
-        .map_err(|err| manifest_write_failed(&manifest.batch_id, &err))?;
+    write_manifest(&batch_dir, &manifest)?;
+    for index in 0..manifest.items.len() {
+        let item = &manifest.items[index];
+        fs::rename(vault_root.join(&item.rel), batch_dir.join(&item.stored))?;
+        manifest.items[index].phase = TrashPhase::Trashed;
+        write_manifest(&batch_dir, &manifest)?;
+    }
+    let rels_out = manifest.items.iter().map(|item| item.rel.clone()).collect();
     delete_trashed_catalog(vault_root, &manifest.batch_id, &manifest.items)?;
 
     Ok(TrashResult {
@@ -436,31 +451,48 @@ pub fn restore_batch(vault_root: &Path, batch_id: &str) -> Result<usize, AppErro
     crate::fs::ensure_vault_dir(vault_root)?;
     validate_batch_id(batch_id)?;
     let batch_dir = vault_root.join(TRASH_REL).join(batch_id);
-    let manifest = read_manifest(&batch_dir)?;
-
-    // Pre-check: never overwrite a path that has reappeared since deletion.
+    let mut manifest = read_manifest(&batch_dir)?;
+    let count = manifest.items.len();
+    // Preflight all targets before changing any files.
     for item in &manifest.items {
-        if vault_root.join(&item.rel).exists() {
-            return Err(AppError::message(format!(
-                "cannot undo: '{}' already exists",
-                item.rel
-            )));
-        }
+        restore_action(
+            item,
+            batch_dir.join(&item.stored).try_exists()?,
+            vault_root.join(&item.rel).try_exists()?,
+        )?;
     }
-
-    for item in &manifest.items {
-        let target = vault_root.join(&item.rel);
-        if let Some(parent) = target.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        fs::rename(batch_dir.join(&item.stored), &target)?;
-        for row in &item.catalog_rows {
-            papers::upsert_paper(vault_root, row)?;
-        }
+    for index in 0..count {
+        restore_local_entry(vault_root, &batch_dir, &mut manifest, index)?;
     }
+    fs::remove_dir_all(&batch_dir)?;
+    Ok(count)
+}
 
-    let _ = fs::remove_dir_all(&batch_dir);
-    Ok(manifest.items.len())
+fn restore_local_entry(
+    vault: &Path,
+    batch: &Path,
+    manifest: &mut TrashManifest,
+    index: usize,
+) -> Result<(), AppError> {
+    let item = &manifest.items[index];
+    let target = vault.join(&item.rel);
+    match restore_action(
+        item,
+        batch.join(&item.stored).try_exists()?,
+        target.try_exists()?,
+    )? {
+        RestoreAction::Unmoved => return Ok(()),
+        RestoreAction::Move => {
+            manifest.items[index].phase = TrashPhase::Restoring;
+            write_manifest(batch, manifest)?;
+            if let Some(parent) = target.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            fs::rename(batch.join(&manifest.items[index].stored), &target)?;
+        }
+        RestoreAction::Finish => {}
+    }
+    restore_catalog(vault, &manifest.items[index])
 }
 
 /// List every item currently in the recycle bin, newest batch first.
@@ -479,6 +511,9 @@ pub fn list_trash(vault_root: &Path) -> Result<Vec<TrashEntry>, AppError> {
             continue;
         };
         for item in &manifest.items {
+            if item.phase == TrashPhase::Prepared && !batch_dir.join(&item.stored).try_exists()? {
+                continue;
+            }
             let is_dir = batch_dir.join(&item.stored).is_dir();
             let name = Path::new(&item.rel)
                 .file_name()
@@ -514,23 +549,10 @@ pub fn restore_item(vault_root: &Path, batch_id: &str, stored: &str) -> Result<S
         .position(|i| i.stored == stored)
         .ok_or_else(|| AppError::message("trash item not found"))?;
 
-    let target = vault_root.join(&manifest.items[idx].rel);
-    if target.exists() {
-        return Err(AppError::message(format!(
-            "cannot restore: '{}' already exists",
-            manifest.items[idx].rel
-        )));
-    }
-    if let Some(parent) = target.parent() {
-        fs::create_dir_all(parent)?;
-    }
+    restore_local_entry(vault_root, &batch_dir, &mut manifest, idx)?;
     let item = manifest.items.remove(idx);
-    fs::rename(batch_dir.join(&item.stored), &target)?;
-    for row in &item.catalog_rows {
-        papers::upsert_paper(vault_root, row)?;
-    }
     if manifest.items.is_empty() {
-        let _ = fs::remove_dir_all(&batch_dir);
+        fs::remove_dir_all(&batch_dir)?;
     } else {
         write_manifest(&batch_dir, &manifest)?;
     }
@@ -701,7 +723,7 @@ mod tests {
     }
 
     #[test]
-    fn plan_trash_assigns_nested_rows_to_the_deeper_item() {
+    fn plan_trash_keeps_parent_with_complete_snapshot() {
         let rels = vec!["papers/group/paperA".into(), "papers/group".into()];
         let plan = plan_trash(
             &rels,
@@ -720,25 +742,9 @@ mod tests {
         )
         .unwrap();
 
-        let child = plan
-            .items
-            .iter()
-            .find(|item| item.rel == "papers/group/paperA")
-            .expect("child item");
-        assert_eq!(child.catalog_rows.len(), 1);
-        assert_eq!(child.catalog_rows[0].path, "papers/group/paperA");
-
-        let group = plan
-            .items
-            .iter()
-            .find(|item| item.rel == "papers/group")
-            .expect("group item");
-        let paths: Vec<_> = group
-            .catalog_rows
-            .iter()
-            .map(|row| row.path.as_str())
-            .collect();
-        assert_eq!(paths, vec!["papers/group/paperB"]);
+        assert_eq!(plan.items.len(), 1);
+        assert_eq!(plan.items[0].rel, "papers/group");
+        assert_eq!(plan.items[0].catalog_rows.len(), 2);
     }
 
     #[test]
@@ -785,6 +791,91 @@ mod tests {
         assert!(json.get("batch_id").is_none());
         assert!(json["items"][0].get("catalogRows").is_some());
         assert!(json["items"][0].get("catalog_rows").is_none());
+    }
+
+    #[test]
+    fn restore_retries_after_catalog_failure() {
+        let root = tempfile::tempdir().unwrap();
+        for id in ["a", "b"] {
+            fs::create_dir_all(root.path().join(format!("papers/{id}"))).unwrap();
+            papers::upsert_paper(root.path(), &sample_record(&format!("papers/{id}"), id)).unwrap();
+        }
+        let batch = trash_paths(root.path(), &["papers/a".into(), "papers/b".into()]).unwrap();
+        crate::features::catalog::with_catalog(root.path(), |conn| {
+            conn.execute_batch("CREATE TRIGGER fail_restore BEFORE INSERT ON papers WHEN NEW.id = 'b' BEGIN SELECT RAISE(FAIL, 'injected'); END;")?;
+            Ok(())
+        }).unwrap();
+        assert!(restore_batch(root.path(), &batch.batch_id).is_err());
+        papers::set_is_read(root.path(), "papers/a", true).unwrap();
+        crate::features::catalog::with_catalog(root.path(), |conn| {
+            conn.execute_batch("DROP TRIGGER fail_restore")?;
+            Ok(())
+        })
+        .unwrap();
+        assert_eq!(restore_batch(root.path(), &batch.batch_id).unwrap(), 2);
+        assert!(
+            papers::get_by_path(root.path(), "papers/a")
+                .unwrap()
+                .unwrap()
+                .is_read
+        );
+        assert!(papers::get_by_path(root.path(), "papers/b")
+            .unwrap()
+            .is_some());
+    }
+
+    #[test]
+    fn single_restore_retries_and_prepared_items_preserve_existing_files() {
+        let root = tempfile::tempdir().unwrap();
+        fs::create_dir_all(root.path().join("papers/a")).unwrap();
+        papers::upsert_paper(root.path(), &sample_record("papers/a", "a")).unwrap();
+        let batch = trash_paths(root.path(), &["papers/a".into()]).unwrap();
+        let batch_dir = root.path().join(TRASH_REL).join(&batch.batch_id);
+        let manifest = read_manifest(&batch_dir).unwrap();
+        let stored = &manifest.items[0].stored;
+        crate::features::catalog::with_catalog(root.path(), |conn| {
+            conn.execute_batch("CREATE TRIGGER fail_restore BEFORE INSERT ON papers BEGIN SELECT RAISE(FAIL, 'injected'); END;")?;
+            Ok(())
+        }).unwrap();
+        assert!(restore_item(root.path(), &batch.batch_id, stored).is_err());
+        crate::features::catalog::with_catalog(root.path(), |conn| {
+            conn.execute_batch("DROP TRIGGER fail_restore")?;
+            Ok(())
+        })
+        .unwrap();
+        restore_item(root.path(), &batch.batch_id, stored).unwrap();
+        assert!(papers::get_by_path(root.path(), "papers/a")
+            .unwrap()
+            .is_some());
+
+        // A crash before the first trash rename leaves only the intent.
+        fs::create_dir_all(&batch_dir).unwrap();
+        let mut intent = manifest;
+        intent.items[0].phase = TrashPhase::Prepared;
+        write_manifest(&batch_dir, &intent).unwrap();
+        assert!(list_trash(root.path()).unwrap().is_empty());
+        restore_batch(root.path(), &batch.batch_id).unwrap();
+        assert!(root.path().join("papers/a").is_dir());
+    }
+
+    #[test]
+    fn overlapping_and_duplicate_paths_restore_without_collisions() {
+        for paths in [
+            vec!["notes/group", "notes/group/a.md", "notes/group"],
+            vec!["notes/group/a.md", "notes/group", "notes/group/a.md"],
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            fs::create_dir_all(root.path().join("notes/group")).unwrap();
+            fs::write(root.path().join("notes/group/a.md"), "a").unwrap();
+            let paths = paths.into_iter().map(str::to_owned).collect::<Vec<_>>();
+            let batch = trash_paths(root.path(), &paths).unwrap();
+            assert_eq!(batch.count, 1);
+            restore_batch(root.path(), &batch.batch_id).unwrap();
+            assert_eq!(
+                fs::read_to_string(root.path().join("notes/group/a.md")).unwrap(),
+                "a"
+            );
+        }
     }
 
     #[test]

@@ -414,6 +414,21 @@ pub fn upsert_paper(vault_root: &Path, record: &PaperRecord) -> Result<PaperReco
     Ok(persisted)
 }
 
+/// Restore missing rows without overwriting a concurrent watcher/user update.
+pub fn insert_paper_if_missing(vault_root: &Path, record: &PaperRecord) -> Result<(), AppError> {
+    let path = crate::fs::normalize_rel_separators(&record.path);
+    with_catalog(vault_root, |conn| {
+        let tx =
+            rusqlite::Transaction::new_unchecked(conn, rusqlite::TransactionBehavior::Immediate)?;
+        if get_conn(&tx, &path)?.is_none() {
+            upsert_conn(&tx, record)?;
+        }
+        tx.commit()?;
+        super::sidecar::retry_pending(vault_root, conn, Some(&path));
+        Ok(())
+    })
+}
+
 pub fn get_by_path(vault_root: &Path, path: &str) -> Result<Option<PaperRecord>, AppError> {
     let path = crate::fs::normalize_rel_separators(path);
     with_catalog(vault_root, |conn| get_conn(conn, &path))
