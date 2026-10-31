@@ -1,5 +1,8 @@
 //! Read-only Vault diagnostics and conservative paper-alias / wikilink repair.
 
+pub(crate) mod note_writes;
+use note_writes::{commit_note_writes, PlannedNoteWrite};
+
 pub use crate::features::markdown::wiki::doctor::{
     apply_wikilink_repairs, plan_wikilink_repairs, WikilinkRepairChange, WikilinkRepairPlan,
     WikilinkRepairResidual, WikilinkRepairResult, WikilinkRepairSuggestion,
@@ -733,13 +736,6 @@ pub fn diagnose_with_index(vault: &Path, index: &WikiIndex) -> Result<DoctorRepo
     })
 }
 
-struct PlannedAliasWrite {
-    path: String,
-    absolute: PathBuf,
-    original: String,
-    rewritten: String,
-}
-
 /// Apply selected alias edits as one preflighted, rollback-capable transaction.
 pub fn apply_alias_repairs(
     vault: &Path,
@@ -857,7 +853,7 @@ pub fn apply_alias_repairs(
                 vec![path.clone()],
             )
         })?;
-        planned.push(PlannedAliasWrite {
+        planned.push(PlannedNoteWrite {
             path,
             absolute,
             original,
@@ -865,48 +861,7 @@ pub fn apply_alias_repairs(
         });
     }
 
-    // Re-check every source immediately before the first write.
-    for write in &planned {
-        let current = fs::read_to_string(&write.absolute).map_err(|error| {
-            DoctorRepairError::new(
-                "readFailed",
-                format!("could not re-read {}: {error}", write.path),
-                vec![write.path.clone()],
-            )
-        })?;
-        if current != write.original {
-            return Err(DoctorRepairError::new(
-                "sourceChanged",
-                format!("paper note changed after preflight: {}", write.path),
-                vec![write.path.clone()],
-            ));
-        }
-    }
-
-    let mut written: Vec<&PlannedAliasWrite> = Vec::new();
-    for write in &planned {
-        if let Err(error) = write_note_bytes(&write.absolute, write.rewritten.as_bytes()) {
-            let mut rollback_complete = true;
-            for previous in written.iter().rev() {
-                if write_note_bytes(&previous.absolute, previous.original.as_bytes()).is_err() {
-                    rollback_complete = false;
-                }
-            }
-            let mut failure = DoctorRepairError::new(
-                "writeFailed",
-                format!("could not write {}: {error}", write.path),
-                planned.iter().map(|item| item.path.clone()).collect(),
-            );
-            failure.rollback = if rollback_complete {
-                "completed"
-            } else {
-                "manualRecoveryRequired"
-            }
-            .into();
-            return Err(failure);
-        }
-        written.push(write);
-    }
+    commit_note_writes(&planned, "paper note")?;
 
     Ok(AliasRepairResult {
         updated_paths: planned.into_iter().map(|write| write.path).collect(),
@@ -923,17 +878,6 @@ pub fn apply_alias_repairs(
 pub fn apply_catalog_duplicate_repairs(vault: &Path) -> Result<DuplicateRepairResult, AppError> {
     crate::fs::ensure_vault_dir(vault)?;
     papers::repair_duplicates(vault)
-}
-
-/// In-place content write for alias repair (path/name never change).
-///
-/// Do **not** use tmp+rename here: Host `atomic_write` is reported by FSEvents
-/// as an incomplete rename. The main window then toasts
-/// `vault.externalRename.unverified` even though no wiki target moved and path-
-/// based `[[...]]` links need no repair. Same trade-off as cite sidecars in
-/// `features/refs` — preflight + in-memory rollback cover batch safety.
-fn write_note_bytes(path: &Path, contents: &[u8]) -> Result<(), String> {
-    fs::write(path, contents).map_err(|error| error.to_string())
 }
 
 #[cfg(test)]

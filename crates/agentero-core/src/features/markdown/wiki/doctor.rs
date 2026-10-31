@@ -17,9 +17,10 @@ use crate::fs::{normalize_rel_lexical, normalize_rel_separators, safe_relative_p
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use uuid::Uuid;
 
+use crate::features::doctor::note_writes::{commit_note_writes, PlannedNoteWrite};
 use crate::features::doctor::DoctorRepairError;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, specta::Type)]
@@ -671,17 +672,6 @@ pub fn plan_wikilink_repairs(vault: &Path) -> Result<WikilinkRepairPlan, DoctorR
     })
 }
 
-fn write_note_bytes(path: &Path, contents: &[u8]) -> Result<(), String> {
-    fs::write(path, contents).map_err(|error| error.to_string())
-}
-
-struct PlannedWikilinkWrite {
-    path: String,
-    absolute: PathBuf,
-    original: String,
-    rewritten: String,
-}
-
 /// Apply selected wikilink byte-range edits with dirty/hash checks and rollback.
 pub fn apply_wikilink_repairs(
     vault: &Path,
@@ -775,7 +765,7 @@ pub fn apply_wikilink_repairs(
         for (start, end, _, replacement) in ordered {
             rewritten.replace_range(start..end, replacement);
         }
-        planned.push(PlannedWikilinkWrite {
+        planned.push(PlannedNoteWrite {
             path,
             absolute,
             original,
@@ -783,47 +773,7 @@ pub fn apply_wikilink_repairs(
         });
     }
 
-    for write in &planned {
-        let current = fs::read_to_string(&write.absolute).map_err(|error| {
-            DoctorRepairError::new(
-                "readFailed",
-                format!("could not re-read {}: {error}", write.path),
-                vec![write.path.clone()],
-            )
-        })?;
-        if current != write.original {
-            return Err(DoctorRepairError::new(
-                "sourceChanged",
-                format!("source changed after preflight: {}", write.path),
-                vec![write.path.clone()],
-            ));
-        }
-    }
-
-    let mut written: Vec<&PlannedWikilinkWrite> = Vec::new();
-    for write in &planned {
-        if let Err(error) = write_note_bytes(&write.absolute, write.rewritten.as_bytes()) {
-            let mut rollback_complete = true;
-            for previous in written.iter().rev() {
-                if write_note_bytes(&previous.absolute, previous.original.as_bytes()).is_err() {
-                    rollback_complete = false;
-                }
-            }
-            let mut failure = DoctorRepairError::new(
-                "writeFailed",
-                format!("could not write {}: {error}", write.path),
-                planned.iter().map(|item| item.path.clone()).collect(),
-            );
-            failure.rollback = if rollback_complete {
-                "completed"
-            } else {
-                "manualRecoveryRequired"
-            }
-            .into();
-            return Err(failure);
-        }
-        written.push(write);
-    }
+    commit_note_writes(&planned, "source")?;
 
     Ok(WikilinkRepairResult {
         updated_paths: planned.into_iter().map(|write| write.path).collect(),

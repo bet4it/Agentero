@@ -44,6 +44,7 @@ Doctor 聚合本地 Vault 的只读完整性检查，并为论文别名、双链
 - 拒绝复杂、异常或无法精确定位的 YAML；
 - 先规划全部文件，再**原地写入**（不改 path / 文件名，只改 frontmatter）；
 - 任一写入失败时按规划内容回滚本批已写文件。
+- alias 与 wikilink 修复共用 core `features/vault/doctor/note_writes.rs` 的提交阶段：全部源文件重检后再原地写入，失败逆序回滚；修复规划和各自错误文案仍由业务入口负责。
 
 不使用 tmp+rename 式原子替换：那样会被 Vault 文件监听器当成「不完整改名」，误报外部改名未修复链接。
 
