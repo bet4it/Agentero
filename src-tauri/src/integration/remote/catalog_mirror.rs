@@ -10,6 +10,7 @@ use crate::features::paper::catalog::{
 };
 use rusqlite::{Connection, OpenFlags};
 use sha2::{Digest, Sha256};
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -38,6 +39,7 @@ pub struct CatalogMirror {
     local_digest: Vec<u8>,
     /// Stamp of the remote file at last successful GET/PUT.
     remote_stamp: RemoteFileStamp,
+    pending_sidecars: HashSet<String>,
 }
 
 impl CatalogMirror {
@@ -91,6 +93,7 @@ impl CatalogMirror {
             source,
             local_digest,
             remote_stamp: stamp,
+            pending_sidecars: HashSet::new(),
         })
     }
 
@@ -144,11 +147,45 @@ impl CatalogMirror {
         Ok(())
     }
 
+    /// Import writes the row while holding the mirror lock, then registers its
+    /// sidecar before any caller can publish that row.
+    pub fn queue_sidecar(&mut self, path: String) {
+        self.pending_sidecars.insert(path);
+    }
+
+    fn sidecar_uploads(&self, snapshot_bytes: &[u8]) -> Result<Vec<(String, Vec<u8>)>, AppError> {
+        if self.pending_sidecars.is_empty() {
+            return Ok(Vec::new());
+        }
+        let snapshot = tempfile::NamedTempFile::new()?;
+        std::fs::write(snapshot.path(), snapshot_bytes)?;
+        let conn = Connection::open_with_flags(snapshot.path(), OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+        crate::features::paper::catalog::papers::list_all_conn(&conn)?
+            .into_iter()
+            .filter(|record| self.pending_sidecars.contains(&record.path))
+            .map(|record| Ok((record.path.clone(), serde_json::to_vec_pretty(&record)?)))
+            .collect()
+    }
+
+    /// A disconnect may discard the work copy only when no write arrived
+    /// during publishing. Keep it available for an explicit retry otherwise.
+    pub async fn push_for_disconnect(&mut self, fs: Arc<dyn VaultFs>) -> Result<(), AppError> {
+        self.push(fs).await?;
+        if !self.pending_sidecars.is_empty()
+            || Sha256::digest(snapshot_catalog(&self.work_db)?).as_slice() != self.local_digest
+        {
+            return Err(AppError::message(
+                "remote catalog changed while publishing; retry disconnecting",
+            ));
+        }
+        Ok(())
+    }
+
     /// Optimistic lock + atomic-ish push (tmp then rename on remote when possible).
     pub async fn push(&mut self, fs: Arc<dyn VaultFs>) -> Result<(), AppError> {
         let bytes = snapshot_catalog(&self.work_db)?;
         let digest = Sha256::digest(&bytes).to_vec();
-        if digest == self.local_digest {
+        if digest == self.local_digest && self.pending_sidecars.is_empty() {
             return Ok(());
         }
         // Replacing the main database while its WAL remains can corrupt the catalog.
@@ -165,6 +202,17 @@ impl CatalogMirror {
                     "remote catalog changed (conflict); reopen the remote vault",
                 ));
             }
+        }
+        // Both payloads come from the same immutable snapshot. Other writers
+        // can update the work DB while remote IO is awaiting completion.
+        let sidecars = self.sidecar_uploads(&bytes)?;
+        for (path, bytes) in &sidecars {
+            fs.write(
+                &format!("{path}/metadata.json"),
+                bytes,
+                WriteOpts::default(),
+            )
+            .await?;
         }
         // Write tmp then rename
         fs.write(
@@ -193,6 +241,26 @@ impl CatalogMirror {
         let meta = fs.stat(CATALOG_REL).await?;
         self.remote_stamp = RemoteFileStamp::from(meta);
         self.local_digest = digest;
+        let root = self
+            .work_db
+            .parent()
+            .and_then(Path::parent)
+            .expect("work catalog root");
+        for path in self.pending_sidecars.clone() {
+            let uploaded = sidecars
+                .iter()
+                .find(|(candidate, _)| candidate == &path)
+                .map(|(_, bytes)| bytes);
+            let current = crate::features::paper::catalog::papers::get_by_path(root, &path)?;
+            if current
+                .as_ref()
+                .map(serde_json::to_vec_pretty)
+                .transpose()?
+                .is_none_or(|bytes| uploaded == Some(&bytes))
+            {
+                self.pending_sidecars.remove(&path);
+            }
+        }
         Ok(())
     }
 }
@@ -219,6 +287,123 @@ mod tests {
     use crate::features::paper::catalog::evict_catalog_conn;
     use std::sync::Arc;
     use std::time::{SystemTime, UNIX_EPOCH};
+
+    struct MutatingFs {
+        local: LocalFs,
+        work: PathBuf,
+    }
+
+    #[async_trait::async_trait]
+    impl VaultFs for MutatingFs {
+        fn caps(&self) -> crate::core::fs::FsCaps {
+            self.local.caps()
+        }
+        async fn list(&self, p: &str) -> Result<Vec<crate::core::fs::FsDirEntry>, AppError> {
+            self.local.list(p).await
+        }
+        async fn stat(&self, p: &str) -> Result<FsFileMeta, AppError> {
+            self.local.stat(p).await
+        }
+        async fn read(&self, p: &str) -> Result<Vec<u8>, AppError> {
+            self.local.read(p).await
+        }
+        async fn write(&self, p: &str, bytes: &[u8], opts: WriteOpts) -> Result<(), AppError> {
+            if p == "papers/x/metadata.json" {
+                crate::features::paper::catalog::papers::set_is_read(&self.work, "papers/x", true)?;
+            }
+            self.local.write(p, bytes, opts).await
+        }
+        async fn mkdir(&self, p: &str) -> Result<(), AppError> {
+            self.local.mkdir(p).await
+        }
+        async fn rename(&self, a: &str, b: &str) -> Result<(), AppError> {
+            self.local.rename(a, b).await
+        }
+        async fn remove(&self, p: &str, recursive: bool) -> Result<(), AppError> {
+            self.local.remove(p, recursive).await
+        }
+    }
+
+    #[tokio::test]
+    async fn sidecar_and_catalog_share_snapshot_and_retry_inflight_changes() {
+        use crate::features::paper::catalog::papers;
+        let remote = tempfile::tempdir().unwrap();
+        let work = tempfile::tempdir().unwrap();
+        let fs: Arc<dyn VaultFs> = Arc::new(LocalFs::new(remote.path()));
+        let mut mirror = CatalogMirror::checkout(
+            fs.clone(),
+            work.path(),
+            CatalogSource::Local(remote.path().into()),
+        )
+        .await
+        .unwrap();
+        std::fs::create_dir_all(remote.path().join("papers/x")).unwrap();
+        let row = papers::PaperRecord::local_pdf("x".into(), "X".into()).at_path("papers/x");
+        papers::upsert_paper(work.path(), &row).unwrap();
+        mirror.queue_sidecar(row.path.clone());
+        let mutating: Arc<dyn VaultFs> = Arc::new(MutatingFs {
+            local: LocalFs::new(remote.path()),
+            work: work.path().into(),
+        });
+        assert!(mirror
+            .push_for_disconnect(mutating)
+            .await
+            .unwrap_err()
+            .to_string()
+            .contains("retry disconnecting"));
+        let read_published = || {
+            let conn = Connection::open_with_flags(
+                remote.path().join(CATALOG_REL),
+                OpenFlags::SQLITE_OPEN_READ_ONLY,
+            )
+            .unwrap();
+            let row = papers::list_all_conn(&conn).unwrap().remove(0);
+            let sidecar: serde_json::Value = serde_json::from_slice(
+                &std::fs::read(remote.path().join("papers/x/metadata.json")).unwrap(),
+            )
+            .unwrap();
+            assert_eq!(sidecar, serde_json::to_value(&row).unwrap());
+            row
+        };
+        assert!(!read_published().is_read);
+        assert!(mirror.pending_sidecars.contains("papers/x"));
+        mirror.push(fs).await.unwrap();
+        assert!(read_published().is_read);
+        assert!(mirror.pending_sidecars.is_empty());
+    }
+
+    #[tokio::test]
+    async fn catalog_conflict_does_not_touch_pending_sidecar() {
+        use crate::features::paper::catalog::papers;
+        let remote = tempfile::tempdir().unwrap();
+        let work = tempfile::tempdir().unwrap();
+        let fs: Arc<dyn VaultFs> = Arc::new(LocalFs::new(remote.path()));
+        let mut mirror = CatalogMirror::checkout(
+            fs.clone(),
+            work.path(),
+            CatalogSource::Local(remote.path().into()),
+        )
+        .await
+        .unwrap();
+        std::fs::create_dir_all(remote.path().join("papers/x")).unwrap();
+        let sidecar = remote.path().join("papers/x/metadata.json");
+        std::fs::write(&sidecar, b"remote version").unwrap();
+        let row = papers::PaperRecord::local_pdf("x".into(), "X".into()).at_path("papers/x");
+        papers::upsert_paper(work.path(), &row).unwrap();
+        mirror.queue_sidecar(row.path);
+        let conn = Connection::open(remote.path().join(CATALOG_REL)).unwrap();
+        conn.execute_batch("CREATE TABLE conflicting_writer(value)")
+            .unwrap();
+        drop(conn);
+        assert!(mirror
+            .push(fs)
+            .await
+            .unwrap_err()
+            .to_string()
+            .contains("conflict"));
+        assert_eq!(std::fs::read(sidecar).unwrap(), b"remote version");
+        assert!(mirror.pending_sidecars.contains("papers/x"));
+    }
 
     fn tmp() -> PathBuf {
         let n = SystemTime::now()

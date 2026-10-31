@@ -89,14 +89,16 @@ impl RemoteRegistry {
     }
 
     pub async fn disconnect(&self, session_id: &str) -> Result<(), AppError> {
-        let session = {
-            let mut map = self.inner.lock().await;
-            map.remove(session_id).ok_or_else(|| {
-                AppError::message(format!("remote session not found: {session_id}"))
-            })?
-        };
-        // Best-effort catalog push before drop
-        let _ = session.push_catalog().await;
+        let session = self.get(session_id).await?;
+        // Keep the session and staged files available when publishing fails;
+        // a later push/disconnect retries the same import instead of losing it.
+        session
+            .catalog
+            .lock()
+            .await
+            .push_for_disconnect(session.fs.clone())
+            .await?;
+        self.inner.lock().await.remove(session_id);
         let _ = std::fs::remove_dir_all(&session.work_root);
         // Keep blob cache for LRU reuse; optional cleanup of empty parent
         Ok(())

@@ -71,7 +71,7 @@
 - [ ] **B2 明确远端 snapshot/publish 边界**（R1 一致快照与读取刷新已完成，发布协调待完成）
   - 2026-10-10：连接与论文列表刷新读取含 WAL 的服务器快照，保留未发布修改，只读断开不发布；远端原子 CAS、多写者协调与完整会话清退仍未完成。
   - 以一致快照发布 Catalog，保持冲突检查；将连接、work-root 和待发布投影纳入远端会话生命周期。
-  - 修正 remote commit 先上传目录、后在 staging 生成 sidecar 的顺序缺口（`integration/remote/paper_commit.rs:84`）。
+  - 2026-10-31 已修复远端入库漏传 sidecar：资产上传后提交 Catalog 行，在同一 mirror 锁内登记待发布路径；所有 `CatalogMirror::push` 先上传最新行的 sidecar，再发布 Catalog。失败保留待发布集合，disconnect 仅发布成功后清退 session/work-root。回归覆盖远端 sidecar 与规范化 Catalog 一致、上传失败不提交行、sidecar 写失败阻止断开与发布、同会话重试成功。待发布集合是会话内状态；崩溃恢复、原子 CAS、多写者与完整资源清退仍未完成。
   - 验收：活跃连接写入后 push/pull 数据完整；sidecar 到达正确目标；失败不误报已发布；断开清退连接后才能清理临时目录。
 - [ ] **B3 文件操作恢复与数据库策略复用**
   - 2026-10-21 已收敛本地原子写基础：删除“Windows rename 失败后截断写目标”的旧回退，统一 tempfile 独占 sibling + persist，保留 `.tmp`、Wiki watcher marker 与权限契约，CLI 保存复用同一 helper。覆盖失败保留原目标/清理临时文件、staging 碰撞、并发读写完整性；Windows 增加禁止 delete-share 的目标锁回归。跨文件恢复日志仍未完成。

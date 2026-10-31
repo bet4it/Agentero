@@ -109,9 +109,13 @@ pub(crate) async fn remote_paper_commit(
         meta.body_quality = Some("high".into());
     }
     let record = meta.clone().at_path(&path_rel);
-    papers::upsert_paper(&session.work_root, &record)?;
-    if opts.push_catalog {
-        session.push_catalog().await?;
+    {
+        let mut catalog = session.catalog.lock().await;
+        let persisted = papers::upsert_paper(&session.work_root, &record)?;
+        catalog.queue_sidecar(persisted.path);
+        if opts.push_catalog {
+            catalog.push(session.fs.clone()).await?;
+        }
     }
 
     Ok(RemotePaperCommitResult {
@@ -130,6 +134,133 @@ mod tests {
     use super::*;
     use crate::integration::remote::{RemoteRegistry, LOCAL_SIM_HOST};
     use agentero_core::features::paper::source::{self, SourceStatus};
+
+    #[tokio::test]
+    async fn failed_sidecar_publish_keeps_session_for_retry() {
+        let root = tempfile::tempdir().unwrap();
+        let pdf = root.path().join("fixture.pdf");
+        fs::write(&pdf, b"fixture PDF").unwrap();
+        let registry = RemoteRegistry::new();
+        let info = registry
+            .connect(LOCAL_SIM_HOST, None, &root.path().to_string_lossy())
+            .await
+            .unwrap();
+        let session = registry.get(&info.session_id).await.unwrap();
+        let result = remote_paper_commit(
+            session.clone(),
+            papers::PaperRecord::local_pdf("retry".into(), "Retry".into()),
+            RemotePaperCommitOptions {
+                parent_rel: "papers",
+                task_id: None,
+                assets: RemoteAssetsPolicy::CopyPdf { src: &pdf },
+                push_catalog: false,
+                note_mode: NoteShellMode::Standard,
+            },
+        )
+        .await
+        .unwrap();
+        let sidecar = root.path().join(&result.path).join("metadata.json");
+        fs::create_dir(&sidecar).unwrap();
+        let before = fs::read(root.path().join(".agentero/catalog.sqlite")).unwrap();
+        assert!(registry.disconnect(&info.session_id).await.is_err());
+        assert!(registry.get(&info.session_id).await.is_ok());
+        assert!(session.work_root.join(&result.path).is_dir());
+        assert_eq!(
+            fs::read(root.path().join(".agentero/catalog.sqlite")).unwrap(),
+            before
+        );
+        fs::remove_dir(&sidecar).unwrap();
+        let catalog_tmp = root.path().join(".agentero/catalog.sqlite.tmp");
+        fs::create_dir(&catalog_tmp).unwrap();
+        assert!(registry.disconnect(&info.session_id).await.is_err());
+        assert!(sidecar.is_file());
+        assert!(registry.get(&info.session_id).await.is_ok());
+        // A retry projects the current row, not the snapshot from the first attempt.
+        papers::set_is_read(&session.work_root, &result.path, true).unwrap();
+        fs::remove_dir(&catalog_tmp).unwrap();
+        registry.disconnect(&info.session_id).await.unwrap();
+        assert!(registry.get(&info.session_id).await.is_err());
+        assert!(!session.work_root.exists());
+        let projected: serde_json::Value =
+            serde_json::from_slice(&fs::read(sidecar).unwrap()).unwrap();
+        let row = papers::get_by_path(root.path(), &result.path)
+            .unwrap()
+            .unwrap();
+        assert_eq!(projected, serde_json::to_value(row).unwrap());
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn upload_failure_does_not_commit_catalog_row() {
+        let root = tempfile::tempdir().unwrap();
+        let pdf = root.path().join("fixture.pdf");
+        fs::write(&pdf, b"fixture PDF").unwrap();
+        // A dangling parent resolves as missing at allocation, but mkdir cannot
+        // replace the symlink when uploading the staged directory.
+        std::os::unix::fs::symlink(root.path().join("missing"), root.path().join("papers"))
+            .unwrap();
+        let registry = RemoteRegistry::new();
+        let info = registry
+            .connect(LOCAL_SIM_HOST, None, &root.path().to_string_lossy())
+            .await
+            .unwrap();
+        let session = registry.get(&info.session_id).await.unwrap();
+        let result = remote_paper_commit(
+            session.clone(),
+            papers::PaperRecord::local_pdf("failed".into(), "Failed".into()),
+            RemotePaperCommitOptions {
+                parent_rel: "papers",
+                task_id: None,
+                assets: RemoteAssetsPolicy::CopyPdf { src: &pdf },
+                push_catalog: true,
+                note_mode: NoteShellMode::Standard,
+            },
+        )
+        .await;
+        assert!(result.is_err());
+        assert!(session.work_root.join("papers/failed/failed.pdf").is_file());
+        assert!(papers::get_by_path(&session.work_root, "papers/failed")
+            .unwrap()
+            .is_none());
+        registry.disconnect(&info.session_id).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn publishes_canonical_sidecar_with_catalog() {
+        let root = tempfile::tempdir().unwrap();
+        let pdf = root.path().join("fixture.pdf");
+        fs::write(&pdf, b"fixture PDF").unwrap();
+        let registry = RemoteRegistry::new();
+        let info = registry
+            .connect(LOCAL_SIM_HOST, None, &root.path().to_string_lossy())
+            .await
+            .unwrap();
+        let session = registry.get(&info.session_id).await.unwrap();
+        let mut meta = papers::PaperRecord::local_pdf("sidecar".into(), "Sidecar".into());
+        meta.added_at = "2024-01-01T00:00:00Z".into();
+        let result = remote_paper_commit(
+            session,
+            meta,
+            RemotePaperCommitOptions {
+                parent_rel: "papers",
+                task_id: None,
+                assets: RemoteAssetsPolicy::CopyPdf { src: &pdf },
+                push_catalog: true,
+                note_mode: NoteShellMode::Standard,
+            },
+        )
+        .await
+        .unwrap();
+        let sidecar: serde_json::Value = serde_json::from_slice(
+            &fs::read(root.path().join(&result.path).join("metadata.json")).unwrap(),
+        )
+        .unwrap();
+        let record = papers::get_by_path(root.path(), &result.path)
+            .unwrap()
+            .unwrap();
+        assert_eq!(sidecar, serde_json::to_value(record).unwrap());
+        registry.disconnect(&info.session_id).await.unwrap();
+    }
 
     #[tokio::test]
     async fn copy_pdf_preserves_file_and_retry_state_when_source_download_fails() {

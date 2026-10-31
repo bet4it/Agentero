@@ -103,22 +103,18 @@ import { basenameOf } from "@/lib/workspace/tabs";
 import { isExcalidrawPath } from "@/lib/workspace/viewer";
 
 export async function activateVault(path: string): Promise<void> {
-	bumpTreeGeneration();
-	setTree([]);
-	setTreeLoading(true);
 	// Tear down previous remote session so work catalogs are flushed.
 	const prev = getVaultPath();
 	if (prev && isRemoteVaultHandle(prev) && prev !== path) {
 		const prevId = remoteSessionIdFromHandle(prev);
 		if (prevId) {
-			try {
-				await remoteDisconnect(prevId);
-			} catch {
-				// best-effort
-			}
+			await remoteDisconnect(prevId);
 		}
 		clearRemoteSessionMeta();
 	}
+	bumpTreeGeneration();
+	setTree([]);
+	setTreeLoading(true);
 	saveVaultPath(path);
 	setVaultPath(path);
 	void import("@/lib/activity").then(({ track }) => {
@@ -170,6 +166,12 @@ export async function openRemoteVault(args: {
 		}
 		setVaultBusy(true);
 		const info = await remoteConnect(args);
+		try {
+			await activateVault(info.vaultHandle);
+		} catch (error) {
+			await remoteDisconnect(info.sessionId);
+			throw error;
+		}
 		saveRemoteSessionMeta(info);
 		rememberRecentRemoteVault({
 			kind: "remote",
@@ -178,8 +180,6 @@ export async function openRemoteVault(args: {
 			remotePath: args.remotePath,
 			label: info.displayName,
 		});
-		// Pseudo-handle routes tree / IO through Host remote_* commands.
-		await activateVault(info.vaultHandle);
 	} catch (e) {
 		notifyError(
 			e instanceof Error ? e.message : i18n.t("app:vault.remoteConnectFailed"),
