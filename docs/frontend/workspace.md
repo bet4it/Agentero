@@ -4,6 +4,8 @@
 
 命令式操作契约统一定义在 `lib/workspace/dock-registry.ts` 的 `DockHandle`；组件导出的 `DockWorkspaceHandle` 是其类型别名。
 
+`components/workspace/dock-layout.ts` 集中维护落点映射、面板放置、栏宽调整及布局恢复后的面板对账；`dock-workspace.tsx` 保留 Dockview 注册副作用、React 挂载和事件接线。
+
 ## 行为
 
 | 场景 | 行为 |
