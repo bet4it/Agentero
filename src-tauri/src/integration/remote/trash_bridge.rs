@@ -11,8 +11,8 @@ use crate::features::paper::catalog::papers;
 use crate::features::vault::trash::remote_ops::RemoteTrashOps;
 use crate::features::vault::trash::{
     delete_trashed_catalog, is_trash_candidate, plan_trash, restore_action, restore_catalog,
-    snapshot_title, trash_batch_rel, validate_batch_id, RestoreAction, TrashEntry, TrashManifest,
-    TrashPhase, TrashResult, TRASH_REL,
+    restore_sidecar_path, snapshot_title, trash_batch_rel, validate_batch_id, RestoreAction,
+    TrashEntry, TrashManifest, TrashPhase, TrashResult, TRASH_REL,
 };
 use std::collections::HashMap;
 use std::path::Path;
@@ -131,6 +131,27 @@ async fn restore_remote_entry(
         RestoreAction::Move => {
             manifest.items[index].phase = TrashPhase::Restoring;
             write_manifest(fs, batch, manifest).await?;
+            let item = &manifest.items[index];
+            for row in &item.catalog_rows {
+                let rel = restore_sidecar_path(item, row)?
+                    .to_string_lossy()
+                    .replace('\\', "/");
+                let path = format!("{stored}/{rel}");
+                if !fs
+                    .exists(path.rsplit_once('/').expect("sidecar parent").0)
+                    .await?
+                {
+                    continue;
+                }
+                let temp = format!("{path}.tmp");
+                fs.write(
+                    &temp,
+                    &serde_json::to_vec_pretty(row)?,
+                    WriteOpts::default(),
+                )
+                .await?;
+                fs.rename(&temp, &path).await?;
+            }
             if let Some(parent) = Path::new(&target).parent() {
                 let parent = parent.to_string_lossy().replace('\\', "/");
                 if !parent.is_empty() {
@@ -141,9 +162,15 @@ async fn restore_remote_entry(
         }
         RestoreAction::Finish => {}
     }
-    let mut catalog = session.catalog.lock().await;
+    let mut present = Vec::new();
     for row in &manifest.items[index].catalog_rows {
-        catalog.queue_sidecar(row.path.clone());
+        if fs.exists(&row.path).await? {
+            present.push(row.path.clone());
+        }
+    }
+    let mut catalog = session.catalog.lock().await;
+    for path in present {
+        catalog.queue_sidecar(path);
     }
     restore_catalog(&session.work_root, &manifest.items[index])
 }
@@ -376,6 +403,35 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn restore_parent_skips_sidecars_for_orphan_rows() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(root.path().join("papers/group")).unwrap();
+        std::fs::write(root.path().join("papers/group/note.md"), "keep").unwrap();
+        let reg = RemoteRegistry::new();
+        let info = reg
+            .connect(LOCAL_SIM_HOST, None, &root.path().to_string_lossy())
+            .await
+            .unwrap();
+        let session = reg.get(&info.session_id).await.unwrap();
+        papers::upsert_paper(
+            &session.work_root,
+            &sample_record("papers/group/missing", "missing"),
+        )
+        .unwrap();
+        session.push_catalog().await.unwrap();
+        let batch = trash_paths(&session, &["papers/group".into()])
+            .await
+            .unwrap();
+        restore_batch(&session, &batch.batch_id).await.unwrap();
+        assert_eq!(
+            std::fs::read_to_string(root.path().join("papers/group/note.md")).unwrap(),
+            "keep"
+        );
+        assert!(!root.path().join("papers/group/missing").exists());
+        reg.disconnect(&info.session_id).await.unwrap();
+    }
+
+    #[tokio::test]
     async fn restore_keeps_manifest_until_publish_succeeds() {
         let root = tempfile::tempdir().unwrap();
         std::fs::create_dir_all(root.path().join("papers/x")).unwrap();
@@ -385,7 +441,14 @@ mod tests {
             .await
             .unwrap();
         let session = reg.get(&info.session_id).await.unwrap();
-        papers::upsert_paper(&session.work_root, &sample_record("papers/x", "x")).unwrap();
+        let mut record = sample_record("papers/x", "x");
+        std::fs::write(
+            root.path().join("papers/x/metadata.json"),
+            serde_json::to_vec(&record).unwrap(),
+        )
+        .unwrap();
+        record.title = "Latest".into();
+        papers::upsert_paper(&session.work_root, &record).unwrap();
         session.push_catalog().await.unwrap();
         for single in [false, true] {
             let batch = trash_paths(&session, &["papers/x".into()]).await.unwrap();
@@ -406,6 +469,12 @@ mod tests {
             assert!(result.is_err());
             assert!(root.path().join(&batch_rel).join("manifest.json").is_file());
             assert!(root.path().join("papers/x").is_dir());
+            assert_eq!(
+                agentero_core::features::catalog::sidecar::read_sidecar(root.path(), "papers/x")
+                    .unwrap()
+                    .title,
+                "Latest"
+            );
             papers::set_is_read(&session.work_root, "papers/x", true).unwrap();
             std::fs::remove_dir(&obstacle).unwrap();
             if single {

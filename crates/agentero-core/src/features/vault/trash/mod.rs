@@ -74,6 +74,19 @@ pub fn restore_action(
     }
 }
 
+/// Sidecar location relative to the stored item, including organization folders.
+pub fn restore_sidecar_path(
+    item: &TrashItem,
+    row: &PaperRecord,
+) -> Result<std::path::PathBuf, AppError> {
+    let item_path = normalize_rel_separators(&item.rel);
+    let row_path = normalize_rel_separators(&row.path);
+    let suffix = Path::new(&row_path)
+        .strip_prefix(&item_path)
+        .map_err(|_| AppError::message("catalog snapshot is outside its trash item"))?;
+    Ok(suffix.join(crate::features::catalog::sidecar::SIDECAR_FILE))
+}
+
 /// A retry must not overwrite metadata edited after an earlier item completed.
 pub fn restore_catalog(vault: &Path, item: &TrashItem) -> Result<(), AppError> {
     for row in &item.catalog_rows {
@@ -485,6 +498,17 @@ fn restore_local_entry(
         RestoreAction::Move => {
             manifest.items[index].phase = TrashPhase::Restoring;
             write_manifest(batch, manifest)?;
+            let item = &manifest.items[index];
+            for row in &item.catalog_rows {
+                let sidecar = batch
+                    .join(&item.stored)
+                    .join(restore_sidecar_path(item, row)?);
+                // Catalog may still contain a child removed outside the app.
+                if !sidecar.parent().expect("sidecar parent").try_exists()? {
+                    continue;
+                }
+                crate::fs::atomic_write(&sidecar, &serde_json::to_vec_pretty(row)?)?;
+            }
             if let Some(parent) = target.parent() {
                 fs::create_dir_all(parent)?;
             }
@@ -791,6 +815,66 @@ mod tests {
         assert!(json.get("batch_id").is_none());
         assert!(json["items"][0].get("catalogRows").is_some());
         assert!(json["items"][0].get("catalog_rows").is_none());
+    }
+
+    #[test]
+    fn restore_parent_keeps_orphan_catalog_rows_without_creating_directories() {
+        let root = tempfile::tempdir().unwrap();
+        fs::create_dir_all(root.path().join("papers/group")).unwrap();
+        fs::write(root.path().join("papers/group/note.md"), "keep").unwrap();
+        papers::upsert_paper(
+            root.path(),
+            &sample_record("papers/group/missing", "missing"),
+        )
+        .unwrap();
+        let batch = trash_paths(root.path(), &["papers/group".into()]).unwrap();
+        restore_batch(root.path(), &batch.batch_id).unwrap();
+        assert_eq!(
+            fs::read_to_string(root.path().join("papers/group/note.md")).unwrap(),
+            "keep"
+        );
+        assert!(!root.path().join("papers/group/missing").exists());
+    }
+
+    #[test]
+    fn restore_exposes_manifest_metadata_before_watcher_recovery() {
+        for selected in ["papers/group/x", "papers/group"] {
+            let root = tempfile::tempdir().unwrap();
+            let path = "papers/group/x";
+            fs::create_dir_all(root.path().join(path)).unwrap();
+            let old = sample_record(path, "x");
+            papers::upsert_paper(root.path(), &old).unwrap();
+            // A committed update whose projection has not run before trash.
+            crate::features::catalog::with_catalog(root.path(), |conn| {
+                conn.execute("UPDATE papers SET title = 'Latest' WHERE path = ?1", [path])?;
+                Ok(())
+            })
+            .unwrap();
+            let batch = trash_paths(root.path(), &[selected.into()]).unwrap();
+            crate::features::catalog::with_catalog(root.path(), |conn| {
+                conn.execute_batch("CREATE TRIGGER fail_restore BEFORE INSERT ON papers BEGIN SELECT RAISE(FAIL, 'injected'); END;")?;
+                Ok(())
+            }).unwrap();
+            assert!(restore_batch(root.path(), &batch.batch_id).is_err());
+            crate::features::catalog::with_catalog(root.path(), |conn| {
+                conn.execute_batch("DROP TRIGGER fail_restore")?;
+                Ok(())
+            })
+            .unwrap();
+            papers::ensure_rows_for_paths(
+                root.path(),
+                &[root.path().join(path).to_string_lossy().into_owned()],
+            )
+            .unwrap();
+            restore_batch(root.path(), &batch.batch_id).unwrap();
+            assert_eq!(
+                papers::get_by_path(root.path(), path)
+                    .unwrap()
+                    .unwrap()
+                    .title,
+                "Latest"
+            );
+        }
     }
 
     #[test]
