@@ -52,9 +52,6 @@ importers:
       '@better-auth-ui/core':
         specifier: 1.7.32
         version: 1.7.32(63307773a450671f7fcc9189a97a6828)
-      '@better-auth-ui/react':
-        specifier: 1.7.32
-        version: 1.7.32(4132d5688a6c6ca1484ec17c74cbf421)
       '@better-auth/api-key':
         specifier: 1.7.6
         version: 1.7.6(@better-auth/core@1.7.6(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.3)(better-call@1.4.0(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.4.2)(better-auth@1.7.6(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(svelte@5.56.6)(vitest@4.1.12(@types/node@26.1.0)(happy-dom@21.0.4)(vite@7.3.7(@types/node@26.1.0)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)))(vue@3.5.43(typescript@5.8.3)))(better-call@1.4.0(zod@4.6.7))
@@ -229,21 +226,12 @@ importers:
       '@tanstack/query-core':
         specifier: 5.104.0
         version: 5.104.0
-      '@tanstack/react-form':
-        specifier: 1.33.5
-        version: 1.33.5(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@tanstack/react-pacer':
         specifier: 0.23.0
         version: 0.23.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@tanstack/react-query':
         specifier: 5.104.0
         version: 5.104.0(react@19.2.7)
-      '@tanstack/react-store':
-        specifier: 0.11.1
-        version: 0.11.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@tanstack/react-table':
-        specifier: 9.2.4
-        version: 9.2.4(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@tanstack/react-virtual':
         specifier: ^3.14.6
         version: 3.14.6(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -298,9 +286,6 @@ importers:
       codemirror-lang-latex:
         specifier: ^0.6.1
         version: 0.6.1(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.11.0)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.4)(@codemirror/view@6.43.11)(@lezer/common@1.5.2)(@lezer/generator@1.8.0)(@lezer/highlight@1.2.5)(@lezer/lr@1.4.10)
-      date-fns:
-        specifier: 4.1.0
-        version: 4.1.0
       dockview:
         specifier: 7.0.4
         version: 7.0.4
@@ -713,25 +698,6 @@ packages:
       '@polar-sh/better-auth':
         optional: true
       autumn-js:
-        optional: true
-
-  '@better-auth-ui/react@1.7.32':
-    resolution: {integrity: sha512-hUUMVwYnBkxuTpB3+tRw4tr/aaKxu1scd8gVwnkXRbli43JFV66IkWsgai/kx3WTg1LfX+uaEjBsnLjQR8Y/7A==}
-    peerDependencies:
-      '@better-auth-ui/core': '*'
-      '@better-auth/api-key': '>=1.7.0'
-      '@better-auth/passkey': '>=1.7.0'
-      '@tanstack/query-core': '>=5.101.2'
-      '@tanstack/react-query': '>=5.101.2'
-      better-auth: '>=1.7.0'
-      cn: '>=0.4.0'
-      react: '>=19.2.6'
-      react-dom: '>=19.2.6'
-      react-email: '>=6.0.0'
-      tailwindcss: '>=4.3.2'
-      zod: '>=4.6.6 <5'
-    peerDependenciesMeta:
-      react-email:
         optional: true
 
   '@better-auth/agent-auth@0.6.2':
@@ -3077,22 +3043,10 @@ packages:
     peerDependencies:
       vite: '>=7.3.7 <8'
 
-  '@tanstack/devtools-event-client@0.4.4':
-    resolution: {integrity: sha512-6T5Yop/793YI+H+5J8Hsyj4kCih9sl4t3ElLgKioW5hk3ocn+ZdSJ94tT7vL7uabxSugWYBZlOTMPzEw2puvQw==}
-    engines: {node: '>=18'}
-    hasBin: true
-
   '@tanstack/devtools-event-client@0.5.0':
     resolution: {integrity: sha512-H+OH3zC6Vhu/K0NaVfQKknEKawc/+2PT+D3SB3Ox0V8SiMlTo0abbmH2rH0721R2aNYbjdMXA1oENOd8E2UVoA==}
     engines: {node: '>=18'}
     hasBin: true
-
-  '@tanstack/form-core@1.33.5':
-    resolution: {integrity: sha512-3dfx9MBP0aq5sXKteikG629X9oviptrQj0IFRk9YGcb+lB7Kv5x8S17oOSk1wUWgjQZ4xVJEMbKwOAODymocgA==}
-
-  '@tanstack/pacer-lite@0.1.1':
-    resolution: {integrity: sha512-y/xtNPNt/YeyoVxE/JCx+T7yjEzpezmbb+toK8DDD1P4m7Kzs5YR956+7OKexG3f8aXgC3rLZl7b1V+yNUSy5w==}
-    engines: {node: '>=18'}
 
   '@tanstack/pacer@0.22.0':
     resolution: {integrity: sha512-Zq23KOn30tFiA6ZYWihs5x++ttHkOIcnIIjRrJq05tGrYx9+iHsmVaj8jb7UJVemEI+JRWGzJ9C+50YV4nRz0w==}
@@ -3100,15 +3054,6 @@ packages:
 
   '@tanstack/query-core@5.104.0':
     resolution: {integrity: sha512-JrC2r/JQlXt7khBSdUpsgxNvybzOg+aITa+ARRMlP2AFo93Y8vIqz077rp+e61mJetSZ0T6AJbwW1JHer1vrPQ==}
-
-  '@tanstack/react-form@1.33.5':
-    resolution: {integrity: sha512-LlRB28qJwO/QCGaHvWnbdh4haBgTFiZVmzA2uzxSBS3YA7/IqrQ6HOBK70CkFQ+DbflZ7NawsmSln13h5iIdTA==}
-    peerDependencies:
-      '@tanstack/react-start': '*'
-      react: ^17.0.0 || ^18.0.0 || ^19.0.0
-    peerDependenciesMeta:
-      '@tanstack/react-start':
-        optional: true
 
   '@tanstack/react-pacer@0.23.0':
     resolution: {integrity: sha512-Ec3h+kT8kYlpGb1M8F7836q+udE/M2RmE8KLr1rhs+UDBgvxjfmyR2bIUeaDEe9Zn1YXNI986RbErXyr5fEJIg==}
@@ -3128,12 +3073,6 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@tanstack/react-table@9.2.4':
-    resolution: {integrity: sha512-Rzp1Q4e0/nIgEjmISYR5HeEgLTNtrG+C7NFZf/AbCxPO5hg+zC3yNGwcoECigUk8SFzzvhXbd2rFdtP2ZiGrfA==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      react: '>=18'
-
   '@tanstack/react-virtual@3.14.6':
     resolution: {integrity: sha512-4+Uq8m0/gzO4kMCHUEpTtGX1RnONK0C+g88b2ltwPMWUBiaVarBuWKoPJaz7gj1cKCVRAdyu+U8GcKhwCc2beA==}
     peerDependencies:
@@ -3145,10 +3084,6 @@ packages:
 
   '@tanstack/store@0.11.2':
     resolution: {integrity: sha512-sJ4mjol8uQsHV0gOJzzjwXfh2Fwm+Sz0+8deqiTm4jGbMdjzNSW+xZCFm0kUa870uhd8yi+DpKnZb5Kc4apa0Q==}
-
-  '@tanstack/table-core@9.2.4':
-    resolution: {integrity: sha512-GwdDyGGr6UXAtubF14yAwcXvdaogqfsQgIk89Suebjxob/Rjq2xvfmXsjDF1rQmKmhHsJm9TOY7myxv3i6geJw==}
-    engines: {node: '>=20'}
 
   '@tanstack/virtual-core@3.17.4':
     resolution: {integrity: sha512-nGm5KteqxasUdThLc2izl6dHUqLv0LQj7Nuyo5gYalTPf/U8a9ermvsl7reT+6ioBW1l8WfpP/mcU338nLXpqw==}
@@ -7131,20 +7066,6 @@ snapshots:
       '@better-auth/api-key': 1.7.6(@better-auth/core@1.7.6(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.3)(better-call@1.4.0(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.4.2)(better-auth@1.7.6(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(svelte@5.56.6)(vitest@4.1.12(@types/node@26.1.0)(happy-dom@21.0.4)(vite@7.3.7(@types/node@26.1.0)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)))(vue@3.5.43(typescript@5.8.3)))(better-call@1.4.0(zod@4.6.7))
       '@better-auth/passkey': 1.7.6(@better-auth/core@1.7.6(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.3)(better-call@1.4.0(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.3)(better-auth@1.7.6(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(svelte@5.56.6)(vitest@4.1.12(@types/node@26.1.0)(happy-dom@21.0.4)(vite@7.3.7(@types/node@26.1.0)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)))(vue@3.5.43(typescript@5.8.3)))(better-call@1.4.0(zod@4.6.7))(nanostores@1.5.5)
 
-  '@better-auth-ui/react@1.7.32(4132d5688a6c6ca1484ec17c74cbf421)':
-    dependencies:
-      '@better-auth-ui/core': 1.7.32(63307773a450671f7fcc9189a97a6828)
-      '@better-auth/api-key': 1.7.6(@better-auth/core@1.7.6(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.3)(better-call@1.4.0(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.4.2)(better-auth@1.7.6(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(svelte@5.56.6)(vitest@4.1.12(@types/node@26.1.0)(happy-dom@21.0.4)(vite@7.3.7(@types/node@26.1.0)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)))(vue@3.5.43(typescript@5.8.3)))(better-call@1.4.0(zod@4.6.7))
-      '@better-auth/passkey': 1.7.6(@better-auth/core@1.7.6(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.3)(better-call@1.4.0(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.3)(better-auth@1.7.6(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(svelte@5.56.6)(vitest@4.1.12(@types/node@26.1.0)(happy-dom@21.0.4)(vite@7.3.7(@types/node@26.1.0)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)))(vue@3.5.43(typescript@5.8.3)))(better-call@1.4.0(zod@4.6.7))(nanostores@1.5.5)
-      '@tanstack/query-core': 5.104.0
-      '@tanstack/react-query': 5.104.0(react@19.2.7)
-      better-auth: 1.7.6(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(svelte@5.56.6)(vitest@4.1.12(@types/node@26.1.0)(happy-dom@21.0.4)(vite@7.3.7(@types/node@26.1.0)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)))(vue@3.5.43(typescript@5.8.3))
-      cn: 0.4.0
-      react: 19.2.7
-      react-dom: 19.2.7(react@19.2.7)
-      tailwindcss: 4.3.2
-      zod: 4.6.7
-
   '@better-auth/agent-auth@0.6.2(@better-auth/core@1.7.6(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.3)(better-call@1.4.0(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.5.5))(better-auth@1.7.6(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(svelte@5.56.6)(vitest@4.1.12(@types/node@26.1.0)(happy-dom@21.0.4)(vite@7.3.7(@types/node@26.1.0)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)))(vue@3.5.43(typescript@5.8.3)))':
     dependencies:
       '@better-auth/core': 1.7.6(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.3)(better-call@1.4.0(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.5.5)
@@ -9604,17 +9525,7 @@ snapshots:
       tailwindcss: 4.3.2
       vite: 7.3.7(@types/node@26.1.0)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
 
-  '@tanstack/devtools-event-client@0.4.4': {}
-
   '@tanstack/devtools-event-client@0.5.0': {}
-
-  '@tanstack/form-core@1.33.5':
-    dependencies:
-      '@tanstack/devtools-event-client': 0.4.4
-      '@tanstack/pacer-lite': 0.1.1
-      '@tanstack/store': 0.11.2
-
-  '@tanstack/pacer-lite@0.1.1': {}
 
   '@tanstack/pacer@0.22.0':
     dependencies:
@@ -9622,14 +9533,6 @@ snapshots:
       '@tanstack/store': 0.11.2
 
   '@tanstack/query-core@5.104.0': {}
-
-  '@tanstack/react-form@1.33.5(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
-    dependencies:
-      '@tanstack/form-core': 1.33.5
-      '@tanstack/react-store': 0.11.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      react: 19.2.7
-    transitivePeerDependencies:
-      - react-dom
 
   '@tanstack/react-pacer@0.23.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
@@ -9650,14 +9553,6 @@ snapshots:
       react-dom: 19.2.7(react@19.2.7)
       use-sync-external-store: 1.6.0(react@19.2.7)
 
-  '@tanstack/react-table@9.2.4(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
-    dependencies:
-      '@tanstack/react-store': 0.11.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@tanstack/table-core': 9.2.4
-      react: 19.2.7
-    transitivePeerDependencies:
-      - react-dom
-
   '@tanstack/react-virtual@3.14.6(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
       '@tanstack/virtual-core': 3.17.4
@@ -9667,10 +9562,6 @@ snapshots:
   '@tanstack/store@0.11.1': {}
 
   '@tanstack/store@0.11.2': {}
-
-  '@tanstack/table-core@9.2.4':
-    dependencies:
-      '@tanstack/store': 0.11.2
 
   '@tanstack/virtual-core@3.17.4': {}
 

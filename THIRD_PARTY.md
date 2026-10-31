@@ -2,15 +2,14 @@
 
 ## Better Auth UI
 
-The copied components under `src/features/account/ui/` and
-`src/features/account/primitives/`, along with organization/localization adapters,
-derive from Better Auth UI 1.7.32's Base UI example at revision
+The retained avatar component in `src/features/account/primitives/avatar.tsx`
+derives from Better Auth UI 1.7.32's Base UI example at revision
 `25c6b5e3a8b6b1e35153bd164d0d109b194c4eb3`:
 https://github.com/better-auth-ui/better-auth-ui/tree/25c6b5e3a8b6b1e35153bd164d0d109b194c4eb3/examples/start-shadcn-baseui-example/src
 
-Agentero adaptations include native request transport, application imports,
-localization and team navigation. These primitives are isolated from the
-existing desktop UI. Preserve this attribution when updating copied sources.
+The old local account and organization screens have been removed; account
+management opens the Web application. Preserve this attribution when updating
+the retained copied source.
 
 MIT License
 

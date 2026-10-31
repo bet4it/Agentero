@@ -1,10 +1,16 @@
 # Account and team integration status
 
-The account entry on the welcome screen and in Settings uses Better Auth UI
-1.7.32 components. `tauri-plugin-better-auth` 0.1.2 owns browser handoff, PKCE,
-native sessions, the OS credential store and the Rust request bridge. The bridge
-limits requests to configured auth/team routes. Local Vault use does not require
-an account. Platform administration opens the Web application.
+Settings retains a native account summary, cloud usage and a team list. Profile
+editing and team management open the Web application. The unused local account
+and organization screens, their adapters and their mutation hooks have been
+removed. `src/features/account/` retains the auth client, session/team query
+helpers, error mapping and the avatar primitive. Better Auth UI core supplies
+query options; its React UI package is no longer needed.
+
+`tauri-plugin-better-auth` 0.1.2 owns browser handoff, PKCE, native sessions, the
+OS credential store and the Rust request bridge. The bridge limits requests to
+configured auth/team routes. Local Vault use does not require an account.
+Platform administration opens the Web application.
 
 Local fixtures require both a Rust debug build with `AGENTERO_LOCAL_AUTH=1` and
 Vite development with `VITE_AGENTERO_LOCAL_AUTH=1`. Production password login
