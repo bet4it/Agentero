@@ -4357,7 +4357,10 @@ export type PaperRecord_Deserialize = {
 	pdf_url: string | null,
 	html_url: string | null,
 	source_url: string | null,
-	/**  Manually maintained code-repository link (no auto resolution yet). */
+	/**
+	 *  Code repository. Import fills this from the main PDF's first page when
+	 *  it is empty; Edit Metadata can set or clear it afterwards.
+	 */
 	code_repo: string | null,
 	/**  Manually maintained OpenReview link; never resolved from identifiers. */
 	openreview_url: string | null,
@@ -4420,7 +4423,10 @@ export type PaperRecord_Serialize = {
 	pdf_url?: string | null,
 	html_url?: string | null,
 	source_url?: string | null,
-	/**  Manually maintained code-repository link (no auto resolution yet). */
+	/**
+	 *  Code repository. Import fills this from the main PDF's first page when
+	 *  it is empty; Edit Metadata can set or clear it afterwards.
+	 */
 	code_repo?: string | null,
 	/**  Manually maintained OpenReview link; never resolved from identifiers. */
 	openreview_url?: string | null,
