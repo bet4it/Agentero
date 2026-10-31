@@ -13,13 +13,9 @@
 
 import { useDocumentState } from "@embedpdf/core/react";
 import {
-	ignore,
 	PdfAnnotationSubtype,
-	PdfBlendMode,
-	PdfErrorCode,
 	type PdfHighlightAnnoObject,
 	type PdfLinkAnnoObject,
-	type Rotation,
 } from "@embedpdf/models";
 import {
 	AnnotationLayer,
@@ -28,12 +24,10 @@ import {
 } from "@embedpdf/plugin-annotation/react";
 import { PagePointerProvider } from "@embedpdf/plugin-interaction-manager/react";
 import { LayoutAnalysisLayer } from "@embedpdf/plugin-layout-analysis/react";
-import { useRenderCapability } from "@embedpdf/plugin-render/react";
 import { SearchLayer } from "@embedpdf/plugin-search/react";
 import { TilingLayer } from "@embedpdf/plugin-tiling/react";
 import { Bookmark, EyeOff, Languages, Loader2 } from "lucide-react";
 import {
-	type CSSProperties,
 	memo,
 	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
@@ -57,6 +51,10 @@ import {
 } from "@/components/viewer/pdf/constants";
 import { EMBED_PAGE_ATTR } from "@/components/viewer/pdf/coords";
 import { nativeSelectionBelongsToHost } from "@/components/viewer/pdf/host-dom";
+import {
+	AgenteroRenderLayer,
+	pdfPageRenderRotation,
+} from "@/components/viewer/pdf/layers/agentero-render-layer";
 import { AskHighlightLayer } from "@/components/viewer/pdf/layers/ask-highlight-layer";
 import {
 	CitationLinkLayer,
@@ -67,8 +65,11 @@ import { CommentCardsLayer } from "@/components/viewer/pdf/layers/comment-cards-
 import { HighlightAnnotationMenu } from "@/components/viewer/pdf/layers/highlight-annotation-menu";
 import { LayoutTranslateOverlay } from "@/components/viewer/pdf/layers/layout-translate-overlay";
 import { PASSIVE_LINK_RENDERER } from "@/components/viewer/pdf/layers/link-annotation";
-import { pageBitmapCache } from "@/components/viewer/pdf/layers/page-bitmap-cache";
 import { PdfTextSelectionLayer } from "@/components/viewer/pdf/layers/pdf-text-selection-layer";
+import {
+	PASSIVE_HIGHLIGHT_RENDERER,
+	READING_ANNOTATION_RENDERERS,
+} from "@/components/viewer/pdf/layers/reading-annotation-renderers";
 import { PdfRegionSelectLayer } from "@/components/viewer/pdf/layers/region-select-layer";
 import { SelectionGutter } from "@/components/viewer/pdf/layers/selection-gutter";
 import { PDF_VISUAL_REGION_FRAME_CLASS } from "@/components/viewer/pdf/layers/visual-region-frame";
@@ -130,52 +131,6 @@ import {
 } from "@/lib/pdf/page-theme";
 import type { PdfNavigationRegion } from "@/lib/pdf/pending-pdf-page";
 import type { SelectionPin } from "@/lib/pdf/selection";
-
-const PASSIVE_HIGHLIGHT_RENDERER: BoxedAnnotationRenderer = {
-	id: "highlight",
-	matches: (annotation) => annotation.type === PdfAnnotationSubtype.HIGHLIGHT,
-	render: ({ currentObject, scale }) => {
-		const highlight = currentObject as PdfHighlightAnnoObject;
-		const rect = highlight.rect;
-		const segments = highlight.segmentRects?.length
-			? highlight.segmentRects
-			: [rect];
-		return (
-			<>
-				{segments.map((segment) => (
-					<div
-						key={`${highlight.id}-${segment.origin.x}-${segment.origin.y}-${segment.size.width}-${segment.size.height}`}
-						aria-hidden="true"
-						style={{
-							position: "absolute",
-							left: (segment.origin.x - rect.origin.x) * scale,
-							top: (segment.origin.y - rect.origin.y) * scale,
-							width: segment.size.width * scale,
-							height: segment.size.height * scale,
-							backgroundColor:
-								highlight.strokeColor ?? highlight.color ?? "#fcd34d",
-							opacity: highlight.opacity ?? 0.4,
-							pointerEvents: "none",
-						}}
-					/>
-				))}
-			</>
-		);
-	},
-	zIndex: 0,
-	defaultBlendMode: PdfBlendMode.Multiply,
-	interactionDefaults: {
-		isDraggable: false,
-		isResizable: false,
-		isRotatable: false,
-	},
-	useAppearanceStream: false,
-};
-
-const READING_ANNOTATION_RENDERERS: BoxedAnnotationRenderer[] = [
-	PASSIVE_HIGHLIGHT_RENDERER,
-	PASSIVE_LINK_RENDERER,
-];
 
 /**
  * Paint unrotated PDF-point layers (highlights, selection tint) in the same
@@ -299,160 +254,6 @@ function TranslationSelectionVeil({
 
 /** A mark region pinned to a page (visual draft frame / formula legend frame). */
 type PageRegion = { page: number; region: PdfAskNormalizedRect } | null;
-
-type AgenteroRenderLayerProps = {
-	pageRef: RefObject<HTMLDivElement | null>;
-	documentId: string;
-	pageIndex: number;
-	scale?: number;
-	dpr?: number;
-	className?: string;
-	style?: CSSProperties;
-};
-
-function pdfPageRenderRotation(
-	documentState: ReturnType<typeof useDocumentState>,
-	pageIndex: number,
-): Rotation {
-	// `normalizeRotation: true` reports the unrotated content-space size and
-	// keeps /Rotate in `page.rotation`; the raster is only upright when the
-	// caller re-applies it (see test/pdf-page-rotation.test.ts).
-	const pageRotation = documentState?.document?.pages[pageIndex]?.rotation ?? 0;
-	return ((((pageRotation + (documentState?.rotation ?? 0)) % 4) + 4) %
-		4) as Rotation;
-}
-
-function AgenteroRenderLayer({
-	pageRef,
-	documentId,
-	pageIndex,
-	scale: scaleOverride,
-	dpr: dprOverride,
-	className,
-	style,
-}: AgenteroRenderLayerProps) {
-	const { provides: renderProvides } = useRenderCapability();
-	const documentState = useDocumentState(documentId);
-	const cacheId = `${documentId}:${pageIndex}`;
-	const [imageUrl, setImageUrl] = useState<string | null>(() =>
-		pageBitmapCache.retain(cacheId),
-	);
-	const pinnedId = useRef(cacheId);
-	const retiredRef = useRef<string[]>([]);
-	const refreshVersion = useMemo(() => {
-		if (!documentState) return 0;
-		return documentState.pageRefreshVersions[pageIndex] || 0;
-	}, [documentState, pageIndex]);
-	const actualScale = useMemo(() => {
-		if (scaleOverride !== undefined) return scaleOverride;
-		return documentState?.scale ?? 1;
-	}, [scaleOverride, documentState?.scale]);
-	const actualDpr = useMemo(() => {
-		if (dprOverride !== undefined) return dprOverride;
-		return window.devicePixelRatio;
-	}, [dprOverride]);
-	const rotation = useMemo(
-		() => pdfPageRenderRotation(documentState, pageIndex),
-		[documentState, pageIndex],
-	);
-
-	useEffect(() => {
-		const id = `${documentId}:${pageIndex}`;
-		if (pinnedId.current !== id) {
-			pageBitmapCache.release(pinnedId.current);
-			pinnedId.current = id;
-			setImageUrl(pageBitmapCache.retain(id));
-		}
-		return () => {
-			pageBitmapCache.release(id);
-			pinnedId.current = "";
-		};
-	}, [documentId, pageIndex]);
-
-	useEffect(() => {
-		const retired = retiredRef.current;
-		if (retired.length === 0) return;
-		retiredRef.current = [];
-		for (const url of retired) {
-			if (url !== imageUrl) URL.revokeObjectURL(url);
-		}
-	}, [imageUrl]);
-
-	// Scroller mounts buffer pages too. Their CRITICAL full-page renders would
-	// queue ahead of visible HIGH-priority tiles and user-requested crops.
-	const [visible, setVisible] = useState(false);
-	useEffect(() => {
-		const page = pageRef.current;
-		if (!page) return;
-		if (typeof IntersectionObserver === "undefined") {
-			setVisible(true);
-			return;
-		}
-		const observer = new IntersectionObserver((entries) => {
-			setVisible(entries.some((entry) => entry.isIntersecting));
-		});
-		observer.observe(page);
-		return () => observer.disconnect();
-	}, [pageRef]);
-
-	const renderKey = `${actualScale}|${actualDpr}|${rotation}|${refreshVersion}`;
-
-	useEffect(() => {
-		if (!renderProvides || !visible) return;
-		const id = `${documentId}:${pageIndex}`;
-		if (pageBitmapCache.matches(id, renderKey)) return;
-		let settled = false;
-		let cancelled = false;
-		const task = renderProvides.forDocument(documentId).renderPage({
-			pageIndex,
-			options: {
-				scaleFactor: actualScale,
-				dpr: actualDpr,
-				rotation,
-			},
-		});
-		task.wait((blob) => {
-			settled = true;
-			if (cancelled) return;
-			const url = URL.createObjectURL(blob);
-			retiredRef.current.push(
-				...pageBitmapCache
-					.store(id, url, renderKey)
-					.filter((old) => old !== url),
-			);
-			setImageUrl(url);
-		}, ignore);
-		return () => {
-			cancelled = true;
-			if (settled) return;
-			task.abort({
-				code: PdfErrorCode.Cancelled,
-				message: "canceled render task",
-			});
-		};
-	}, [
-		documentId,
-		pageIndex,
-		actualScale,
-		actualDpr,
-		rotation,
-		renderProvides,
-		renderKey,
-		visible,
-	]);
-
-	if (!imageUrl) return null;
-	return (
-		<img
-			src={imageUrl}
-			alt=""
-			aria-hidden="true"
-			draggable={false}
-			className={className}
-			style={{ width: "100%", height: "100%", ...style }}
-		/>
-	);
-}
 
 /**
  * Anchor geometry of an open ask / translate card. Anchor-only: it keeps its

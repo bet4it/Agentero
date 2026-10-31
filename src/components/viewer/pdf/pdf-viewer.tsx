@@ -1,6 +1,6 @@
 import { createPluginRegistration } from "@embedpdf/core";
 import { EmbedPDF } from "@embedpdf/core/react";
-import type { PdfLinkAnnoObject, Rect } from "@embedpdf/models";
+import type { PdfLinkAnnoObject } from "@embedpdf/models";
 import { AiManagerPluginPackage } from "@embedpdf/plugin-ai-manager/react";
 import {
 	AnnotationPluginPackage,
@@ -32,7 +32,6 @@ import {
 	useScroll,
 } from "@embedpdf/plugin-scroll/react";
 import { SearchPluginPackage, useSearch } from "@embedpdf/plugin-search/react";
-import type { FormattedSelection } from "@embedpdf/plugin-selection/react";
 import {
 	SelectionPluginPackage,
 	useSelectionCapability,
@@ -58,7 +57,6 @@ import { PdfLeftToolbar } from "@/components/viewer/pdf/chrome/pdf-left-toolbar"
 import { PdfOutlinePanel } from "@/components/viewer/pdf/chrome/pdf-outline-panel";
 import { PdfReferencesPanel } from "@/components/viewer/pdf/chrome/pdf-references-panel";
 import { PdfToolbar } from "@/components/viewer/pdf/chrome/pdf-toolbar";
-
 import { usePdfEngineContext } from "@/components/viewer/pdf/engine-provider";
 import { usePdfActiveAnchors } from "@/components/viewer/pdf/hooks/use-pdf-active-anchors";
 import { usePdfAskThreads } from "@/components/viewer/pdf/hooks/use-pdf-ask-threads";
@@ -91,6 +89,7 @@ import { usePdfSelectionActions } from "@/components/viewer/pdf/hooks/use-pdf-se
 import { usePdfSelectionTranslate } from "@/components/viewer/pdf/hooks/use-pdf-selection-translate";
 import { useSentenceGlyphRects } from "@/components/viewer/pdf/hooks/use-pdf-sentence-glyph-rects";
 import { usePdfSidebarPanels } from "@/components/viewer/pdf/hooks/use-pdf-sidebar-panels";
+import { usePdfSmartHighlights } from "@/components/viewer/pdf/hooks/use-pdf-smart-highlights";
 import { usePdfSyncTex } from "@/components/viewer/pdf/hooks/use-pdf-synctex";
 import { usePdfTextSelection } from "@/components/viewer/pdf/hooks/use-pdf-text-selection";
 import { usePdfTranslationSelection } from "@/components/viewer/pdf/hooks/use-pdf-translation-selection";
@@ -121,7 +120,6 @@ import type {
 	ScreenPoint,
 	SelectionCommentDraft,
 	SelectionMenuState,
-	SuggestedHighlight,
 } from "@/components/viewer/pdf/types";
 import { ActiveCardScrollSync } from "@/components/viewer/pdf/viewport/active-card-scroll-sync";
 import { DockviewViewport } from "@/components/viewer/pdf/viewport/dockview-viewport";
@@ -134,10 +132,8 @@ import {
 	createSelectionContext,
 	pinSelection,
 } from "@/lib/agent/selection-store";
-import { commands, events } from "@/lib/core/bindings";
 import { copyTextToClipboard } from "@/lib/core/clipboard";
 import { errorText } from "@/lib/core/error";
-import { callApiResult } from "@/lib/core/ipc";
 import { notifyError } from "@/lib/core/notify";
 import { openExternalUrl } from "@/lib/core/open-external";
 import { markOnce } from "@/lib/core/perf";
@@ -155,10 +151,7 @@ import {
 	removePageBookmark,
 } from "@/lib/pdf/bookmark-edit";
 import { embedPdfDocumentId } from "@/lib/pdf/document-id";
-import {
-	HIGHLIGHT_HEX_LIST,
-	normalizeHighlightColor,
-} from "@/lib/pdf/highlight/palette";
+import { HIGHLIGHT_HEX_LIST } from "@/lib/pdf/highlight/palette";
 import { partitionHighlightPaint } from "@/lib/pdf/highlight/translated-geometry";
 import {
 	getPdfAiRuntime,
@@ -1337,110 +1330,12 @@ function PdfViewerInner({
 		t,
 	]);
 
-	const applyJevHighlights = useCallback(
-		(highlights: SuggestedHighlight[]) => {
-			for (const h of highlights) {
-				const width = h.pageWidth ?? 0;
-				const height = h.pageHeight ?? 0;
-				if (!width || !height || !h.rects.length) continue;
-				const segmentRects: Rect[] = h.rects
-					.map((r) => {
-						const x = r.x ?? 0;
-						const y = r.y ?? 0;
-						const w = r.w ?? 0;
-						const h_ = r.h ?? 0;
-						return {
-							origin: { x: x * width, y: y * height },
-							size: { width: w * width, height: h_ * height },
-						};
-					})
-					.filter((r) => r.size.width > 0 && r.size.height > 0);
-				const first = segmentRects[0];
-				const rect: Rect = segmentRects.slice(1).reduce(
-					(acc, r) => ({
-						origin: {
-							x: Math.min(acc.origin.x, r.origin.x),
-							y: Math.min(acc.origin.y, r.origin.y),
-						},
-						size: {
-							width:
-								Math.max(
-									acc.origin.x + acc.size.width,
-									r.origin.x + r.size.width,
-								) - Math.min(acc.origin.x, r.origin.x),
-							height:
-								Math.max(
-									acc.origin.y + acc.size.height,
-									r.origin.y + r.size.height,
-								) - Math.min(acc.origin.y, r.origin.y),
-						},
-					}),
-					first,
-				);
-				const selection: FormattedSelection = {
-					pageIndex: h.page - 1,
-					rect,
-					segmentRects,
-				};
-				createHighlights(
-					[selection],
-					normalizeHighlightColor(h.color),
-					h.quote,
-				);
-			}
-		},
-		[createHighlights],
-	);
-
-	const [jevJobId, setJevJobId] = useState<string | null>(null);
-	const smartHighlightBusy = jevJobId != null;
-
-	useEffect(() => {
-		if (!jevJobId) return;
-		let active = true;
-		const unlistenPromise = events.jobChanged.listen((event) => {
-			if (!active) return;
-			const job = event.payload.job;
-			if (job.id !== jevJobId || job.kind !== "jevSmartHighlights") return;
-			if (job.state === "succeeded") {
-				const result = (
-					job.params as {
-						result?: { highlights?: SuggestedHighlight[] };
-					} | null
-				)?.result;
-				const highlights = result?.highlights ?? [];
-				applyJevHighlights(highlights);
-				setJevJobId(null);
-			} else if (job.state === "failed" || job.state === "cancelled") {
-				const raw = job.error?.trim();
-				const message =
-					raw === "jevNoReadableText"
-						? t("pdf.jevNoReadableText")
-						: raw || t("pdf.smartHighlightFailed");
-				notifyError(message);
-				setJevJobId(null);
-			}
-		});
-		return () => {
-			active = false;
-			void unlistenPromise.then((dispose) => dispose());
-		};
-	}, [jevJobId, applyJevHighlights, t]);
-
-	const handleSmartHighlight = useCallback(async () => {
-		if (!vaultPath || !paperRelPath) return;
-		try {
-			const snapshot = await callApiResult(() =>
-				commands.jobJevSmartHighlightsEnqueue({
-					vaultPath,
-					path: paperRelPath,
-				}),
-			);
-			setJevJobId(snapshot.id);
-		} catch (err) {
-			notifyError(errorText(err));
-		}
-	}, [vaultPath, paperRelPath]);
+	const { smartHighlightBusy, handleSmartHighlight } = usePdfSmartHighlights({
+		vaultPath,
+		paperRelPath,
+		createHighlights,
+		t,
+	});
 
 	// Translation pane: wait for the sidecar hydrate in usePdfLayoutTranslate
 	// before deciding whether to start a job. Starting immediately races the
