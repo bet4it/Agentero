@@ -31,6 +31,8 @@
 | `SettingsRow` / `settingsRowClassName` | Body 行：`text-sm` 常规字重、`min-h-10`、柔和行间分隔 |
 | `HelpLabel` | 可键盘聚焦的 `?` 按钮（Tooltip），按压有微缩反馈 |
 
+通用页由 `panes/general-pane.tsx` 组装；EasyScholar、隐私、Connector 和 MCP 设置区块按职责放在 `panes/general/`。MCP tunnel 与 MCP 开关保留在同一模块，区块各自管理原有状态与事件订阅，页面负责传入设置和保存回调。
+
 侧栏（`SettingsContent`）：
 
 - 材质：`bg-sidebar` / `border-sidebar-border`；选中项滑动高亮（`sidebar-primary`）+ `font-medium`；按压 `scale(0.98)`；方向键在导航项间移动。
@@ -83,7 +85,7 @@
 ## 主题
 
 - `uiTheme` 默认 `default`（内置外观）：Apple 系统灰材质——冷灰低饱和中性色（oklch hue ≈260），侧栏略重于画布、卡片抬起；`--brand` / `--highlight` 保留彩色强调。覆盖见 `src/index.css` `:root` / `.dark`。
-- 外观设置中的配色主题以紧凑预览网格展示背景、卡片、主色和强调色；点击预览项即可应用主题。
+- 外观设置中的配色主题以紧凑预览网格展示背景、卡片、主色和强调色；点击预览项即可应用主题。引导页与外观设置共用 `src/hooks/use-theme-previews.ts` 加载预览和构造默认色板，布局与翻译文案仍由各入口负责。
 - 原生窗口 chrome 跟随主题：`src/lib/shell/native-window-theme.ts` 在启动与 `settings:changed` 时调用 `window.setTheme`（`system` 传 `null` 交还系统），避免深色主题在 Windows 浅色系统下顶栏仍为白色；macOS 走 Overlay 标题栏不受影响。
 - 36 个 tweakcn 预设：`src/themes/tweakcn.json`；`src/lib/ui/theme.ts` 注入 CSS 变量。
 - 刷新主题数据：`node scripts/fetch-tweakcn-themes.mjs`。
@@ -128,3 +130,7 @@
 - UI：`src/components/settings/`
 - 状态：`src/lib/settings/`
 - 更新服务：`src/lib/update/`
+
+## 账户入口
+
+账户页在桌面显示当前用户、云同步用量和团队列表；资料编辑与团队管理分别打开 Web 应用的 `/account` 与 `/teams`。登录、退出及会话事件仍经 `tauri-plugin-better-auth` 处理。`src/features/account/` 只保留客户端、会话/团队查询、错误映射和头像组件；旧本地账户管理 UI 及其专用 mutation hooks 已移除。
