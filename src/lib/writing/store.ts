@@ -4,7 +4,7 @@
  */
 
 import { createStore } from "zustand/vanilla";
-import { normalizePath } from "@/lib/core/path";
+import { createPathRemapper, normalizePath } from "@/lib/core/path";
 import {
 	type Manuscript,
 	manuscriptDir,
@@ -106,20 +106,7 @@ export function remapWritingPaths(
 	moves: readonly { from: string; to: string }[],
 ): void {
 	if (moves.length === 0) return;
-	const remap = (path: string): string => {
-		const current = normalizePath(path);
-		const currentKey = current.toLowerCase();
-		for (const move of moves) {
-			const from = normalizePath(move.from);
-			const to = normalizePath(move.to);
-			const fromKey = from.toLowerCase();
-			if (currentKey === fromKey) return to;
-			if (currentKey.startsWith(`${fromKey}/`)) {
-				return `${to}${current.slice(from.length)}`;
-			}
-		}
-		return path;
-	};
+	const remap = createPathRemapper(moves);
 	const state = writingStore.getState();
 	writingStore.setState({
 		activeRoot: state.activeRoot ? remap(state.activeRoot) : null,

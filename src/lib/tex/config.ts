@@ -1,5 +1,5 @@
 import { createStore } from "zustand/vanilla";
-import { dirnameOf, normalizePath } from "@/lib/core/path";
+import { createPathRemapper, dirnameOf, normalizePath } from "@/lib/core/path";
 import { readJsonStorage, writeJsonStorage } from "@/lib/core/storage";
 import type { LatexBuildOptions, LatexRecipe } from "@/lib/tex/host";
 
@@ -181,20 +181,7 @@ export function remapTexSettingsPaths(
 	moves: readonly { from: string; to: string }[],
 ): void {
 	if (moves.length === 0) return;
-	const remap = (path: string): string => {
-		const current = normalizePath(path);
-		const currentKey = current.toLowerCase();
-		for (const move of moves) {
-			const from = normalizePath(move.from);
-			const to = normalizePath(move.to);
-			const fromKey = from.toLowerCase();
-			if (currentKey === fromKey) return to;
-			if (currentKey.startsWith(`${fromKey}/`)) {
-				return `${to}${current.slice(from.length)}`;
-			}
-		}
-		return path;
-	};
+	const remap = createPathRemapper(moves);
 	texSettingsStore.setState((state) => {
 		const projects: TexSettingsState["projects"] = {};
 		for (const [key, value] of Object.entries(state.projects)) {

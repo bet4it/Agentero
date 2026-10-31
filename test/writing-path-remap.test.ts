@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { createPathRemapper } from "@/lib/core/path";
 import { remapWritingPaths, writingStore } from "@/lib/writing/store";
 
 describe("remapWritingPaths", () => {
@@ -42,5 +43,28 @@ describe("remapWritingPaths", () => {
 		const state = writingStore.getState();
 		expect(state.activeRoot).toBe("/vault/thesis/renamed/main.tex");
 		expect(state.recents).toEqual(["/vault/thesis/renamed/main.tex"]);
+	});
+});
+
+describe("createPathRemapper", () => {
+	it("normalizes Windows moves but preserves unmatched paths and directory boundaries", () => {
+		const remap = createPathRemapper([
+			{ from: "C:/Vault/Paper/", to: "D:/Work/New/" },
+		]);
+		expect(remap(String.raw`c:\vault\paper\Main.tex`)).toBe(
+			"D:/Work/New/Main.tex",
+		);
+		expect(remap("c:/vault/paper")).toBe("D:/Work/New");
+		const unmatched = String.raw`C:\Vault\Paperwork\Main.tex`;
+		expect(remap(unmatched)).toBe(unmatched);
+	});
+
+	it("uses the first matching move without chaining through later moves", () => {
+		const remap = createPathRemapper([
+			{ from: "/vault/old", to: "/vault/new" },
+			{ from: "/vault/old/main.tex", to: "/vault/specific.tex" },
+			{ from: "/vault/new", to: "/vault/final" },
+		]);
+		expect(remap("/vault/old/main.tex")).toBe("/vault/new/main.tex");
 	});
 });

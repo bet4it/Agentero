@@ -86,3 +86,23 @@ export function toVaultRelative(
 	if (n.startsWith(`${root}/`)) return n.slice(root.length + 1);
 	return n;
 }
+
+/** Case-insensitive file/directory moves, applied in order without chaining. */
+export function createPathRemapper(
+	moves: readonly { from: string; to: string }[],
+): (path: string) => string {
+	return (path: string): string => {
+		const current = normalizePath(path);
+		const currentKey = current.toLowerCase();
+		for (const move of moves) {
+			const from = normalizePath(move.from);
+			const to = normalizePath(move.to);
+			const fromKey = from.toLowerCase();
+			if (currentKey === fromKey) return to;
+			if (currentKey.startsWith(`${fromKey}/`)) {
+				return `${to}${current.slice(from.length)}`;
+			}
+		}
+		return path;
+	};
+}
